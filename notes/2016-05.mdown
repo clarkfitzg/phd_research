@@ -1,0 +1,11 @@
+
+Fri May 20 17:17:24 PDT 2016
+
+Symbolic statistics paper by Matt Rocklin and Andy Terrel
+
+### Stats inside Sympy
+
+https://www.researchgate.net/publication/260585491_Symbolic_Statistics_with_SymPy
+
+This seems very cool. I wonder if any more work has been done on it. How
+does it play with larger systems?
