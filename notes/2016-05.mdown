@@ -9,3 +9,8 @@ https://www.researchgate.net/publication/260585491_Symbolic_Statistics_with_SymP
 
 This seems very cool. I wonder if any more work has been done on it. How
 does it play with larger systems?
+
+The graph showing the dependence of the computation on random components is
+neat.
+
+

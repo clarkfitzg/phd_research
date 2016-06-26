@@ -1,0 +1,33 @@
+Some ideas for transportation data sets
+
+Thu Jun 23 11:27:23 PDT 2016
+
+UC Davis has an Institute for Transportation Studies. Might be a nice
+source for data / motivations for applications.
+
+http://onlinelibrary.wiley.com/doi/10.1002/atr.1301/abstract
+
+## Statistical inference on transit route-level origin–destination flows using
+## automatic passenger counter data
+
+Yuxiong Ji1,2,, Qiyuan You1, Shengchuan Jiang1 andHongjun Michael Zhang1,3
+
+MCMC approach to bus passengers using automatic passenger counts. Their
+data sources may be interesting. The title of the journal is _Journal of
+Advanced Transportation_. Could be other relevant articles there.
+
+## Estimation of Bimodal Urban Link Travel Time Distribution and Its
+## Applications in Traffic Analysis
+
+http://www.hindawi.com/journals/mpe/2015/615468/
+
+Similar technical article- same year, same authors. Provides some
+distribution for arrival times.
+
+Government transportation data sets:
+http://www.rita.dot.gov/bts/data_and_statistics/index.html
+
+<http://www.transtats.bts.gov/Fields.asp?Table_ID=1180>
+
+This might let one quantify exactly how well served various areas in the US
+are by public transportation.
