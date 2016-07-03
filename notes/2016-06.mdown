@@ -1,0 +1,59 @@
+Notes from DSC (Directions in Statistical Computing) conference on July
+1st, 2016
+
+### Julia session
+
+Attendees: Erin, Katie, Viral, Clark, Robert, Doug, Deepayan
+
+There's been success in the 'Jump' team (acronym?) with having a nice API
+and a DSL for optimization.
+
+Sparse matrices and other related objects are implemented in Julia itself.
+Writing Julia in Julia. Helps with maintainability.
+
+MPI direct works in C but not Julia.
+
+Distributed arrays in Julia would be nice. So far the focus has been on
+single node performance, not parallelism.
+
+Julia box technology runs a Jupyter notebook inside a Docker container.
+
+A problem when considering 'big data' use cases is that there are few
+public data sets that can't be fit into RAM on a large machine. Ie. it's
+not as compelling to run on a 40 GB data set.
+
+Julia passes by reference and uses ! as a convention to denote functions
+which mutate the argument.
+
+As in R, initial design idea with Julia was as a Scheme / Lisp interpreter.
+
+__Graphics__ 
+`plots.jl` defines a common API among plotting packages. There's room for
+improvements and contributions. Right now the common use is calling into
+Python's matplotlib.
+
+Upgrade for Gadfly package is needed.
+
+GL visualize is an abstraction built on openGL.
+
+__NA's__
+The main problem is having type stable NA's so that the compiler can handle
+them. Plan is to use masked arrays and try to get them within 1.1 - 1.2
+times the speed of regular arrays.
+
+Default for dataframes will be masked arrays.
+
+Plan is to have abstract dataframes, so there could be an underlying
+distributed dataframe.
+
+There are Normal and Exponential RNG's written in Julia. Ziggurat?
+
+Inline documentation happens similar to doxygen.
+
+Packaging system is through Git and tends towards continuous integration.
+Git tags are used for major and minor releases.
+
+One idea for reproducibility is to snapshot the Docker container. Ideally
+it's better to just have the code.
+
+Doug's blog- 2nd MB of memory.
