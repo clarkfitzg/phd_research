@@ -9,7 +9,9 @@ Work supported by the R Consortium.
 
 ## Tue Jul  5 08:37:18 PDT 2016
 
-- Administrative emails
-- Follow ups from useR and DSC
-- Set up Dev mailing list
-- Propose general direction for summer work
+| Task                                  | Finished
+|------------------------------------   |---------
+| Administrative emails                 | X
+| Follow ups from useR and DSC          | 
+| Set up Dev mailing list               | X
+| Propose general direction for summer  | 

@@ -1,5 +1,10 @@
 Tue Jul  5 09:04:22 PDT 2016
 
+## Questions
+
+- Why is distributedR.ddR included in ddR? Shouldn't it be a separate
+  package?
+
 Reading through Michael's ddR documentation, think I'm getting the general
 flavor.
 <https://github.com/vertica/ddR/wiki/Design>
@@ -15,7 +20,106 @@ interact with distributed data in R.
 The appeal to authors of packages implementing distributed algorithms is that they will run on
 any system that follows this API. It's more flexibility all around.
 
-## Questions
+## Mike Kane's talk
 
-- Why is distributedR.ddR included in ddR? Shouldn't it be a separate
-  package?
+(including follow up discussion with Bryan)
+
+Think about it as a grammar- composing operations on distributed objects.
+
+Likes the distributed list, array, and dataframe. I agree.
+
+All 3 distributed objects could be built on one simple object- the chunk
+
+Separation of data and container API from execution- ie. use dplyr or base
+R. Also may be possible to increase speed by writing specific code for each
+backend.
+ 
+Simpler and more general data and container API "API needs to be as simple
+and stable as possible". Have to preserve backwards compatibility.
+
+Cache optimization may be more important that data locality for `group_by`.
+
+Serialization and multicore should be awesome and stable, because that's
+what users will try first.
+
+## references
+
+Quick summaries of Mike's references
+
+__cnidaria__
+
+cnidaria: A Generative Communication Approach to Scalable, Distributed
+Learning (2013)
+
+> cnidaria is a computing framework for writing distributed data structures
+> and algorithms
+
+So it was basically the same idea as ddR.
+
+Three types of problems:
+1. Subset - (Subsample) Can do if iid. Linear regression has worked for me here
+2. Divide and recombine - Same operation on many small subsets
+3. Analysis Reduction - Goes beyond first two, ie. SVD on a large matrix
+
+Idea is to have a configuration manager and all the other compute nodes
+working decentralized peer-to-peer (P2P). Sounds difficult to actually
+implement.
+
+CAP theorem: consistency, availability, partition tolerance. Pick 2.
+
+Don't really understand Figure 1. It appears to be just fetching a matrix
+from one R process to another.
+
+Seems related to functional programming.
+
+The software uses `itertools`, which makes it even more related to the
+functional ideas.
+
+References: Matloff N (2013). “Software Alchemy: Turning Complex
+Statistical Computations into Embarrass- ingly Parallel Ones.”
+ 
+__Linda__ 
+
+Generative communication in Linda, Gelernter (1985)
+
+30 page classic paper - 3000 citations
+
+Linda is a distributed language. Basic idea is Tuple space with operations
+`read, in, out` on tuples.
+
+This is certainly further than we want to go- it's writing the whole
+system. We just want an abstraction.
+
+## Kicking the tires
+
+```
+> source('examples/dkmeans-example.R')
+
+Welcome to 'ddR' (Distributed Data-structures in R)!
+For more information, visit: https://github.com/vertica/ddR
+
+Attaching package: ‘ddR’
+
+The following objects are masked from ‘package:base’:
+
+    cbind, rbind
+
+Generating data with rows= 1e+06  and cols= 100 
+training dkmeans model on distributed data:  11.869 
+training normal kmeans model on centralized data:  16.384 
+Warning messages:
+1: did not converge in 10 iterations 
+2: did not converge in 10 iterations
+```
+
+TODO: to set a seed or modify these so the example scripts work.
+
+So what's up with `cbind` and `rbind`? They're being exported.
+
+Both sparse and dense `darray`s are there in `dobject.R`.
+
+TODO: improve print methods with distributed metadata
+
+Right now `dmapply` is not lazy. It evaluates as soon as it receives the
+command. Guessing it would be better if it deferred computation as long as
+possible like dask and itertools.
