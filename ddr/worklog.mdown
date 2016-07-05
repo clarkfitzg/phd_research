@@ -1,0 +1,15 @@
+A todo list which can also be a work log for the ddR project
+
+Work supported by the R Consortium.
+
+
+## June 26 - July 2
+
+- useR and DSC conference
+
+## Tue Jul  5 08:37:18 PDT 2016
+
+- Administrative emails
+- Follow ups from useR and DSC
+- Set up Dev mailing list
+- Propose general direction for summer work

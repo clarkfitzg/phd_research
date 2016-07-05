@@ -1,0 +1,21 @@
+Tue Jul  5 09:04:22 PDT 2016
+
+Reading through Michael's ddR documentation, think I'm getting the general
+flavor.
+<https://github.com/vertica/ddR/wiki/Design>
+
+Looks like only the couple algorithms are reverse dependencies on CRAN
+right now, so it should be ok to make changes. It's really worth it to get
+the right abstraction.
+<https://cran.r-project.org/web/packages/ddR/index.html>
+
+I think that for this package to actually be successful and move the needle
+it needs to be modular enough to handle all the ways package authors will
+interact with distributed data in R.
+The appeal to authors of packages implementing distributed algorithms is that they will run on
+any system that follows this API. It's more flexibility all around.
+
+## Questions
+
+- Why is distributedR.ddR included in ddR? Shouldn't it be a separate
+  package?
