@@ -1,0 +1,82 @@
+# Installing Local Spark
+
+You don't need hadoop for standalone mode, but it's useful to have hdfs.
+
+This command had me first install Java.
+```
+$ brew install hadoop
+```
+
+Download desired spark image - I'm using the Preview 2.0.0 release
+<http://spark.apache.org/downloads.html>
+
+Navigate into image and then:
+```
+./build/mvn -Pyarn -Phadoop-2.7 -Dhadoop.version=2.7.2 -DskipTests clean
+package
+```
+
+This takes about 10 minutes.
+
+Now testing R
+
+```
+$ ./R/run-tests.sh 
+Error in library(SparkR) : there is no package called ‘SparkR’
+Execution halted
+```
+
+So we'll need to install SparkR here.
+
+```
+R CMD INSTALL R/pkg/
+```
+
+Works fine.
+
+```
+./bin/sparkR
+```
+
+Now this looks just like a normal R interpreter.
+Following this tutorial:
+<http://spark.apache.org/docs/2.0.0-preview/sparkr.html>
+
+Seems like the basics work as expected.
+
+Moving onto the `sparkapi` package. Looks like I need hive for this to
+work. hive installs with brew.
+
+```
+hive> show databases;
+OK
+default
+Time taken: 0.215 seconds, Fetched: 1 row(s)
+hive> USE default;
+OK
+Time taken: 0.028 seconds
+hive> show tables;
+OK
+Time taken: 0.035 seconds
+hive> quit;
+campus-030-003 ~/dev/sparkapi $ 
+```
+
+Ok, I still get the same errors
+
+```
+> library(sparkapi)
+> sc <- start_shell(master = "local")
+Error: java.lang.IllegalArgumentException: Unable to instantiate SparkSession with Hive support because Hive classes are not found.
+        at org.apache.spark.sql.SparkSession$Builder.enableHiveSupport(SparkSession.scala:731)
+        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+        at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+        at java.lang.reflect.Method.invoke(Method.java:498)
+        at org.apache.spark.api.r.RBackendHandler.handleMethodCall(RBackendHandler.scala:141)
+        at org.apache.spark.api.r.RBackendHandler.channelRead0(RBackendHandler.scala:86)
+        at org.apache.spark.api.r.RBackendHandler.channelRead0(RBackendHandler.scala:38)
+        at io.netty.channel.SimpleChannelInboundHandler.channelRead(SimpleChannelInboundHandler.java:105)
+        at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:308)
+        at io.netty.channel.AbstractCh
+```
