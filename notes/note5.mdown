@@ -80,3 +80,51 @@ Error: java.lang.IllegalArgumentException: Unable to instantiate SparkSession wi
         at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:308)
         at io.netty.channel.AbstractCh
 ```
+
+First I better check if I can load data into HDFS and hive and get started with
+that. I'll use the `Orange` data sets in R.
+
+Looks like the HDFS setup is a little more involved:
+<http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/SingleCluster.html>
+
+Not making much headway with this. Is it possible to skip it?
+
+Seems like I need a Hive metastore and all kinds of other configuration.
+
+But I didn't build Spark with Hive support. I'll try to go back and do
+that.
+
+```
+./build/mvn -Pyarn -Phadoop-2.7 -Dhadoop.version=2.7.2 -Phive -Phive-thriftserver -DskipTests clean package
+
+...
+
+[ERROR] Failed to execute goal
+net.alchim31.maven:scala-maven-plugin:3.2.2:compile (scala-compile-first)
+on project spark-tags_2.11: Execution scala-compile-first of goal net.alc
+him31.maven:scala-maven-plugin:3.2.2:compile failed. CompileFailed -> [Help
+1]
+```
+
+Compilation errors. Maybe I can start with a fresh build.
+First set JAVA HOME
+
+<http://stackoverflow.com/questions/1348842/what-should-i-set-java-home-to-on-osx>
+
+```
+$ ./dev/make-distribution.sh --name clarkspark --tgz -Psparkr -Phadoop-2.7 -Phive -Phive-thriftserver -Pyarn
+```
+
+Same errors. Maybe I should delete it all and start again. Feel like this
+is wasting a lot of time. Can I just start with the databricks product
+maybe?
+
+Trying the community edition. <https://community.cloud.databricks.com>
+Let's see if it allows me to get in and try Rstudio's `sparkapi`.
+
+Looks like the only access is through the notebook. Not ideal for trying to
+build this stuff.
+
+Looking at 'Intro to big data' Python course
+RDD in Spark - resilient distributed dataset. Immutable data structure,
+seems to act somewhat like an iterator in Python.
