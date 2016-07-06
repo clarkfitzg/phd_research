@@ -15,3 +15,4 @@ Work supported by the R Consortium.
 | Follow ups from useR and DSC          | 
 | Set up Dev mailing list               | X
 | Propose general direction for summer  | 
+| Check convergence kmeans code         |

@@ -114,6 +114,20 @@ Warning messages:
 
 TODO: to set a seed or modify these so the example scripts work.
 
+After some modification:
+
+```
+> source('examples/dkmeans-example.R')
+Generating 100000 x 100 matrix for clustering with 10 means
+training dkmeans model on distributed data
+14.975
+training normal kmeans model on centralized data
+10.34
+Warning messages:
+1: did not converge in 100 iterations
+2: empty cluster: try a better set of initial centers
+```
+
 So what's up with `cbind` and `rbind`? They're being exported.
 
 Both sparse and dense `darray`s are there in `dobject.R`.
