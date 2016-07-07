@@ -1,0 +1,54 @@
+Thu Jul  7 08:45:00 PDT 2016
+
+## Who did you meet at the 2016 useR and DSC?
+
+In chronological order:
+
+__Peter Wang__ CTO of Continuum, a major contributor to the scientific
+Python stack. At Berkeley MMDS he presented some interesting ideas about
+visualizing large data using [Bokeh](http://bokeh.pydata.org/en/latest/).
+There are a couple of ideas:
+- Visualizing large data sets is quite different from small data sets where
+  you can see all the points
+- It's not all that well studied or understood 
+- Bokeh uses various components of the Python stack (dask, llvm) to quickly
+  zoom, filter, aggregate, etc.
+
+Understanding large data sets through visualization seems like an
+interesting thesis topic.
+
+__Michael Lawrence__ Core R developer and organizer of the ddR project this summer. He works at
+Genentech with Gabe Becker supporting computational research activities. We had
+several conversations around ddR and activities for this summer. Right now
+the focus is on making Spark work with ddR.
+
+__Edward Ma__ Engineer at HP Vertica, main contributor to ddR along with
+Indrajit. He presented a talk describing ddR.
+
+__Simon Urbanek__ Core R developer working at ATT Labs. Processing
+distributed data at Petabyte scale in R - very cool! He gave a keynote on
+RCloud and a similar talk at DSC.  He also alluded to the possibility of
+internships.
+
+__Doug Bates__ Retired Professor and former R core member, author of
+`lme4` (one of my favorite R packages). He now contributes to linear
+algebra and mixed models in the Julia language.
+
+__Viral Shah__ One of the creators of Julia. The language is changing
+quickly, which has it's ups and downs. The good is that it might be
+good for research, trying totally new things. The bad is that it's not that
+stable or widely used yet.
+
+__Michael Kane__ Author of `bigmemory` and some other higher level tools
+that sit on top of that. These extend functionality of R from
+computation in memory into disk, without the hassle of a distributed
+system. For individual data analysts without the dedicated support of systems
+administrators and an engineering team I think that this is an appealing
+way to scale computation beyond a single node.
+
+__Bryan Lewis__ Collaborator of Michael Kane. Has written popular R
+interfaces to SciDB and Redis, so has many ideas and suggestions on how to
+emulate base R objects using different back ends.
+
+Also met and spoke more briefly with Ryan Hafen, JJ Allaire, and Mario
+Inchiosa. They're all working in the space of distributed computation in R.
