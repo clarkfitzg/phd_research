@@ -1,0 +1,25 @@
+## Spark Install
+
+Fri Jul  8 15:14:56 PDT 2016
+
+The easiest way to get started with an R / Spark development environment.
+Big thanks to Javier Luraschi and the Rstudio team!
+
+This will download what you need for a local install:
+
+```
+> sparklyr::spark_install(version = "2.0.0-preview")
+```
+
+Since I'll be using this often I made a note of the directory and set
+`SPARK_HOME` accordingly in my `.bashrc`:
+
+```
+export SPARK_HOME="/Users/clark/Library/Caches/spark/spark-2.0.0-preview-bin-hadoop2.6/"
+```
+
+If you forget run `sparklyr::spark_install_dir()` - it's
+contained in there.
+
+After this I was able to run examples from the README in
+[sparkapi](https://github.com/rstudio/sparkapi).
