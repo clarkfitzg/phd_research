@@ -1,0 +1,20 @@
+Thu Jul  7 10:31:57 PDT 2016
+
+Now I have the latest Ubuntu 16.04 installed and updated on my server in
+the DSI. Hopefully this will make it easier to get Spark running.
+
+First I'll try installing Hadoop and Hive.
+
+Still excessively complicated. Instead let's try to use Docker on this Mac.
+
+```
+docker pull sequenceiq/spark
+```
+
+This was the most popular docker image. Now it appears to be downloading a
+huge amount of data...
+
+For developing and testing it seems that this Docker idea is the way to go.
+The configuration is finicky enough that even if I'm able to get it I doubt
+that I can reproduce it. Makes more sense to get it going in an automated
+way so that others can use it as well.
