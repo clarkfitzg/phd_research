@@ -12,9 +12,11 @@ Work supported by the R Consortium.
 | Task                                  | Finished
 |------------------------------------   |---------
 | Administrative emails                 | X
-| Follow ups from useR and DSC          | 
+| Follow ups from useR and DSC          | X
 | Set up Dev mailing list               | X
 | Propose general direction for summer  | 
-| Check convergence kmeans code         |
+| Check convergence kmeans code         | X
 | Install local Spark stack             | 
+| Get sparkapi working                  |
+| Read through documentation and code   |
 

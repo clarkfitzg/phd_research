@@ -1,9 +1,9 @@
 Tue Jul  5 09:04:22 PDT 2016
 
-## Questions
 
-- Why is distributedR.ddR included in ddR? Shouldn't it be a separate
-  package?
+Why is distributedR.ddR included in ddR? Shouldn't it be a separate
+package? I guess it's here since it's an officially supported backend.
+It's also very handy now for someone like me writing a new backend.
 
 Reading through Michael's ddR documentation, think I'm getting the general
 flavor.
@@ -132,8 +132,75 @@ So what's up with `cbind` and `rbind`? They're being exported.
 
 Both sparse and dense `darray`s are there in `dobject.R`.
 
-TODO: improve print methods with distributed metadata
+TODO: improve print methods with distributed metadata.
+Print method- it can sometimes be very handy to see the first couple
+rows. But this would preclude lazy evaluation.
 
 Right now `dmapply` is not lazy. It evaluates as soon as it receives the
 command. Guessing it would be better if it deferred computation as long as
 possible like dask and itertools.
+
+- I would have expected a different split based on the data sizes:
+```
+> dl2 = dlist(1:10, letters, runif(5), nparts=2)
+> dl2
+
+ddR Distributed Object
+Type: dlist
+# of partitions: 2
+Partitions per dimension: 2x1
+Partition sizes: [2], [1]
+Length: 3
+Backend: parallel
+```
+
+The docs seem to preclude the use of arrays with dimension higher than 2.
+
+So `collect` brings it back into memory of the local process.
+
+### Question
+
+So how exactly would I write a group by operation? (Ryan Hafen's
+common use case) This is something encountered very often in data analysis.
+Split a big table on some factor, load one observation into memory and
+figure out what you're trying to do, then apply that to the big table.
+ddR doesn't have any facility to do this, but it's a natural way to think
+about the problem.
+
+On a related note, it seems super weird to me to chunk a table like this:
+```
+a b c d
+. .|. .
+-------
+. .|. .
+```
+Because this doesn't correspond to a logical or physical partitioning. So
+what's the goal of ddR? Do the chunks actually correspond to either of
+these? Or do we just know that there are chunks?
+
+All the focus is on dmapply and dlapply. What about a plain old Map?
+
+Uses S4 classes? But seems to mention S3 methods also?
+
+TODO: Add ability to select ith row or jth column. `da[2, ]` which
+currently throws an error.
+
+`repartition` function seems like it might be more expensive than it needs
+to be.
+
+The big thing I need to be thinking about is how to write a driver for a
+new backend.
+
+What exactly would it mean to have a serial backend like Bryan Lewis was
+talking about? What about a memory mapped backend?
+
+What would be a compelling use case? What about algorithms that involved
+diagonal block matrices. Those are sparse and proper representation of the
+structure will accelerate any computation. Can ddR naturally build and
+operate on those?
+
+So I believe it's possible to write backend specific code, ie. `colMeans` for a
+particular class. How exactly is this done? Ah, see `colnames` in 
+`distributedR.ddR/R/ops.R`.
+
+
