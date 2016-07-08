@@ -18,3 +18,26 @@ For developing and testing it seems that this Docker idea is the way to go.
 The configuration is finicky enough that even if I'm able to get it I doubt
 that I can reproduce it. Makes more sense to get it going in an automated
 way so that others can use it as well.
+
+```
+docker run -d -P jupyter/pyspark-notebook
+docker run -d -p 8888:8888 jupyter/pyspark-notebook
+```
+
+The `-p` maps the ports from container to the host.
+
+View running containers: `docker ps`
+
+Trying out the Jupyter versions now :
+https://github.com/jupyter/docker-stacks as recommended by Karen Ng.
+
+This seems to be working fine. I can access the shell. Now it needs R. Use
+this notebook:
+https://github.com/jupyter/docker-stacks/tree/master/all-spark-notebook
+
+and SparkR runs here. Sweet!
+Now lets see if `sparkapi` can run.
+
+It would seem that the thing to do is fork this notebook and start hacking
+on it.
+
