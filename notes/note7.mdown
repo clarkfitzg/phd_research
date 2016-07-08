@@ -39,5 +39,10 @@ and SparkR runs here. Sweet!
 Now lets see if `sparkapi` can run.
 
 It would seem that the thing to do is fork this notebook and start hacking
-on it.
+on it. So let's figure out how to make this work easily available.
 
+The Jupyter stack is huge- much larger than I actually need, but it has the
+advantage that it's actively maintained. So I'll build off that.
+
+When I push to Dockerhub the entire image goes through => 6 GB are uploaded. Seems quite
+excessive when all I really need are the contents of the `Dockerfile`!

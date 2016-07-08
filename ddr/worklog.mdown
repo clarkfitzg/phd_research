@@ -16,7 +16,7 @@ Work supported by the R Consortium.
 | Set up Dev mailing list               | X
 | Propose general direction for summer  | 
 | Check convergence kmeans code         | X
-| Install local Spark stack             | 
-| Get sparkapi working                  |
+| Install local Spark stack             | X
+| Get sparkapi working                  | X
 | Read through documentation and code   |
 

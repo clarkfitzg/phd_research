@@ -1,8 +1,10 @@
 # Copyright (c) Jupyter Development Team.
 # Distributed under the terms of the Modified BSD License.
+#
+# A modification of jupyter/all-spark-notebook
 FROM jupyter/pyspark-notebook
 
-MAINTAINER Jupyter Project <jupyter@googlegroups.com>
+MAINTAINER Clark Fitzgerald <clarkfitzg@gmail.com>
 
 USER root
 
@@ -10,23 +12,20 @@ USER root
 ENV R_LIBS_USER $SPARK_HOME/R/lib
 
 # R pre-requisites
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    fonts-dejavu \
-    gfortran \
-    gcc && apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+#RUN apt-get update && \
+    #apt-get install -y --no-install-recommends \
+    #fonts-dejavu \
+    #gfortran \
+    #gcc && apt-get clean && \
+    #rm -rf /var/lib/apt/lists/*
+#
+# Comment out to stay as root?
+#USER $NB_USER
 
-USER $NB_USER
+# Install R
+RUN apt-get update
+RUN apt-get install -y r-base
 
-# R packages
-RUN conda config --add channels r && \
-    conda install --quiet --yes \
-    'r-base=3.2*' \
-    'r-irkernel=0.5*' \
-    'r-ggplot2=1.0*' \
-    'r-rcurl=1.95*' && conda clean -tipsy
-
-# Apache Toree kernel
-RUN pip --no-cache-dir install toree==0.1.0.dev7
-RUN jupyter toree install --user
+# Need packages irkernel for notebook, sparkapi, ddR
+#RUN R --quiet -e "install.packages('devtools')"
+#RUN R --quiet -e "devtools::install_github"
