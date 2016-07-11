@@ -1,0 +1,6 @@
+Will group by on tables be supported?
+
+Different dimensional arrays? Current focus seems to be on matrices.
+
+Do chunks correspond to logical or physical partitions? If neither, then
+what's the purpose?

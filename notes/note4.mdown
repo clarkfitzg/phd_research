@@ -203,4 +203,5 @@ So I believe it's possible to write backend specific code, ie. `colMeans` for a
 particular class. How exactly is this done? Ah, see `colnames` in 
 `distributedR.ddR/R/ops.R`.
 
-
+Some of the talks that led to this project:
+http://www.labs.hpe.com/research/systems-research/R-workshop/
