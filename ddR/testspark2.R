@@ -9,6 +9,17 @@ sc = spark_connect(master = "local")
 # Loads the iris table into Spark
 iris_tbl = copy_to(sc, iris, overwrite=TRUE)
 
+# Why are these all NA?
+iris_tbl %>% group_by(Species) %>% summarize(avglength =
+mean("Sepal.Length")) %>% collect
+
+# Try a user defined function - gives Undefined function error in SQL
+# (Which is to be expected)
+bake = function(x) data.frame(delicious = pi)
+iris_tbl %>% group_by(Species) %>% summarize(delicious = bake("Sepal.Length"))
+
+############################################################
+
 # Now can we manipulate this at some lower level?
 library(sparkapi)
 
