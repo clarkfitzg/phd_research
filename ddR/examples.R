@@ -53,3 +53,17 @@ a3 = collect(da3)
 data(Orange)
 s = split(Orange, Orange$Tree)
 l = sapply(s, function(df) mean(df$circumference[-1]))
+
+n = 10
+d = data.frame(a = 1:n, b = rnorm(n), c = runif(n), d = rnorm(n))
+
+dd = as.dframe(d, psize = c(n, 2))
+
+# Lets put a more informative error message on this.
+dd = as.dframe(d, psize = 2)
+
+# Why are these the same?
+collect(parts(dd)[[1]])
+collect(parts(dd)[[2]])
+
+collect(dd, 2)

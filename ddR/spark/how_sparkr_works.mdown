@@ -1,0 +1,16 @@
+Wed Jul 13 09:11:44 PDT 2016
+
+Starting to understand how SparkR works.
+
+## Start up an R process on every worker
+
+Relevant files:
+- `spark/core/src/main/scala/org/apache/spark/api/r/RRunner.scala`
+- `./R/pkg/inst/worker/worker.R`
+
+Useful command to change into the containing directory:
+```
+~/dev/spark $ cd $(find . -type f -name 'worker.R' | xargs dirname)`
+```
+
+## Serialize that workers local data into R
