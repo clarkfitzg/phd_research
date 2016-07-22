@@ -9,7 +9,9 @@ local_df = data.frame(key = 1:3, value = letters[1:3])
 
 wrapper = function(df){
     out = data.frame(key = df$key)
-    out$value = lapply(df$value, function(x) serialize(1:5, NULL))
+    # So both of these work:
+    #out$value = lapply(df$value, function(x) serialize(1:5, NULL))
+    out$value = lapply(df$value, function(x) serialize(x, NULL))
     out
 }
 
