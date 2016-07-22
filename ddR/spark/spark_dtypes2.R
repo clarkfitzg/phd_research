@@ -63,9 +63,11 @@ sqlContext <- sparkRSQL.init(sc)
 
 spark_df = createDataFrame(sqlContext, local_df)
 
-# Works fine - No, some
+# Works fine 
 collect(spark_df)
 
-spark_df2 = dapplyCollect(spark_df, wrapper)
+# Error:
+# invalid list argument: all variables should have the same length
+#spark_df2 = dapplyCollect(spark_df, wrapper)
 
 }
