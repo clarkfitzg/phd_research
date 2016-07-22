@@ -1,0 +1,30 @@
+
+Which methods does a new driver need to implement? (Cross referencing from
+the two working implementations to make sure they're the same)
+
+```
+
+grep "setMethod" ~/dev/ddR/ddR/R/pobject.R
+grep "setMethod" ~/dev/ddR/distributedR.ddR/R/object.R
+grep "setMethod" ~/dev/ddR/Spark.ddR/R/object.R
+
+initialize, combine, get_parts, do_collect
+
+grep "setMethod" ~/dev/ddR/ddR/R/pdriver.R
+grep "setMethod" ~/dev/ddR/distributedR.ddR/R/driver.R
+grep "setMethod" ~/dev/ddR/Spark.ddR/R/driver.R
+
+init, shutdown, do_dmapply
+
+```
+
+Excellent, I can just use the shells of the existing functions from
+Edward's work.
+
+Judging by these functions I think that it's possible to write the whole
+thing in terms of map reduce style code on key value pairs.
+
+Note ddR doesn't have any mechanisms for saving or loading data. So that
+won't be my first priority in working on Spark. But it probably is
+necessary for this to be useful to work with actual data sets. If I build
+this on SparkR then it will probably be easier to load and save.

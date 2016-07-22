@@ -102,3 +102,23 @@ spark_results = lapply(spark_df2$value, from_byte_string)
 # [[3]]
 # [1] A B C D E
 # Levels: A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
+
+############################################################# 
+
+# What happens if I attempt to use this idea with 100 MB matrices as
+# values?
+
+n = round(sqrt(1e8 / 8))
+
+m1 = matrix(rnorm(n^2), nrow=n)
+m2 = matrix(rnorm(n^2), nrow=n)
+
+# Sanity check:
+format(object.size(m1), units="MB")
+
+# In a local R session this takes nearly 1 minute
+l_df = data.frame(key = 1:2
+                  , value = c(to_byte_string(m1), to_byte_string(m2))
+                  , stringsAsFactors = FALSE)
+
+
