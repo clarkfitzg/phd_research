@@ -6,33 +6,46 @@
 
 library("SparkR")
 
-local_df = data.frame(key = 1:3, value = letters[1:3])
+local_df = data.frame(key = 1:3)
+local_values = list(letters, 1:20, rnorm(7))
+local_df$value = lapply(local_values, serialize, conn=NULL)
 
-serialize_spark = function(df){
+sapply(local_df, class)
+
+# A list of raw vectors
+class(local_df$value[[1]])
+
+func_raw = function(xraw){
+    # A function operating on serialized objects
+    # Unserialize, apply function, reserialize
+    x = unserialize(xraw)
+    # Actual function body is here:
+    fx = x[1:5]
+    serialize(fx, NULL)
+}
+
+# Test this recovers the right thing
+actual = unserialize(func_raw(local_df$value[[1]]))
+stopifnot(all(actual == letters[1:5]))
+
+wrapper = function(df){
+    # Necessary because we can't assume that every row corresponds to a
+    # partition
     out = data.frame(key = df$key)
-    out$value = lapply(df$value, serialize, connection = NULL)
+    out$value = lapply(df$value, func_raw)
     out
 }
 
+# Will this work on both single rows of dataframes?
+# Yes
+wrapper(local_df[1, ])
 
-serialize_spark_anonymous = function(df){
-    out = data.frame(key = df$key)
-    out$value = lapply(df$value, function(x) serialize(x, NULL))
-    out
-}
+# Works
+local_df2 = wrapper(local_df)
 
-unserialize_spark = function(df){
-    out = data.frame(key = df$key)
-    out$value = lapply(df$value, unserialize)
-    out
-}
-
-unserialize_spark_anonymous = function(df){
-    out = data.frame(key = df$key)
-    out$value = lapply(df$value, function(x) unserialize(x))
-    out
-}
-
+# Worry about the key later
+local_results = lapply(local_df2$value, unserialize)
+local_results
 
 ############################################################
 
@@ -43,23 +56,8 @@ sc <- sparkR.init()
 sqlContext <- sparkRSQL.init(sc)
 spark_df = createDataFrame(sqlContext, local_df)
 
-# Works - Creates the serialized version of the values
-local_ser = dapplyCollect(spark_df, serialize_spark)
-spark_ser = createDataFrame(sqlContext, local_ser)
-
-# Works
-unserialize_spark(collect(spark_ser))
-
-# local_df2 = dapplyCollect(spark_ser, unserialize_spark)
-# Fails with same error
-# Calls: source ... withVisible -> eval -> eval -> do.call -> <Anonymous>
-# Execution halted
-# Error in (function (..., deparse.level = 1, make.row.names = TRUE,
-# stringsAsFactors = default.stringsAsFactors())  :
-#   invalid list argument: all variables should have the same length
-
-# local_df2 = dapplyCollect(spark_ser, unserialize_spark_anonymous)
-# Fails with same error
-
-# Conclusion: Serialization works, while unserialization doesn't.
-# Maybe I only thought that it worked before.
+# local_wrapper_applied = dapplyCollect(spark_df, wrapper)
+# Yep, exact same failure.
+# Let's grep through the Spark source and see if it's in there.
+# Don't see it. Googling this gives me hits to the source of data.frame,
+# cbind and rbind
