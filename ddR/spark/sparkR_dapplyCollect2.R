@@ -32,27 +32,16 @@ wrapper2(df_rawvals)
 ############################################################
 
 # Now for the Spark stuff
-if(TRUE){
 
 sparkR.stop()
-
 sc <- sparkR.init()
 sqlContext <- sparkRSQL.init(sc)
-
 spark_df = createDataFrame(sqlContext, df_rawvals)
 
-# Works fine 
-collect(spark_df)
-
+#spark_df2 = dapplyCollect(spark_df, wrapper2)
 # Fails with
 #  Error in (function (..., deparse.level = 1, make.row.names = TRUE,
 #  stringsAsFactors = default.stringsAsFactors())  :
 #  invalid list argument: all variables should have the same length
 
-spark_df1 = dapplyCollect(spark_df, wrapper1)
-
-class(spark_df2$value[[1]])
-
-# This then shows that SparkR is capable of directly reading and writing
-# serialized R objects as raw vectors. Which is the main thing I needed.
-}
+# => unserialization did not work

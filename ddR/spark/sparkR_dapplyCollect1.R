@@ -20,13 +20,10 @@ wrapper(local_df)
 ############################################################
 
 # Now for the Spark stuff
-if(TRUE){
 
 sparkR.stop()
-
 sc <- sparkR.init()
 sqlContext <- sparkRSQL.init(sc)
-
 spark_df = createDataFrame(sqlContext, local_df)
 
 # Works fine 
