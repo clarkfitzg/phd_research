@@ -49,3 +49,10 @@ dapplyCollect(spark_df, somefunc)
 
 # This means that it's something about operating on the list of raw values
 # that's throwing the error.
+
+# How about the identity function:
+# Works as expected:
+dapplyCollect(spark_df, function(x) x)
+
+# Fails
+# dapplyCollect(spark_df_rawvals, function(x) x)
