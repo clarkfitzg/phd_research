@@ -1,0 +1,35 @@
+Wed Aug 24 10:03:19 KST 2016
+
+After modifying SparkR such that dapplyCollect will fail in the local R
+session (not Spark) I see the following Spark error. This implies that
+calling the Java "collect" method failed when there was a binary column.
+
+```
+16/08/24 09:59:24 ERROR RBackendHandler: collect on 19 failed
+Error in invokeJava(isStatic = FALSE, objId$id, methodName, ...) :
+  org.apache.spark.SparkException: Job aborted due to stage failure: Task 0 in stage 1.0 failed 1 times, most recent failure: Lost task 0.0 in stage 1.0 (TID 1, localhost): org.apache.spark.SparkException: R computation failed with
+ Error in (function (..., deparse.level = 1, make.row.names = TRUE, stringsAsFactors = default.stringsAsFactors())  :
+  invalid list argument: all variables should have the same length
+        at org.apache.spark.api.r.RRunner.compute(RRunner.scala:108)
+```
+
+This error message is the same as the small example that Shivaram showed:
+
+```
+n = 3
+df = data.frame(key = 1:n)
+df$value = lapply(letters[1:n], serialize, connection = NULL)
+
+# Convert df to list
+args <- list(FUN = list, SIMPLIFY = FALSE, USE.NAMES = FALSE)
+df_as_list <- do.call(mapply, append(args, df))
+
+# Convert list back to df. This gives an error
+df2 <- do.call(rbind.data.frame, df_as_list)
+```
+
+============================================================
+
+Wed Aug 24 10:22:30 KST 2016
+
+What happens when we modify worker.R?

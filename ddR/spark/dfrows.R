@@ -92,4 +92,8 @@ rbind_df_with_raw(list_of_lists, rawcolumns)
 # Can we do it in a more vectorized way?
 # What if we just "fill in" a dataframe?
 
+# This looks ____WAY____ better :)
+
+dframe <- as.data.frame(do.call(rbind, list_of_rows))
+dframe[!rawcolumns] <- lapply(dframe[!rawcolumns], unlist)
 
