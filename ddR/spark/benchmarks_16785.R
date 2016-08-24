@@ -1,14 +1,35 @@
-# Fri Aug 19 08:07:10 KST 2016
+# Wed Aug 24 14:12:12 KST 2016
 # Benchmarking performance before and after dapplyCollect patch
 
 # Downloaded data here:
 # https://s3-us-west-2.amazonaws.com/sparkr-data/nycflights13.csv
 
-library(SparkR, lib.loc = "~/dev/spark/R/lib")
+library(microbenchmark)
+
+PATCH = TRUE
+
+if(PATCH){
+    # Patch version
+    library(SparkR, lib.loc = "~/dev/spark/R/lib")
+}else{
+    library(SparkR, lib.loc = "~/dev/sparkr_libs/master")
+}
+
 
 sparkR.session()
 
-sdf = createDataFrame(iris)
-
 df <- read.csv("~/data/nycflights13.csv")
-microbenchmark::microbenchmark(createDataFrame(sqlContext, df), times=3)
+
+sdf <- createDataFrame(df)
+
+# BEFORE: 7.27 seconds
+# AFTER: 7.20 seconds
+# The patch shouldn't change this at all
+microbenchmark({sdf <- createDataFrame(df)}, times=1)
+
+# BEFORE: 502 seconds
+# AFTER: 508 seconds
+microbenchmark({
+    df2 <- dapplyCollect(sdf, function(x) x)
+}, times=1)
+

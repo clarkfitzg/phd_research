@@ -48,3 +48,20 @@ Wed Aug 24 11:25:41 KST 2016
 Ran tests again and this time they pass. Possibly it was because I had
 another SparkR session going at the same time, using lots of system
 resources? Also could have been related to all the errors.
+
+============================================================
+
+Wed Aug 24 13:34:36 KST 2016
+
+Simple reorganization- put `rbindRaw` in utils.R and now `collect` doesn't
+work at all for anything. Very strange to me. This means everything fails.
+
+I can determine if this is some system issue or if it is caused by the
+actual changes in code by checking out the working version and running the
+tests there.
+
+Yes, code runs when I check out that commit. Now I'll do a diff to figure
+out what is different and what causes it.
+
+I'll be damned. It was a syntax error in `worker.R`!!! But it's never
+actually throwing me that, it just times out and hangs.

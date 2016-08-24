@@ -1,0 +1,12 @@
+Launching java with spark-submit command /Users/clark/dev/spark/bin/spark-submit   sparkr-shell /var/folders/pq/859v8t7s0ps0v3kpb2d243xw0000gn/T//Rtmpr6S9ix/backend_port88f74a9b5e18 
+Java ref type org.apache.spark.sql.SparkSession id 1 
+Unit: seconds
+                               expr      min       lq     mean   median
+ {     sdf <- createDataFrame(df) } 7.202719 7.202719 7.202719 7.202719
+       uq      max neval
+ 7.202719 7.202719     1
+Unit: seconds
+                                             expr      min       lq     mean
+ {     df2 <- dapplyCollect(sdf, function(x) x) } 508.0962 508.0962 508.0962
+   median       uq      max neval
+ 508.0962 508.0962 508.0962     1
