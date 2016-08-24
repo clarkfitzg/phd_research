@@ -32,4 +32,19 @@ df2 <- do.call(rbind.data.frame, df_as_list)
 
 Wed Aug 24 10:22:30 KST 2016
 
-What happens when we modify worker.R?
+What happens when we modify worker.R? The dapplyCollect
+test actually works now. However, there are several other failures and an
+excessive amount of errors. But searching for the string "Failed ---" only
+turns up this one:
+
+```
+1. Error: create DataFrame from RDD (@test_sparkSQL.R#137
+```
+
+============================================================
+
+Wed Aug 24 11:25:41 KST 2016
+
+Ran tests again and this time they pass. Possibly it was because I had
+another SparkR session going at the same time, using lots of system
+resources? Also could have been related to all the errors.
