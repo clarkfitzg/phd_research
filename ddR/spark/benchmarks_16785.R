@@ -6,7 +6,7 @@
 
 library(microbenchmark)
 
-PATCH = TRUE
+PATCH = FALSE
 
 if(PATCH){
     # Patch version
@@ -27,9 +27,19 @@ sdf <- createDataFrame(df)
 # The patch shouldn't change this at all
 microbenchmark({sdf <- createDataFrame(df)}, times=1)
 
+# Without any repartitioning
 # BEFORE: 502 seconds
 # AFTER: 508 seconds
+
+# With repartitioning to N partitions
+N <- 5L
+sdfN <- repartition(sdf, numPartitions = N)
+
+# I don't know if this caching does anything?
+cache(sdfN)
+
+# BEFORE    N = 5   212 sec
 microbenchmark({
-    df2 <- dapplyCollect(sdf, function(x) x)
+    df2 <- dapplyCollect(sdfN, function(x) x)
 }, times=1)
 
