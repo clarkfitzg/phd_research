@@ -1,0 +1,33 @@
+name|description
+utc_time_id|
+source_ref|Reference type for this source identifier (e.g. TMC, PeMS)
+source_id|The item being mapped (e.g. TMC Code) if other to a station_id
+feed_id|Source data feed
+primary_link_source_flag|Indicates that this is the primary measure for a given link (0 or 1).
+samples|# of raw data samples for this link
+avg_speed|Average speed (km/h) that traffic is traveling.
+avg_flow|Average # of vehicles on for this link in this interval.
+avg_occ|Average occupancy on for this link in this interval.
+avg_freeflow_speed|The typical traffic speed under free flow conditions.
+avg_travel_time|The average time in minutes required to traverse the segment.
+high_quality_samples|# of samples considered high quality
+samples_below_100pct_ff|# of samples below 100% freeflow speed
+samples_below_95pct_ff|# of samples below 95% freeflow speed
+samples_below_90pct_ff|# of samples below 90% freeflow speed
+samples_below_85pct_ff|# of samples below 85% freeflow speed
+samples_below_80pct_ff|# of samples below 80% freeflow speed
+samples_below_75pct_ff|# of samples below 75% freeflow speed
+samples_below_70pct_ff|# of samples below 70% freeflow speed
+samples_below_65pct_ff|# of samples below 65% freeflow speed
+samples_below_60pct_ff|# of samples below 60% freeflow speed
+samples_below_55pct_ff|# of samples below 55% freeflow speed
+samples_below_50pct_ff|# of samples below 50% freeflow speed
+samples_below_45pct_ff|# of samples below 45% freeflow speed
+samples_below_40pct_ff|# of samples below 40% freeflow speed
+samples_below_35pct_ff|# of samples below 35% freeflow speed
+samples_below_30pct_ff|# of samples below 30% freeflow speed
+samples_below_25pct_ff|# of samples below 25% freeflow speed
+samples_below_20pct_ff|# of samples below 20% freeflow speed
+samples_below_15pct_ff|# of samples below 15% freeflow speed
+samples_below_10pct_ff|# of samples below 10% freeflow speed
+samples_below_5pct_ff|# of samples below 5% freeflow speed
