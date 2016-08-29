@@ -7,8 +7,21 @@ library(microbenchmark)
 library(sparkapi)
 library(sparklite)
 
-sc <- start_shell(master = "local", 
-        spark_home = "/Users/clark/Library/Caches/spark/spark-2.0.0-preview-bin-hadoop2.6/")
+# Just a string like "2.0.0". Don't think it's used anywhere.
+spark_version_from_home("/Users/clark/Library/Caches/spark/spark-2.0.0-preview-bin-hadoop2.6")
+
+# Connect to already running local cluster
+master <- "spark://Clarks-MacBook-Pro.local:7077"
+master <- "Clarks-MacBook-Pro.local:7077"
+master <- "localhost:7077"
+master <- "sparklocalhost:7077"
+master <- "spark://Clarks-MacBook-Pro.local:7077"
+# master <- "local"  # Not what I want since this doesn't use the one I
+# started locally
+sc <- start_shell(master, spark_version = "2.1.0")
+
+#sc <- start_shell(master = "local", 
+#        spark_home = "/Users/clark/Library/Caches/spark/spark-2.0.0-preview-bin-hadoop2.6/")
 
 df <- read.csv("~/data/nycflights13.csv")
 

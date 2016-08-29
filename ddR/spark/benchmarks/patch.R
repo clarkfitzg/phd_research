@@ -16,11 +16,13 @@ if(PATCH){
     library(SparkR, lib.loc = "~/dev/sparkr_libs/master")
 }
 
-# Fails?
-#sc <- sparkR.session("spark//localhost:7077")
+# Fails? Can't parse URL?
+#sc <- sparkR.session("localhost:7077")
+# But this works fine
+sc <- sparkR.session("spark://Clarks-MacBook-Pro.local:7077"
+                    , spark.executor.memory = "4g")
 
-sc <- sparkR.session("spark://Clarks-MacBook-Pro.local:7077")
-
+                    , spark.executor.memory = "4g")
 df <- read.csv("~/data/nycflights13.csv")
 
 sdf <- createDataFrame(df)
