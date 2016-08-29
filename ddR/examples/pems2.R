@@ -20,12 +20,50 @@ station <- read.table(station_files[1]
     )
 })
 
+# 400 MB
 print(object.size(station), units="MB")
 
+# 10 million rows x 8 columns
 dim(station)
 
 sapply(station, class)
 
+# Simple questions:
+# 1) Is one lane faster than the the other?
+# 2) Does one lane have more traffic than the other?
+#
+# To answer:
+# 1) Only look at rows that don't contain NA's
+# 2) Compare the means of the last 6 columns
+
+s2 <- station[complete.cases(station), -c(1, 2)]
+
+# About 6.4 million
+dim(s2)
+
+colMeans(s2)
+
+# A little more formally:
+t.test(s2$speed1, s2$speed2)
+
+# Suppose the traffic is between 50 and 90 mph. Then is one lane faster than the
+# other?
+in50_90 <- with(s2, 50 <= speed1 & speed1 <= 90 & 50 <= speed2 & speed2 <= 90)
+
+s <- s2[in50_90, ]
+
+# Down to 2.1 million
+dim(s)
+
+median(s$speed1)
+median(s$speed2)
+
+# So the average speed for fast traffic is about 4.1 mph faster in the 1st
+# lane.
+t.test(s$speed1, s$speed2)
+
+
+############################################################
 
 # Now try it with ddR
 library(ddR)
@@ -42,14 +80,15 @@ read1 <- function(file){
 # Interesting observation- the master R process seems to be working for a
 # lot longer than it needs after all the workers have finished. Why? What
 # is it doing? It doesn't really need to do anything.
+# 168 seconds
+#
 system.time({
 # Distributed station dataframe:
 ds <- dmapply(read1, station_files, output.type = "dframe"
-              , nparts = c(1, 4),  combine = "rbind"
+              , nparts = c(4, 1),  combine = "rbind"
               )
 })
 
-# Doesn't work due to bug in ddR. Come back and look into it.
 testds <- dmapply(function(x) data.frame(a = 1, b = 2), 1:4, output.type = "dframe"
-              , nparts = c(1, 4),  combine = "rbind"
+              , nparts = c(4, 1),  combine = "rbind"
         )

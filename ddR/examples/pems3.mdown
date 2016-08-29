@@ -1,0 +1,7 @@
+From PEMS manual:
+FACT CHECK
+- PeMS started in 1999 as university research project - Now deployed
+  statewide across California
+- Over 35,000 detectors report data every 30 seconds - Currently has over
+  12TB of data
+- Data is stored from inception (detector added) and never deleted
