@@ -9,7 +9,6 @@
 library(microbenchmark)
 
 PATCH = TRUE
-
 if(PATCH){
     # Patch version
     library(SparkR, lib.loc = "~/dev/spark/R/lib")
@@ -17,9 +16,9 @@ if(PATCH){
     library(SparkR, lib.loc = "~/dev/sparkr_libs/master")
 }
 
+# Fails?
+#sc <- sparkR.session("spark//localhost:7077")
 
-# It appears that by default this only uses one R process.
-# That must be because there's one worker on localhost.
 sc <- sparkR.session("spark://Clarks-MacBook-Pro.local:7077")
 
 df <- read.csv("~/data/nycflights13.csv")
