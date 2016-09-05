@@ -8,7 +8,7 @@
 
 library(microbenchmark)
 
-PATCH = TRUE
+PATCH = FALSE
 if(PATCH){
     # Patch version
     library(SparkR, lib.loc = "~/dev/spark/R/lib")
@@ -19,10 +19,10 @@ if(PATCH){
 # Fails? Can't parse URL?
 #sc <- sparkR.session("localhost:7077")
 # But this works fine
-sc <- sparkR.session("spark://Clarks-MacBook-Pro.local:7077"
-                    , spark.executor.memory = "4g")
+#sc <- sparkR.session("spark://Clarks-MacBook-Pro.local:7077"
+#                    , spark.executor.memory = "4g")
 
-                    , spark.executor.memory = "4g")
+sc <- sparkR.session(spark.executor.memory = "8g")
 df <- read.csv("~/data/nycflights13.csv")
 
 sdf <- createDataFrame(df)
@@ -43,7 +43,7 @@ sdfN <- repartition(sdf, numPartitions = N)
 sdfN <- cache(sdfN)
 
 # BEFORE    N = 5   212 sec
-# BEFORE    N = 10  208 sec
+# BEFORE    N = 10  206, 208 sec
 # AFTER     N = 10  206 sec
 microbenchmark({
     df2 <- dapplyCollect(sdfN, function(x) x)
