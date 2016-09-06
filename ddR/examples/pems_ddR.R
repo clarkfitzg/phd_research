@@ -38,11 +38,25 @@ ds <- dmapply(read1, station_files, output.type = "dframe"
               )
 })
 
+# Takes on the order of 5 minutes??
+system.time({
+colnames(ds)
+})
+
+system.time({
+ds1 = collect(ds, 1)
+})
+
+# Wait, why is this 2 Gb??
+print(object.size(ds1), units="GB")
+
+sapply(ds1, class)
+
 # Now translate the base R workflow into ddR
 
 # Suppose the traffic is between 50 and 90 mph. Then is one lane faster than the
 # other?
-in50_90 <- with(s2, 50 <= speed1 & speed1 <= 90
+in50_90 <- with(ds, 50 <= speed1 & speed1 <= 90
                   & 50 <= speed2 & speed2 <= 90
                   & !is.na(speed1) & !is.na(speed2))
 
