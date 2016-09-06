@@ -3,3 +3,9 @@ Mon Sep  5 09:43:50 KST 2016
 Seems like the state of the art for R and big data hasn't changed all that much since 2010.
 
 http://www.slideshare.net/bytemining/taking-r-to-the-limit-high-performance-computing-in-r-part-1-parallelization-la-r-users-group-727
+
+NWS NetWorkSpaces are a pretty interesting concept. Seems to not have much
+activity in R since 2010. Wonder why I haven't heard of it more? Maybe it
+didn't work that well.
+
+Docs here are a good read: http://nws-r.sourceforge.net/doc/nwsR-1.5.0.pdf
