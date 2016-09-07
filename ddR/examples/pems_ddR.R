@@ -20,7 +20,7 @@ read1 <- function(file){
     )
 }
 
-station <- read1(station_files[1])
+#station <- read1(station_files[1])
 
 # Interesting observation- the master R process seems to be working for a
 # lot longer than it needs after all the workers have finished. Why? What
@@ -43,6 +43,10 @@ ds <- dmapply(read1, station_files, output.type = "dframe"
               )
 })
 
+# TODO:
+# If these really were distributed data structures then on my activity
+# monitor I would only see the 4 slave nodes with large data on them.
+
 # Takes on the order of 5 minutes??
 system.time({
 colnames(ds)
@@ -54,7 +58,11 @@ ds1 = collect(ds, 1)
 })
 
 # Wait, why is this 2 GB?? It should be around 400 MB
+# Because of row names
 print(object.size(ds1), units="GB")
+
+
+print(object.size(ds), units="GB")
 
 # From previous
 print(object.size(station), units="GB")

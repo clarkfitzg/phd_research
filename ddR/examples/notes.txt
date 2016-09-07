@@ -1,0 +1,54 @@
+After restarting my computer I started a new R session and used ddR to fork
+4 parallel workers and read 4 objects, each of which should be 400 MB in
+memory. However, they are each 2 GB. I believe this is because a long file
+path is prepended to the row names, making for some big strings.
+
+Here's the memory usage for R when I do this:
+
+![image](https://cloud.githubusercontent.com/assets/5356122/18302329/411b0c64-7512-11e6-8af0-71bd8c0bc15a.png)
+
+If these were actual distributed data structures then I would expect the 4
+slaves here to use around 2 GB of memory each, and it looks like they are.
+I would expect the master to only have to use the memory of a running R
+process with a library loaded. This should be much less than 100 MB. Yet
+the master uses 10 GB? This is true even after calling garbage collection
+with `gc()`.
+
+Any idea what's going on?
+
+Code for reference:
+
+```
+library(ddR)
+
+# There are 4 gzipped files here
+station_files = list.files("~/data/pems/", full.names = TRUE)
+
+read1 <- function(file){
+    read.table(file, header = FALSE, sep = ",", row.names = NULL
+        , col.names = c("timestamp", "station", "flow1", "occupancy1",
+"speed1"
+                        , "flow2", "occupancy2", "speed2" , rep("NULL",
+18))
+        , colClasses = c("character", "factor", "integer", "numeric",
+"integer"
+                        , "integer", "numeric", "integer", rep("NULL", 18))
+    )
+}
+
+# Interesting observation- the master R process seems to be working for a
+# lot longer than it needs after all the workers have finished. Why? What
+# is it doing? It doesn't really need to do anything.
+system.time({
+# Distributed station dataframe:
+ds <- dmapply(read1, station_files, output.type = "dframe"
+              , nparts = c(4, 1),  combine = "rbind"
+              )
+})
+```
+
+Wed Sep  7 16:23:28 KST 2016
+Looking at my activity monitor now it seems that these different calls to
+parallel are doing VERY different things. I need to look further into this
+tomorrow.
+
