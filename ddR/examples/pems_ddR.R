@@ -8,14 +8,19 @@
 
 library(ddR)
 
+# There are 4 gzipped files here
+station_files = list.files("~/data/pems/", full.names = TRUE)
+
 read1 <- function(file){
-    read.table(file, header = FALSE, sep = ","
+    read.table(file, header = FALSE, sep = ",", row.names = NULL
         , col.names = c("timestamp", "station", "flow1", "occupancy1", "speed1"
                         , "flow2", "occupancy2", "speed2" , rep("NULL", 18))
         , colClasses = c("character", "factor", "integer", "numeric", "integer"
                         , "integer", "numeric", "integer", rep("NULL", 18))
     )
 }
+
+station <- read1(station_files[1])
 
 # Interesting observation- the master R process seems to be working for a
 # lot longer than it needs after all the workers have finished. Why? What
@@ -43,14 +48,27 @@ system.time({
 colnames(ds)
 })
 
+# About 15 seconds
 system.time({
 ds1 = collect(ds, 1)
 })
 
-# Wait, why is this 2 Gb??
+# Wait, why is this 2 GB?? It should be around 400 MB
 print(object.size(ds1), units="GB")
 
+# From previous
+print(object.size(station), units="GB")
+
+dim(ds1)
+
 sapply(ds1, class)
+
+sapply(station, class)
+
+identical(station, ds1)
+# No
+
+all.equal(station, ds1)
 
 # Now translate the base R workflow into ddR
 

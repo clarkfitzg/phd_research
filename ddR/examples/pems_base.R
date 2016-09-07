@@ -4,9 +4,6 @@
 # 1.3 GB each, which is a little too big for comfort. Better just read the
 # first two lanes in to cut this size in half.
 
-# There are 4 gzipped files here
-station_files = list.files("~/data/pems/", full.names = TRUE)
-
 # Takes 47 seconds to read a single gzipped file.
 system.time({
 station <- read.table(station_files[1]
