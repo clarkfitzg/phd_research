@@ -8,6 +8,9 @@
 
 library(ddR)
 
+# Trying old version of ddR:
+#useBackend(parallel, type = "PSOCK")
+
 # There are 4 gzipped files here
 station_files = list.files("~/data/pems/", full.names = TRUE)
 
@@ -17,6 +20,7 @@ read1 <- function(file){
                         , "flow2", "occupancy2", "speed2" , rep("NULL", 18))
         , colClasses = c("character", "factor", "integer", "numeric", "integer"
                         , "integer", "numeric", "integer", rep("NULL", 18))
+        , nrows = 1e6L # <- Come back and remove this
     )
 }
 
@@ -29,6 +33,9 @@ read1 <- function(file){
 # 1st: 168 sec
 # 2nd: Hung, had to restart
 # 3rd: 175 sec
+#
+# Takes the same amount of time running on SNOW cluster with ddR master
+# branch
 #
 # It should only take the time for the longest read.table (~50 seconds) plus
 # some minimal overhead time.
@@ -48,6 +55,8 @@ ds <- dmapply(read1, station_files, output.type = "dframe"
 # monitor I would only see the 4 slave nodes with large data on them.
 
 # Takes on the order of 5 minutes??
+# Driver process is using 20 GB memory, and my Mac has 16 GB of
+# physical memory so it uses compressed memory
 system.time({
 colnames(ds)
 })
@@ -57,64 +66,51 @@ system.time({
 ds1 = collect(ds, 1)
 })
 
-# Wait, why is this 2 GB?? It should be around 400 MB
-# Because of row names
+# Why is this 2 GB?? It should be around 400 MB
+# Looks like row names are to blame.
 print(object.size(ds1), units="GB")
-
-
-print(object.size(ds), units="GB")
-
-# From previous
-print(object.size(station), units="GB")
-
-dim(ds1)
-
-sapply(ds1, class)
-
-sapply(station, class)
-
-identical(station, ds1)
-# No
-
-all.equal(station, ds1)
 
 # Now translate the base R workflow into ddR
 
-# Suppose the traffic is between 50 and 90 mph. Then is one lane faster than the
-# other?
-in50_90 <- with(ds, 50 <= speed1 & speed1 <= 90
-                  & 50 <= speed2 & speed2 <= 90
-                  & !is.na(speed1) & !is.na(speed2))
+allrows = seq.int(nrow(ds))
+speed1 = ds[allrows, 5]
+speed2 = ds[allrows, 8]
+in50_90 <- 50 <= speed1 & speed1 <= 90 &
+           50 <= speed2 & speed2 <= 90 &
+           !is.na(speed1) & !is.na(speed2)
 
-s <- s2[in50_90, ]
+# This has been converted to data.frame
+s = ds[which(in50_90), seq.int(ncol(ds))]
 
-# Down to 2.1 million
-dim(s)
+# So I guess we convert it back.
 
-median(s$speed1)
-median(s$speed2)
+# These are 1 x n matrices, aka row vectors
+s1 = as.darray(matrix(s$speed1), psize = c(50000, 1))
+s2 = as.darray(matrix(s$speed2), psize = c(50000, 1))
 
-# So the average speed for fast traffic is about 4.1 mph faster in the 1st
-# lane.
-delta <- s$speed1 - s$speed2
 
-t.test(delta)
+# More robust version should find its way into ddR
+setMethod("-", signature(e1="ParallelObj", e2="ParallelObj"),
+function(e1, e2){
+    dmapply(`-`, e1, e2, output.type = "darray", combine = "cbind")
+})
 
-hist(delta)
 
-# Leave out the long tails
-d2 <- delta[abs(delta) < 17]
-length(d2)
+delta = s1 - s2
 
-plot(density(d2, bw = 1))
 
-breaks = 2 * seq.int(-9, 8) + 1
+# Parallelized binning for histogram like plot
+cut.DObject = function(x, breaks, labels = NULL){
+    localcut = function(y){
+        table(cut(y, breaks = breaks, labels = labels))
+    }
+    tabs = collect(dlapply(x, localcut))
+    Reduce(`+`, tabs)
+}
 
-# This one is my favorite plot
-hist(d2, freq = FALSE, breaks = breaks)
 
 breaks = c(-Inf, 3 * seq.int(-5, 5), Inf)
-# Too bad hist() doesn't do this...
-plot(cut(delta, breaks))
+dtable = cut.DObject(delta, breaks)
 
-
+# Shows the distribution of speed differences
+plot(dtable)
