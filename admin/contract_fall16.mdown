@@ -1,0 +1,25 @@
+# Course Plan
+
+_Explain work to be undertaken (i.e., subject matter, text, reading,
+specific responsibilities/duties)._
+
+- Literature review on computational statistics, including work by Duncan
+  Temple Lang, Ross Ihaka, Doug Bates,
+- Download and analyze 3 years of 30 second FastTrak sensor data for Bay
+  Area traffic.  This is around 10 billion observations of 20 variables
+  which is 400 GB if loaded in R. It's spatial temporal and can be
+  represented as a graph. I plan to load it into Spark
+- Organize student led seminar
+
+# Goals
+
+_Elaborate on reasons for taking this course and/or projected outcomes of
+this experience._
+
+- Preparing for the PhD Qualifying Exam in the Spring
+
+
+# Qualifications
+
+_List specific courses and/or experiences that enable you to complete this
+special project._
