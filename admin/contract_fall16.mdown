@@ -1,25 +1,60 @@
-# Course Plan
-
-_Explain work to be undertaken (i.e., subject matter, text, reading,
-specific responsibilities/duties)._
-
-- Literature review on computational statistics, including work by Duncan
-  Temple Lang, Ross Ihaka, Doug Bates,
-- Download and analyze 3 years of 30 second FastTrak sensor data for Bay
-  Area traffic.  This is around 10 billion observations of 20 variables
-  which is 400 GB if loaded in R. It's spatial temporal and can be
-  represented as a graph. I plan to load it into Spark
-- Organize student led seminar
-
 # Goals
 
 _Elaborate on reasons for taking this course and/or projected outcomes of
 this experience._
 
-- Preparing for the PhD Qualifying Exam in the Spring
+- Preparing for the PhD Qualifying Exam _(Debashis suggests taking this in the
+  Spring)_
+
+# Course Plan
+
+_Explain work to be undertaken (i.e., subject matter, text, reading,
+specific responsibilities/duties)._
+
+### Literature Review
+
+- Literature review on distributed computational statistics, including work by Duncan
+  Temple Lang, Ross Ihaka, Doug Bates, Michael Kane
+- Literature review on statistical applications in highway sensor data
+
+### Traffic Sensor Data
+
+This data set will initially motivate my research and development in computational
+statistics.
+
+- Analyze 3 years of 30 second highway traffic sensor data for Bay
+  Area traffic.  This is around 10 billion observations of 20 variables
+  which is 400 GB if loaded in R.
+- It's spatial temporal and can be represented as a graph. 
+- Work with Nehad to load it into the department's new Spark cluster and
+  make it available to department users.
+- Contact [Professor Debbie Niemeier](http://faculty.engineering.ucdavis.edu/dniemeier/)
+  and other faculty experts to learn about applications of traffic sensor data
+
+### Open Source Software
+
+- Use cutting edge software stack (Spark, Python's dask +
+  Bokeh) for the traffic sensor data.
+- Participate actively with patches and mailing group discussions
+
+### Other
+
+- Organize 5 student led seminars
+- Present at RTG workshop
+- Attend seminars / workshops
+
+# Output
+
+__Time Allocation__ How I plan to spend my working time:
+
+- 40% Literature Review
+- 40% Traffic Sensor Data
+- 10% Open Source Software
+- 10% Other
 
 
-# Qualifications
+_Work to be produced and turned in by the end of the semester._
 
-_List specific courses and/or experiences that enable you to complete this
-special project._
+- Report (LaTeX, at least 10 pages) summarizing papers in literature review
+- Report (LaTeX, at least 5 pages) describing traffic sensor data 
+- Visualization (Web based) of traffic sensor data
