@@ -1,0 +1,75 @@
+Mon Sep 26 12:43:03 PDT 2016
+
+Browsing web looking for literature on data intensive transportation
+modelling using sensors. Particularly looking for papers that are:
+
+- Specific to PEMS
+- Highly cited
+- Local to Davis
+
+Nice Google search:
+https://scholar.google.com/scholar?hl=en&as_sdt=0,5&q=%22caltrans+pems%22
+
+__Original 2002 paper describing PEMS.__
+
+http://people.eecs.berkeley.edu/~varaiya/papers_ps.dir/PeMS_TRB2002.pdf
+
+Definitions:
+- Caltrans defines delay as freeway speed under 35 mph.
+- VMT vehicle miles traveled
+- VHT vehicle hours traveled
+
+Application sections are interesting. One application is to determine the
+effect of one particular incident, a multi car collsion blocking traffic in
+4 of 5 lanes.  This could be greatly extended
+by looking at more (or all) of the incidents.
+
+> Caltrans and other agencies nationwide have started to deploy Advanced Traffic
+> Management and Information Systems (ATMIS) to manage freeway congestion. Examples
+> include ramp metering, changeable message signs, and incident detection. The most
+> important question to answer is: By how much can ATMIS reduce congestion? PeMS can
+> help answer this question. 
+
+Amazing- you can perturb the system by changing messages on signs and ramp
+metering. Another technique that I've seen in other countries is to
+increase the number of lanes when the traffic flow is heavy through the use
+of cones in the median.
+
+Accurate models are needed to model changes to the system- ie. investing
+millions of dollars to improve the infrastructure around a bottleneck.
+Would like some assurance that the project is worth doing.
+
+Figure 3, the "speed contour plot" is interesting. I wonder how that could
+be made more useful?
+
+
+To print:
+
+2014 Overview of emerging technologies, including high resolution. Seems
+very relevant
+http://www.sciencedirect.com/science/article/pii/S0968090X14000333
+
+Traffic states and crash risk
+http://www.sciencedirect.com/science/article/pii/S0001457512000346
+
+Effect of snowfall on crash risk
+http://www.sciencedirect.com/science/article/pii/S0001457515001669
+
+Willingness to pay tolls
+http://trrjournalonline.trb.org/doi/abs/10.3141/2297-06
+
+Neural nets and trees to estimate crash risk
+http://www.sciencedirect.com/science/article/pii/S002243751300042X
+
+Crash risk index
+http://link.springer.com/article/10.1007/s12205-013-0353-6
+
+Paper describing original speed determination algorithms
+http://people.eecs.berkeley.edu/~varaiya/papers_ps.dir/gfactoritsc.pdf
+
+Multistate models to predict travel times
+http://trrjournalonline.trb.org/doi/abs/10.3141/2278-02
+
+Seems like many of these only focus on a particular stretch of highway for
+a narrow amount of time. Might be interesting to take one model and extend
+it to see how well it works.
