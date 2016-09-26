@@ -11,13 +11,13 @@ this experience._
 _Explain work to be undertaken (i.e., subject matter, text, reading,
 specific responsibilities/duties)._
 
-### Literature Review
+### 40% Literature Review
 
 - Literature review on distributed computational statistics, including work by Duncan
   Temple Lang, Ross Ihaka, Doug Bates, Michael Kane
 - Literature review on statistical applications in highway sensor data
 
-### Traffic Sensor Data
+### 40% Traffic Sensor Data
 
 This data set will initially motivate my research and development in computational
 statistics.
@@ -31,27 +31,19 @@ statistics.
 - Contact [Professor Debbie Niemeier](http://faculty.engineering.ucdavis.edu/dniemeier/)
   and other faculty experts to learn about applications of traffic sensor data
 
-### Open Source Software
+### 10% Open Source Software
 
 - Use cutting edge software stack (Spark, Python's dask +
   Bokeh) for the traffic sensor data.
 - Participate actively with patches and mailing group discussions
 
-### Other
+### 10% Other
 
 - Organize 5 student led seminars
 - Present at RTG workshop
 - Attend seminars / workshops
 
 # Output
-
-__Time Allocation__ How I plan to spend my working time:
-
-- 40% Literature Review
-- 40% Traffic Sensor Data
-- 10% Open Source Software
-- 10% Other
-
 
 _Work to be produced and turned in by the end of the semester._
 
