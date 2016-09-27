@@ -11,11 +11,14 @@ this experience._
 _Explain work to be undertaken (i.e., subject matter, text, reading,
 specific responsibilities/duties)._
 
+Since I'm taking 1 course this will be independent study for 8 units.
+Here's how I plan to spend my time.
+
 ### 40% Literature Review
 
+- Literature review on statistical applications in highway sensor data
 - Literature review on distributed computational statistics, including work by Duncan
   Temple Lang, Ross Ihaka, Doug Bates, Michael Kane
-- Literature review on statistical applications in highway sensor data
 
 ### 40% Traffic Sensor Data
 
