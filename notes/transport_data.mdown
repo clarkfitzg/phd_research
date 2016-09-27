@@ -1,0 +1,8 @@
+
+The raw loop data is quite difficult to find. 
+
+Seems that this SMART-SIGNAL
+http://www.its.umn.edu/Research/FeaturedStudies/smartsignals/ was an
+attempt by the researchers to make a commercial product out of these ideas.
+Company website hasn't been updated in a couple years, so probably not
+doing so hot.

@@ -1,3 +1,17 @@
+Tue Sep 27 11:32:00 PDT 2016
+
+John Rice (Duncan's advisor) wrote a paper in 1999 on visualizing loop
+detector data.
+https://merritt.cdlib.org/d/ark:%252F13030%252Fm5gn1bxw/1/producer%252F43101567.pdf
+
+Using adaboost / compute heavy machine learning for image classification of
+traffic.
+http://electronicimaging.spiedigitallibrary.org/article.aspx?articleid=2506998
+
+I've read this one before- they do some machine learning with 100 million
+observations downloaded from PEMS.
+http://www.ics.uci.edu/~johutchi/pubs/traffic_sensor_paper.pdf
+
 Mon Sep 26 12:43:03 PDT 2016
 
 Browsing web looking for literature on data intensive transportation
