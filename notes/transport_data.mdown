@@ -1,3 +1,4 @@
+Tue Sep 27 12:23:28 PDT 2016
 
 The raw loop data is quite difficult to find. 
 
@@ -6,3 +7,6 @@ http://www.its.umn.edu/Research/FeaturedStudies/smartsignals/ was an
 attempt by the researchers to make a commercial product out of these ideas.
 Company website hasn't been updated in a couple years, so probably not
 doing so hot.
+
+In contrast, the Econolite website looks modern and well maintained.
+https://www.econolite.com/index.php/about/
