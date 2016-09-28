@@ -6,6 +6,8 @@ this experience._
 - Preparing for the PhD Qualifying Exam _(Debashis suggests taking this in the
   Spring)_
 
+Goal is to graduate 3 years from now.
+
 # Course Plan
 
 _Explain work to be undertaken (i.e., subject matter, text, reading,
@@ -53,3 +55,40 @@ _Work to be produced and turned in by the end of the semester._
 - Report (LaTeX, at least 10 pages) summarizing papers in literature review
 - Report (LaTeX, at least 5 pages) describing traffic sensor data 
 - Visualization (Web based) of traffic sensor data
+
+
+# Notes
+
+Write along the way, keep notes for a record and know why particular
+choices were made. Better to write prose first and then code.
+
+Nice for Duncan to have a log to read the day before.
+
+Keep notes of meetings, decisions, timelines, target tasks.
+
+Goal of this quarter is to focus in more tightly on a thesis topic.
+
+Send Duncan a copy of application paper.
+
+To turn in at the end of the quarter: These are the 3 or 4 things that I want to
+focus on, why they're interesting, what are the challenges, and who cares?
+Make a good write up and report about this.
+
+Need at least two or three applications if building a new tool / technique.
+Otherwise solve a very important problems.
+
+Talk to Deb and other transportation people about open questions
+
+For visualization talk to Kwan-Liu Ma in CS.
+
+Possible PhD topics: 
+
+1. Proving optimality of approach (all math)
+2. Comparing and evaluating variety of approaches 
+3. Big hard applied problem (don't need to be new stats)
+4. Novel new approach- seems to work. Engineering style
+
+
+### Next week
+
+Come up with better idea of how to use simulations
