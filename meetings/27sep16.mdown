@@ -22,8 +22,7 @@ Need at least two or three applications if building a new tool / technique.
 Otherwise solve a very important problems.
 
 Talk to Deb and other transportation people about open questions. It's
-better not to be creating a model- that's the domain of the transportation
-people.
+better not to be creating a model- that's their domain.
 
 For visualization talk to Kwan-Liu Ma in CS.
 
@@ -34,11 +33,11 @@ engineering along with 8 units of independent study.
 
 The goal of this quarter is to focus in more tightly on a thesis topic.
 
-At the end of the quarter I'll turn in a report of the 3 or 4 things that I
+At the end of the quarter I'll turn in a report describing 3 or 4 things that I
 want to focus on, why they're interesting, what are the challenges, and who
-cares?  Make a good write up and report about this.
+cares? Write this up into a report.
 
-### Next week
+### Next Time
 
-Come up with better idea of how to use simulations with transportation
+Come up with better ideas of how to use simulations with transportation
 data, and how to apply statistics.
