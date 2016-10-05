@@ -1,3 +1,23 @@
+Tue Oct  4 12:56:05 PDT 2016
+
+TODO: This one looks quite relevant to statistics. I'll print it and take a
+closer look.
+
+Dealing with uncertainty in detailed calibration of traffic simulation
+models for safety assessment
+http://www.sciencedirect.com/science/article/pii/S0968090X15000376
+
+Distributed computing and traffic simulation
+http://ieeexplore.ieee.org/document/7030771/?arnumber=7030771&tag=1
+
+The original highly cited paper for Matsim 
+http://trrjournalonline.trb.org/doi/abs/10.3141/1985-14
+
+Using common graphics hardware for multi-agent traffic simulation with CUDA
+http://dl.acm.org/citation.cfm?id=1537693
+
+
+
 Tue Sep 27 11:32:00 PDT 2016
 
 John Rice (Duncan's advisor) wrote a paper in 1999 on visualizing loop
