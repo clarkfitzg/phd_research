@@ -1,0 +1,55 @@
+Thu Oct  6 08:39:24 PDT 2016
+
+## Simulated Data
+
+
+Simulations allow transportation professionals to quickly estimate the
+effects of changes in policy or infrastructure without actually making
+expensive changes. They can produce much more sophisticated
+analyses than with the purely analytic approach
+required before modern computing. 
+
+An interesting feature of simulations is that they both consume and produce
+enormous amounts of data.
+In 2014 the Federal Highway Administration produced a report titled
+[Guidance on the Level of Effort Required to Conduct Traffic Analysis Using
+Microsimulation](http://www.fhwa.dot.gov/publications/research/operations/13026/13026.pdf).
+The word "Micro" usually refers to representing the movement of
+individuals, rather than aggregate flows.
+Chapter 4 of this report goes into great detail on the data gathering
+requirements which include data on Travel Demand, Origin - Destination,
+Network, and many other aspects.
+[Recent academic
+literature](http://www.sciencedirect.com/science/article/pii/S0968090X15000376)
+has focused on quantifying the uncertainty present in data resulting from these models.
+
+[Matsim](http://www.matsim.org) is an example of open source traffic
+simulation software. It uses agent based simulations to represent every
+single individual in large urban areas (with millions of agents) utilizing
+different transportation modes for various purposes over the course of a
+single day. This software has use
+cases beyond just road transportation because it relates travel to econometric
+ideas of utility. 
+
+The Metropolitan Transportation Commission publicly provides [simulation
+results](http://dataportal.mtc.ca.gov/). It shows quantities of interest
+such as the projected Vehicle Miles Traveled (VMT) on Bay Area roads in
+2040.
+
+In my opinion microscopic data driven simulations have enormous potential
+as an analysis tool for the transportation system operator. However, their
+(necessary) complexity means that using and inferring correct results can
+be challenging. Today's students should rise to this challenge.
+
+# Perfect data...
+
+I want to know every detail required to have an accurate microscopic
+simulated model of a large urban area. It would be enough to know typical
+and occasional travel patterns for every single person, along with travel
+modes, reasons for travel and constraints (ie. drop the kids off at school
+then be at work by 9).
+
+This sort of data could likely be inferred through gathering enough
+smartphone GPS data, say 1 second resolution over the course of a month.
+Alternatively it could be estimated / simulated through third party data
+sources like the census.

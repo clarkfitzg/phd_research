@@ -1,12 +1,330 @@
-Tue Sep 27 12:23:28 PDT 2016
+## Why collect data?
 
-The raw loop data is quite difficult to find. 
+Data only adds value when it is used to inform decisions. Here
+are some decisions that individual travelers might make:
 
-Seems that this SMART-SIGNAL
-http://www.its.umn.edu/Research/FeaturedStudies/smartsignals/ was an
-attempt by the researchers to make a commercial product out of these ideas.
-Company website hasn't been updated in a couple years, so probably not
-doing so hot.
+__Individual__
 
-In contrast, the Econolite website looks modern and well maintained.
-https://www.econolite.com/index.php/about/
+- Should I turn left now?
+
+- Where is the closest rest area?
+
+- When will I arrive at my destination?
+
+- If I have a flexible schedule, when is the best time to make my trip?
+
+- Where should I shop for homes so I can have a pleasant commute?
+
+These questions are mostly short term, and can be answered by knowing
+routes, location, and traffic conditions. In contrast, most of the
+questions facing the transportation system operator are long term, often
+with timelines measured in years.
+
+__Transportation System Operator__
+
+- Will changing the speed limit increase flow?
+
+- Should metered onramps be used to reduce congestion?
+
+- How much budget should the state allocate to maintenance on a particular
+  stretch of highway?
+
+- Where should a city locate emergency services for fast and efficient
+  responses?
+
+- What changes are required for the infrastructure to support a new housing
+  development?
+
+- Should we build a bullet train connecting two cities?  
+
+To answer these we need to quantify the physical condition of the road,
+typical traffic volumes, daily and seasonal patterns and trends, and travel
+times between points.
+
+In a way the decisions faced by the individual are simpler than for the
+transportation system operator. Individuals are constrained to work within
+the existing system, while government agencies are reasonably free to make
+changes to policy or infrastructure to improve the system.
+
+Pragmatically, data is only worth collecting if it supports
+decisions like these, and the more directly the better.
+Now we consider the various data sources.
+
+## Physical Transportation Network
+
+The system of roads and public transportation can be represented as
+a directed graph (network) in the mathematical sense, where roads correspond to edges
+(called links in transportation literature) and intersections or dead ends
+correspond to nodes. One possible weight for the edges is the uncongested
+travel time along the road segment. GPS routefinding software uses this
+network data (along with current road conditions if capable) to suggest
+travel routes by finding the shortest paths. This graph can be augmented by
+the locations of traveler resources like rest areas.
+
+One example of this kind of data (although incomplete) is the [342
+MB graph](http://www.dis.uniroma1.it/challenge9/download.shtml)
+of the US roads from the 9th DIMACS (Discrete Mathematics and
+Theoretical Computer Science) Challenge. This was used for the evaluation
+of software algorithm implementations.
+
+CalTrans collects and [publishes
+data](http://www.dot.ca.gov/cgi-bin/roads.cgi) on lane and road closures so
+travelers can be aware of special conditions and plan accordingly. This can
+be viewed as an update of the network. If travel time is delayed in an area
+then the weight of an edge should increase. If a road is closed then an
+entire edge is removed from the graph.
+
+## Incidents
+
+Traffic accidents cause delays, so it's useful to have current information
+on incidents and special events. The California Highway Patrol (CHP)
+collects highway incident data and makes it publicly available in real time
+through its [computer aided dispatch](https://cad.chp.ca.gov/Traffic.aspx)
+system. Information is available on collisions, traffic hazards,
+construction, and even funeral processions. PeMS also integrates this data
+source.
+
+This data comes from citizens observing and calling in to report the
+incidents. The CHP then uses it to dispatch officers. 
+This source only reports incidents within the jurisdiction of the
+CHP, so to obtain all road and traffic incidents in a local area one would
+need to integrate incident information from the local city police and
+sheriff.
+
+## Embedded sensors
+
+Embedded sensors here refers to any fixed physical sensor on the road, with the
+inductive loop sensor as the classic example.
+
+The California Performance Measurement System (PeMS) provides access for
+all the sensor data in California for the last 15 years. Most of the data
+come from inductive loops. Other technologies include side fire radar and
+magnetometers. PeMS collects observations from around 40 thousand detectors
+every 30 seconds which works out to around 10 million observations per day.
+
+The [PeMS
+Handbook](http://pems.dot.ca.gov/PeMS_Intro_User_Guide_v5.pdf) explains the
+purpose of this data:
+
+> PeMS provides access to real-time and historical performance data in many
+> useful formats and presentation styles to help managers, engineers,
+> planners, and researchers understand transportation performance, identify
+> problems, and formulate solutions. With PeMS, users can conduct a uniform
+> and comprehensive assessment of freeway performance, base operational
+> decisions on knowledge of the current state of the freeway network, analyze
+> congestion bottlenecks to determine potential remedies, and make better
+> overall decisions. 
+
+Below is an example of the raw 30 second loop detector data.
+
+```
+Timestamp | Station ID | Flow | Occupancy | Speed
+-------------------------------------------------------
+10/02/2016 23:59:53,413987,1,.0106,,,,,,,,,,,,,,,,,,,,,,
+10/02/2016 23:59:53,414015,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,,,,,,,,
+10/02/2016 23:59:53,414093,0,0,0,1,.0083,78,1,.0083,71,0,0,1,,,,,,,,,,,,
+```
+
+__Flow__ is the number of vehicles that have passed in the time window, and
+__occupancy__ is the proportion of time that the sensor was activated.
+__Speed__ is calculated from single loops by using an average vehicle
+length for that particular lane. This could lead to inaccuracy if it's
+assumed that the vehicle length is 15 feet but if the only vehicle passing
+through in the 30 second window is a 60 foot truck. Then the speed will be
+estimated as 4 times lower than the true speed. More generally this will
+systematically add variance whenever the actual vehicle lengths differ
+significantly from the "average" vehicle length.
+
+Note (flow, occupancy, speed) is repeated for each of 8
+lanes. If there are not 8 lanes then we see the trailing commas. In this
+sample we can observe that speed is missing in several points.  Looking at
+the [detector
+health](http://pems.dot.ca.gov/?dnode=State&content=detector_health&tab=dh_summary)
+for PeMS in October 2016 we see that only 62% of detectors are operational.
+A further source of uncertainty is the data imputation methods, which are
+necessary for convenience in calculating derived metrics like travel time.
+PEMS doesn't show which or how much data was imputed, so this could
+potentially lead to statistical error. Ie. if one fits a linear model to a
+dataset where 90% was _imputed from_ a linear model then the fit will be
+excellent, but the results invalid. 
+
+## GPS
+
+The Global Positioning System (GPS) uses
+orbiting satellites to broadcast very precise time and location signals to
+receivers (ie. a smartphone) on the earth. With signals from four
+satellites a receiver computes its position on the earth. These positions
+are accurate within about 8 meters, which makes this a high quality data
+source.  (Source: [US Federal Aviation
+Agency](http://www.faa.gov/about/office_org/headquarters_offices/ato/service_units/techops/navservices/gnss/gps/howitworks/))
+
+One example of this type of data is from
+[511.org](http://511.org/developers/list/apis/) provided by the San Francisco Bay
+Area Metropolitan Transportation Commission. Developers can use live feeds of
+the GPS coordinates of buses to plot bus locations on a map. This data is also
+used to calculate and display expected arrival times at various stops,
+which is useful for individuals waiting at bus stops.
+
+Google Maps (and similar applications) use GPS data in a more sophisticated
+way. They collect anonymous location data from many smart phones and use
+this to infer speed and the current traffic conditions. This is combined with
+historical patterns and reports of traffic accidents to direct users along
+the fastest routes.
+(Sources:
+[techinsider.io](http://www.techinsider.io/how-google-maps-knows-about-traffic-2015-11),
+[Wikipedia](https://en.wikipedia.org/wiki/Google_Traffic))
+
+Microsoft has made some interesting GPS datasets available for research
+purposes. I downloaded and inspected one containing trajectories for [10
+thousand
+taxis](https://www.microsoft.com/en-us/research/publication/t-drive-trajectory-data-sample/)
+which contains tables like this:
+
+```
+ID   | Time Stamp          | Longitude | Latitude
+-------------------------------------------------
+1000 | 2008-02-02 13:34:52 | 116.48361 | 39.94491
+1000 | 2008-02-02 13:39:08 | 116.48347 | 39.91869
+1000 | 2008-02-02 13:49:11 | 116.51384 | 39.8919
+1000 | 2008-02-02 13:49:57 | 116.51359 | 39.89197
+1000 | 2008-02-02 13:54:13 | 116.52448 | 39.87212
+```
+
+## Cameras
+
+CalTrans uses cameras to check weather conditions for
+highways in the Sierra Nevada mountains. Some traffic signals use video
+detectors to detect bicycles and change signal appropriately. Police
+officers collect video through car or body mounted cameras to collect
+evidence used in court.
+
+Video data is a burgeoning source of rich information for transportation
+professionals. A limiting factor for video data historically has been the
+image processing algorithms and software.
+Image processing is notoriously difficult, and continues to be an active
+area of research.  However, aerial video can be used to accurately and directly
+estimate speed, flow, vehicle length, headway, and occupancy.  It can also
+classify vehicle traffic by type.  One such company specializing in this
+type of data processing is [Data From Sky](http://datafromsky.com/) from
+the Czech Republic. They collect most of their data from aerial drones.
+
+Three examples follow describing how video data could be collected and used
+in the future.
+
+1. A president travels to a city and addresses 100
+thousand people in a large sports stadium. This will generate unusual
+traffic patterns.  It's not feasible to upgrade the entire embedded sensor
+network just for this one event, but it is feasible to send up a few aerial
+drones to monitor the areas of interest and use this collected data to
+analyze the effectiveness of any special traffic control measures used.
+
+2. A traffic engineer redesigns a single
+intersection that currently has no nearby automatic data collection
+capability. A drone can be used for a short period of time to gather a
+statistically valid sample to infer the local traffic patterns.
+
+3. A researcher studies the formation and dissolution of platoons over
+   a 10 mile stretch of arterial road. A drone follows an index car for 10
+miles and captures video in a 50 meter radius around the index car. This
+provides great insight into the behavior of vehicles relative to the index
+car, much better than a camera mounted on the vehicle is capable of.
+
+In summary video data collection is non-invasive, portable, agile, and
+potentially highly accurate. As software improves and prices for
+related data collection hardware like drones continue to decline I believe
+that this will become a much more important data source in the future.
+
+
+## Surveys
+
+Surveys can be designed to directly gather data on travel habits, or they
+can be much more general like the US Census. They are used to estimate
+demand for transportation resources. Quality can vary here, but the 10 year
+US Census is generally recognized as a high quality source.
+
+From the SF Bay Area [Metropolitan Transportation Commission](http://mtc.ca.gov/tools-resources/data-tools%20):
+
+> Every decade the U.S. Census Bureau counts residents where they live. We
+> use Bay Area Census Data to help ensure that all our region's communities
+> receive a fair share of transportation funding and services.
+
+## Derived Data
+
+Raw 30 second loop detector data is not directly useful for making
+decisions. So PeMS aggregates this, refines it, potentially joining various
+data sources to compute a higher level metric such as travel time.
+Different analysts may make different choices in how to use
+raw data to compute the metric, or they may even use the
+same name to refer to a different metric. For example, there are many ways
+to estimate the total Carbon Monoxide emissions from traffic on a given
+day. So analysts should take this into account before reaching
+conclusions, particularly in the calculation of confidence intervals.
+
+The [Vital Signs](http://www.vitalsigns.mtc.ca.gov/data-center) website shows
+14 measures such as Time Spent in Congestion, Transit System
+Efficiency, etc. These are higher level, preprocessed datasets that make
+it easier to address the public decisions. The ones I looked at 
+included detailed methodology sections describing how the
+measures were derived from underlying data.
+However, when inspecting the KML data using Google Earth we observe that
+gaps in the freeways are clearly missing. So this data has
+quality problems.
+
+Another relevant list of derived data are the Measures of Effectiveness as
+listed in Table 10.1 of the Traffic Flow Theory Monograph.
+This includes metrics from Mean Travel Time per
+Vehicle-Mile to CO Emissions to be computed either on one link or an entire
+road network.
+
+## Simulated Data
+
+Simulations allow transportation professionals to quickly estimate the
+effects of changes in policy or infrastructure without actually making
+expensive changes. They can produce much more sophisticated
+analyses than with the purely analytic approach
+required before modern computing. 
+
+An interesting feature of simulations is that they both consume and produce
+enormous amounts of data.
+In 2014 the Federal Highway Administration produced a report titled
+[Guidance on the Level of Effort Required to Conduct Traffic Analysis Using
+Microsimulation](http://www.fhwa.dot.gov/publications/research/operations/13026/13026.pdf).
+The word "Micro" usually refers to representing the movement of
+individuals, rather than aggregate flows.
+Chapter 4 of this report goes into great detail on the data gathering
+requirements which include data on Travel Demand, Origin - Destination,
+Network, and many other aspects.
+[Recent academic
+literature](http://www.sciencedirect.com/science/article/pii/S0968090X15000376)
+has focused on quantifying the uncertainty present in data resulting from these models.
+
+[Matsim](http://www.matsim.org) is an example of open source traffic
+simulation software. It uses agent based simulations to represent every
+single individual in large urban areas (with millions of agents) utilizing
+different transportation modes for various purposes over the course of a
+single day. This software has use
+cases beyond just road transportation because it relates travel to econometric
+ideas of utility. 
+
+The Metropolitan Transportation Commission publicly provides [simulation
+results](http://dataportal.mtc.ca.gov/). It shows quantities of interest
+such as the projected Vehicle Miles Traveled (VMT) on Bay Area roads in
+2040.
+
+In my opinion microscopic data driven simulations have enormous potential
+as an analysis tool for the transportation system operator. However, their
+(necessary) complexity means that using and inferring correct results can
+be challenging. Today's students should rise to this challenge.
+
+# Perfect data...
+
+I want to know every detail required to have an accurate microscopic
+simulated model of a large urban area. It would be enough to know typical
+and occasional travel patterns for every single person, along with travel
+modes, reasons for travel and constraints (ie. drop the kids off at school
+then be at work by 9).
+
+This sort of data could likely be inferred through gathering enough
+smartphone GPS data, say 1 second resolution over the course of a month.
+Alternatively it could be estimated / simulated through third party data
+sources like the census.
