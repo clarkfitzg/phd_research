@@ -31,3 +31,23 @@ rather than GPS are used for speed.
 Generating `population.xml` looks extremely interesting. This is the list
 of agents and their day plans. How can we make valid simulations from
 something like US Census data?
+
+TODO: I still don't know the big idea here. What is being iterated? I
+believe it's people's changing plans but am not sure.
+
+### Parameters
+
+Together there are 24 different modules containing an aggregated total of
+242 parameters.
+
+```
+<!-- The type of routing (least cost path) algorithm used, may have the values:
+Dijkstra, FastDijkstra, AStarLandmarks or FastAStarLandmarks -->
+<param name="routingAlgorithmType" value="Dijkstra" />
+```
+
+Are there fast stochastic or probabalistic routing algorithms? It seems like
+these could just plugged in to the framework to try new things. Although I
+may have to implement them in Java.
+
+
