@@ -1,0 +1,39 @@
+Fri Oct  7 11:41:18 PDT 2016
+
+The project has been done for a few weeks, having a final call this
+afternoon.
+
+## Reflections and Lessons Learned
+
+Now I am not convinced that `ddR`'s model is necessary. Distributed systems
+are so different, this seems excessively ambitious to work well and
+perform.
+
+Sign a contract and get paid first. Verbal agreements insufficient. Pay
+hassles every single time and late payments were not fun.
+
+I was under the impression that this was much more
+mature than it is. 
+
+Who owns the project? If it's a company, are they motivated to maintain it? If it's
+an individual, are they likely to stick it out?
+
+Use the software before starting work on it. Even a very simple application
+to real data analysis revealed serious memory and speed problems with the
+base implementation. 
+
+Be careful with low activity. Although there was buzz in the forms of blogs
+and Github watchers, I'm not aware of applications of the
+software on anything other than simulated data. And there was no activity
+on the Github account in 8 months or so.
+
+Choose dependencies wisely. I thought I was doing this when by keeping an
+open dialogue with RStudio, but they pulled the rug out from us by
+incorporating `sparkapi` into `sparklyr`. In my mind they should still be
+separate packages.
+
+Check for code quality. This is important for public projects. Is one
+naming scheme CamelCase or under_score followed? Are functions easy to read
+and composed from nice modular units? How much code is repeated? Are there
+functions or classes with no apparent purpose? Is the user facing API
+clearly defined and minimal?
