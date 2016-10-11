@@ -1,3 +1,15 @@
+Fri Oct  7 08:49:35 PDT 2016
+
+Review on state of the art:
+
+https://www.cambridge.org/core/journals/knowledge-engineering-review/article/a-review-on-agent-based-technology-for-traffic-and-transportation/00947E41817CA7336E0A130CBF353D16
+
+A Sensitivity-Analysis-Based Approach for the
+Calibration of Traffic Simulation Models
+http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6757042
+
+Same authors, and referenced frequently by the "Dealing with Uncertainty" article below.
+
 Tue Oct  4 12:56:05 PDT 2016
 
 TODO: This one looks quite relevant to statistics. I'll print it and take a

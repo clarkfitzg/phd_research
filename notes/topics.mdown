@@ -1,0 +1,203 @@
+Mon Oct 10 09:57:51 PDT 2016
+
+Kicking around ideas for PhD thesis topics related to high performance
+computing. See [goals](goals.mdown) for some background on what I'm trying to accomplish.
+
+One of Duncan's big ideas is for users to write code that says __what__ to
+do, and not __how__ to do it. In other words, the end users will be most
+productive writing in the highest level language possible.
+
+Base Dataframes in R, Python, and Julia all share similar problems when data is
+larger than memory. Their (efficient) computational model of contiguous
+blocks of homogeneously typed memory stop working because there is no more
+memory.
+
+There are actually two related ideas here- sequential and parallel. Both have the
+potential to handle larger than memory data.
+
+There are existing solutions: 
+- Mike Kane's `bigmemory` 
+- Matt Rocklin's `dask`
+
+Idea: Make R lazier than it is. Consider a script like this:
+
+```
+df = read.csv("hugefile.csv")
+df$logx = log(df$x)
+
+pdf("histogram.pdf")
+plot(hist(df$logx))
+dev.off()
+```
+
+If you know this is all that ever happens then you have a fair amount of
+freedom to be lazy. Ie. `read.csv` only needs to read the `x` column and
+`log(df$x)` can be computed on the fly. Then `df$logx` is the only data
+object that needs to ever be in memory. Moreover, if it's known that
+`hugefile.csv` behaves reasonably, then this read can happen in parallel.
+
+## Sequential operations
+
+This would make R capable of say iterating through a large file which gets
+past the memory bottleneck. But Python already does this _quite_ well.
+
+## Minimal executables
+
+Code analysis can be used to create minimal sets of compiled code, ie. to run
+and or embed R. This is a weird and cool idea. Looks like some similar
+things exist, such as [Nuitka in
+Python](https://github.com/kayhayen/Nuitka#use-cases).
+
+This can also make standalone executables, which means that an R programmer
+can write some script which can be compiled into a minimal executable to be
+run on someone else's machine.
+
+## General tools for working with large data files
+
+This [question on
+StackOverflow](http://stackoverflow.com/questions/15532810/reading-40-gb-csv-file-into-r-using-bigmemory)
+asks how to sample and read data of this size into memory. One idea for the
+sampling is to do that along with filtering in a preprocessing step to
+create a new sampled file. But Duncan already wrote that in C and LLVM in
+his paper.
+
+## R / SQL translation
+
+Data frames / tables in capable databases are where most data will reside
+for serious use cases. The easiest way to manipulate these is through SQL.
+This is a step towards bridging the gap between data science and
+statistics, and between research problems and production systems. 
+
+Working with ddR motivates this for me. A sophisticated system like Spark
+will take whatever SQL you give it and optimize it into a query plan which
+therefore ideally should run faster on the data in Spark than any explicit
+code.
+
+I typically work with files rather than databases, but that's for
+convenience as a student and researcher. Getting closer to production use
+cases will mean more databases.
+
+Doing this well would probably require getting deep in the
+formal semantics of the languages.
+
+Simple translation could possibly be extended through translating R functions and scripts
+into [stored procedures](https://en.wikipedia.org/wiki/SQL/PSM) in MySQL and
+Postgres.
+
+It may be possible to integrate this in the context of something like
+`RCodeGen`. Or even generalize to more cross language translators- ie.
+Python pandas or Julia.
+
+A more general question might be "how much can be translated?"
+
+An email from Michael Lawrence describing prior work here:
+
+> I think the SQL backend should somehow be ddR-independent, since SQL
+> is independent of distributed computing. The distributed data
+> structures could somehow delegate to the more general ones for SQL
+> translation.
+> 
+> Here is a list of prior work translating the base R API to SQL:
+> 
+> Abandoned MonetDB prototype:
+> https://github.com/MonetDB/monet.frame
+> I think it only supports basic data.frame operations.
+> 
+> Oracle R Connector for Hadoop (targets Hive):
+> https://docs.oracle.com/cd/E37231_01/doc.20/e36961/orch.htm#BDCUG401
+> This is work by Patrick Aboyoun (not acknowledged by Oracle anywhere).
+> I'm worried about the licensing on this one. Even though Oracle
+> advertises ORCH as open-source, I think it depends on Oracle R
+> Enterprise for the SQL translation, which is closed source. But I
+> peeked at it and it's probably the most advanced of all of these.
+> 
+> PivotalR:
+> https://cran.r-project.org/web/packages/PivotalR/index.html
+> The only CRAN package I've found that translates the base API to SQL.
+> Now that Pivotal HAWQ is open-source Apache HAWQ, maybe we could work
+> with them on extracting the SQL translation to a more general package?
+
+There are of course packages like `RSQLite` to connect R to a backend
+database to bring tables into R data frames. But they don't do any SQL
+translation.
+
+[dplyr](https://cran.r-project.org/web/packages/dplyr/vignettes/databases.html)
+introduces a whole new syntax for data manipulation. It can translate this
+only into `SELECT` statements, which is a limitation. It does have a
+[`translate_sql`](https://github.com/hadley/dplyr/blob/master/R/translate-sql-base.r)
+function which translates base R functions like `+`, `==`, `cos`, along
+with some features to prevent SQL injection attacks. Together with the
+supporting files this is less than 1K lines of R code. It would probably be
+a nice place to start from.
+
+> Currently dplyr supports the three most popular open source databases
+> (sqlite, mysql and postgresql)
+
+This suggests that anything I do should work well on these databases.
+
+Grothendieck's [sqldf](https://github.com/ggrothendieck/sqldf) runs SQL
+code on R dataframes by temporarily storing the R data frame in a SQL
+database. Code is only 600 lines of R.
+
+## Missing Data
+
+R represents missing data through NA much better than Python and Julia.
+This is a serious problem when working with real data in these other
+languages.
+
+So I could try to implement appropriate and fast missing data handling in
+one or both languages.
+
+I foresee two challenges:
+- It will require significant low level understanding of the languages,
+  down to the bit level representation.
+- People have been talking about it for years and it hasn't yet happened,
+  which probably means it's quite difficult.
+
+## Computing within databases
+
+Databases are nice, but often we wish to do more than SQL can provide, so
+we'd like to run a more powerful data analysis language within the database.
+My experience with Teradata was bad here- not much was supported.
+
+## Visual exploration of unusual data structures
+
+Reading through Duncan's [RClang
+paper](https://github.com/clarkfitzg/RClangSimple/blob/master/Paper/RClang.tex)
+there's a section on understanding the code in a library. It mentions
+visualizing code. I'm not currently aware of any common ways to visualize code. But
+it might be possible as part of a code review process, or to communicate
+technical material to a nontechnical audience. So the code is data...
+
+A few ideas:
+
+- Visualize the growth and development of the Linux kernel
+- Look through code and attempt to infer who wrote it.
+- Trace a program as it runs and visualize how a program spends time.
+
+There's certainly no shortage of data if we use code on Github.
+
+Looking at tables in a complex database it's hard to figure out how they
+connect, what they are used for, etc. The table metadata could probably be
+used to infer and visualize some of this.
+
+When I go to a new software project I like to get some idea of how the
+codebase is organized. Some visual tools here would be extremely helpful.
+
+The other thing I was doing recently was reading through some XML. Raw
+files are much too big to manually inspect, and it's probably easy to miss
+some obvious structure or schema to 
+
+## Summary
+
+Project         |   Utility |   Feasibility |   Intellectual |
+----------------|-----------|---------------|----------------|
+R / SQL         |   4       |   4           |   3            | 
+Automatic Parallelism | 2   |   4           |   4            |
+Executables     |   2       |   3           |   4            |
+Missing Data    |   5       |   2           |   2            |
+Computing in DB |   5       |   3           |   2            |
+Visualization   |   5       |   5           |   3            |
+
+
+

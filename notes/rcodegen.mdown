@@ -1,0 +1,9 @@
+Fri Oct  7 15:24:01 PDT 2016
+
+Reading up on Duncan's RCodeGen package:
+https://github.com/duncantl/RCodeGen
+
+__Translation Unit__ is a C source file after it has been preprocessed.
+This includes recursive expansion of headers (`#include`).
+
+

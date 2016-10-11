@@ -1,0 +1,11 @@
+Fri Oct  7 16:02:23 PDT 2016
+
+Looking at how [Julia does parallelism](http://docs.julialang.org/en/release-0.5/manual/parallel-computing/).
+
+They use the idea of a `Future`. A master process makes a remote call and
+then continues, not waiting for it to finish. I like their use of macros
+for these.
+
+Like everything in Julia, it seems that within the parallel programming
+area they have many nice features, and they've learned from the mistakes
+and weird things in other languages.

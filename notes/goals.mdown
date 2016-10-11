@@ -1,0 +1,13 @@
+Mon Oct 10 10:34:20 PDT 2016
+
+## Goals
+
+Before I go too far into thesis topics, let's step back and consider what I
+want to produce at the end. If I'm building software I want it to be
+something that I can be proud of.
+
+- Solves a real problem, therefore I can use it now and in the future, and recommend it to others
+- Be a technology that I want to continue working in
+- Be reasonably self-contained, because I don't want to work on it
+  forever from scope creep
+- Provide some financial benefit / expertise

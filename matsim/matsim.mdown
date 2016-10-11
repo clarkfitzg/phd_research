@@ -32,8 +32,14 @@ Generating `population.xml` looks extremely interesting. This is the list
 of agents and their day plans. How can we make valid simulations from
 something like US Census data?
 
-TODO: I still don't know the big idea here. What is being iterated? I
-believe it's people's changing plans but am not sure.
+Most referenced simulations run with on the order of 5
+million agents and networks with ~ 20K nodes / 40K links.
+
+Rieser's 2007 paper describes alternating mental layer / physical layer to
+converge to "optimal" travel plan solution. Takes about 80 iterations to
+"converge" in example. Each iteration takes around an hour, so the whole
+thing runs in 2 - 6 days in Balmer's 2008 MatSim-T "Architecture and Simulation
+Times" paper.
 
 ### Parameters
 
