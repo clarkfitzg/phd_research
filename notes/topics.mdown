@@ -167,15 +167,25 @@ paper](https://github.com/clarkfitzg/RClangSimple/blob/master/Paper/RClang.tex)
 there's a section on understanding the code in a library. It mentions
 visualizing code. I'm not currently aware of any common ways to visualize code. But
 it might be possible as part of a code review process, or to communicate
-technical material to a nontechnical audience. So the code is data...
+technical material to a nontechnical audience. Code has far more structure
+and patterns than raw text. So the code is data...
 
 A few ideas:
 
-- Visualize the growth and development of the Linux kernel
+- Visualize the growth and development of the Linux kernel - a time series
+  of patches
 - Look through code and attempt to infer who wrote it.
+- Visualize the relative importance and utility of libraries
 - Trace a program as it runs and visualize how a program spends time.
 
 There's certainly no shortage of data if we use code on Github.
+
+Here's some of what has been done:
+http://programmers.stackexchange.com/questions/9761/how-to-visualize-code
+looks quite basic.
+
+There are many things that an IDE can do- those tools exist to improve
+developer productivity *right now*. But 
 
 Looking at tables in a complex database it's hard to figure out how they
 connect, what they are used for, etc. The table metadata could probably be
@@ -186,7 +196,8 @@ codebase is organized. Some visual tools here would be extremely helpful.
 
 The other thing I was doing recently was reading through some XML. Raw
 files are much too big to manually inspect, and it's probably easy to miss
-some obvious structure or schema to 
+some obvious structure or schema if you page through it. OTOH, most XML
+files have very clear structure and organization.
 
 ## Summary
 
@@ -198,6 +209,3 @@ Executables     |   2       |   3           |   4            |
 Missing Data    |   5       |   2           |   2            |
 Computing in DB |   5       |   3           |   2            |
 Visualization   |   5       |   5           |   3            |
-
-
-

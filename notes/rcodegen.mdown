@@ -1,9 +1,86 @@
 Fri Oct  7 15:24:01 PDT 2016
 
-Reading up on Duncan's RCodeGen package:
+Reading up on Duncan's RCIndex and RCodeGen packages:
 https://github.com/duncantl/RCodeGen
 
 __Translation Unit__ is a C source file after it has been preprocessed.
 This includes recursive expansion of headers (`#include`).
 
+### installation notes for RClangSimple
 
+After I install the dependencies clang, llvm, libclang-dev and the R
+package dependencies I run into this:
+
+```
+Error in eval(expr, envir, enclos) : object 'CXType_Int' not found
+Error : unable to load R code in package ‘RCIndex’
+ERROR: lazy loading failed for package ‘RCIndex’
+* removing ‘/usr/local/lib/R/site-library/RCIndex’
+
+```
+
+This appears to be a problem with the order in which the files are sourced?
+
+Nope, problem was that none of the `enumDefs` files were sourced because my
+upgrade got the most recent version of `clang`, 3.8. I need to be using
+3.7 for this.
+
+Ok, I did some dirty hacking to switch my `clang` just on my bashrc , and now when I run
+
+```
+R CMD INSTALL --preclean
+```
+
+I see compilation and then:
+
+```
+Warning in clangVersionNum(libclangVersion_Install) :
+  NAs introduced by coercion
+Warning in clangVersionNum(libclangVersion_Install) :
+  NAs introduced by coercion
+Error in eval(expr, envir, enclos) : object 'CXType_Int' not found
+Error : unable to load R code in package ‘RCIndex’
+```
+
+Looking through more notes running 
+
+```
+R CMD INSTALL --clean
+```
+
+I see that it's still using all the 3.8 versions. Which is not what I
+wanted. What if I try uninstalling clang from apt to remove the
+configuration files?
+
+Current install:
+
+```
+
+$ apt-cache policy libclang-dev
+libclang-dev:
+  Installed: 1:3.8-33ubuntu3.1
+  Candidate: 1:3.8-33ubuntu3.1
+  Version table:
+ *** 1:3.8-33ubuntu3.1 500
+        500 http://us.archive.ubuntu.com/ubuntu xenial-updates/universe amd64 Packages
+        100 /var/lib/dpkg/status
+     1:3.8-33ubuntu3 500
+        500 http://us.archive.ubuntu.com/ubuntu xenial/universe amd64 Packages
+
+```
+
+
+```
+
+sudo apt-get remove --purge libclang-dev
+
+sudo apt-get remove --purge llvm
+
+sudo apt-get remove --purge clang
+
+```
+
+Now `clang` is off my `$PATH`.
+
+TODO: tomorrow, start frash, attempt install, update repo with correct
+install instructions.
