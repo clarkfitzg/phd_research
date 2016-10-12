@@ -1,0 +1,50 @@
+Wed Oct 12 13:27:43 PDT 2016
+
+## Detecting Parallelism
+
+With this idea I'd analyze a program (ie. an R script) and see if I could
+detect places where parallel computation is possible. Then the execution of
+the code would change and automatically become parallel.
+
+This is one of the initial projects that I pitched to Duncan, and it's
+quite similar to what I proposed in the NSF application. Duncan has pointed
+out that this may be easier in R because of the functional underpinnings.
+
+If I have a fixed script and pure functions then I can do much more- I can look
+at the code and data dependencies and execute more in parallel. This has
+the potential to really accelerate an R script. I would enjoy learning more
+about the theory of functional programming- and I believe it's really the
+way to go for reliable parallelism.
+
+Talking a bit with Nick about this today. If I can detect parallelism and
+automatically generate code that runs on GPU's it would be quite useful.
+Another advantage of this is that I could work more closely with Nick and
+Duncan as a team.
+
+Questions:
+- Is it possible to automatically detect pure functions in R?
+
+## CRAN task view
+
+Dirk Eddelbuettel's task view is pretty comprehensive and a good place to
+start. The __implicit parallelism__ section is of particular interest.
+
+https://cran.r-project.org/web/views/HighPerformanceComputing.html
+
+Luke Tierney did `pnmath` which replaces some R math functions with OpenMP threaded versions.
+Revolution does similar.
+
+Norm Matloff has `Rdsm` which does shared memory and threads.
+
+## Paper
+
+2008
+
+R/parallel – speeding up bioinformatics analysis with R
+Reviewed by Gonzalo Vera,1,2 Ritsert C Jansen,1 and Remo L
+Suppicorresponding author2
+
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2557021/
+
+Parallelizes loops with some new syntax. Revolution had something similar
+at one point IIRC.
