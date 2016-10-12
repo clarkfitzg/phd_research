@@ -1,0 +1,15 @@
+Wed Oct 12 10:28:26 PDT 2016
+
+Question posed by Duncan:
+
+> Popular software has bug trackers, and with version control we can see
+> code diffs before and after the bug is closed. It would be interesting to
+> see if that same bug exists anywhere else in the code. We could look for
+> patterns in how bugs are introduced and who fixes them. This may involve
+> NLP.
+
+I can think of one example, where in `scipy.stats` the evaluation of
+`namedtuple` was moved outside of the function for the purpose of speed.
+https://github.com/scipy/scipy/pull/6335
+But it was only changed for _one_ of the 50 or so times this pattern
+occurs.
