@@ -9,6 +9,8 @@ Discussed a few different options for thesis work.
    particular detecting bugs through bug reporters and pattern matching.
 3. Visualization of code
 
+Translation of SQL has been done.
+
 ### People
 
 Prem Devanhu, Vladimir Filkov from UC Davis CS dept have done data analysis
