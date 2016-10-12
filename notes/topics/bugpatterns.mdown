@@ -7,9 +7,31 @@ Question posed by Duncan:
 > see if that same bug exists anywhere else in the code. We could look for
 > patterns in how bugs are introduced and who fixes them. This may involve
 > NLP.
+>
+> This may have been done more with enterprise languages and applications,
+> so there could be new ideas in doing it for R or Python.
 
 I can think of one example, where in `scipy.stats` the evaluation of
 `namedtuple` was moved outside of the function for the purpose of speed.
 https://github.com/scipy/scipy/pull/6335
 But it was only changed for _one_ of the 50 or so times this pattern
 occurs.
+
+
+## Paper
+
+Initial and Eventual Software Quality Relating to
+Continuous Integration in GitHub
+
+Yue Yu‡†, Bogdan Vasilescu†
+, Huaimin Wang‡
+, Vladimir Filkov†
+, Premkumar Devanbu†
+
+https://arxiv.org/pdf/1606.00521v1.pdf
+
+This paper looks specifically at the effect of Continuous Integration (CI)
+services on initial and eventual software quality. They find CI effective.
+They define 20 or so project related metrics that would probably
+be useful in visualization, from the number of lines of source code to CI
+run time.

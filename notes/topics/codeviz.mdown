@@ -1,0 +1,47 @@
+
+What would I like to know about a large software project?
+
+- Complexity and quality as a function of time.
+
+
+Vladimir Filkov's lab in Davis:
+
+https://decallab.cs.ucdavis.edu/
+
+> The DECAL (Davis Excellent/Eclectic/Extreme Computational Analytics Lab)
+> Lab, allied with the Computer Science Department at UC Davis is an
+> inter-disciplinary community of researchers who study software engineering
+> practice, as well as emergent phenomena on the Internet: online
+> communities, open-source projects and ecosystems, and large corpora of
+> software source code.
+
+They seem to be producing around 10 papers per year, which is great. Not
+much on the website about software they're producing though.
+
+
+
+## Paper
+
+__Stochastic Actor-Oriented Modeling for Studying Homophily and Social
+Influence in OSS Projects__
+
+David Kavaler · Vladimir Filkov 2016
+
+https://decallab.files.wordpress.com/2016/04/selectioninfluence.pdf
+
+> we adapt the stochastic actor-oriented models from social network analysis.
+> These models enable the study of the interplay between behavior, influence
+> and network architecture, for dynamic networks, in a statistically sound
+> way.
+
+They use statistics on networks to formalize relationships between OSS
+contributors. Main data source is email threads, which is more
+sociological. They use the R `SIENA` package to model the networks. They
+model social ties with no interaction as decaying over time according to an exponential distribution.
+The overall flavor of this work emphasizes the evolving social
+relationships, not so much on the evolving software.
+
+
+## Paper
+
+
