@@ -54,8 +54,8 @@ if __name__ == "__main__":
 
     links = pems_links("dist3_raw30sec_13oct16.html")
 
-    # Useful to test locally with 2 before full download
-    links = dict((links.popitem(), links.popitem()))
+    # Useful to test locally with just 2 before full download
+    #links = dict((links.popitem(), links.popitem()))
 
-    #datadir = "/scratch/pems/"
-    download(links, cookies, datadir="/home/clark/data/pems/district3/")
+    datadir = "/scratch/clarkf/pems/district3/"
+    download(links, cookies, datadir=datadir)
