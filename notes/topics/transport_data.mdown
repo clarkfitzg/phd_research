@@ -1,3 +1,12 @@
+
+Fri Oct 14 14:35:22 PDT 2016
+
+It appears that the REID in PeMS is the same as
+[RFID](https://en.wikipedia.org/wiki/Radio-frequency_identification#Intelligent_transportation_systems)?
+It has tags for origin and destination, measuring travel times between
+points.
+
+
 ## Why collect data?
 
 Data only adds value when it is used to inform decisions. Here
