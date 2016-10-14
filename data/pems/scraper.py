@@ -1,36 +1,41 @@
-# Run this on poisson, save to scratch partition
+#!/usr/bin/env python
+
+"""
+Automates download from PeMS of a years worth of 30 second compressed raw
+highway traffic sensor data, which is around 30 GB
+
+Run this on poisson, save to scratch partition
+"""
+
 from lxml import etree
 import requests
 
 
-baseurl = "http://pems.dot.ca.gov"
-
-# Controls streaming download
-chunk_size = 10240
-
-# After logging on to the website I just copied out the html table
-# containing the file links
-html = etree.parse("raw30sec_d4_13oct16.html")
-
-# Copy your cookie from the web browser and save it in this file
-with open("cookie.txt") as f:
-    cookies = {"PHPSESSID": f.read().strip()}
-
-# Where to save the files when downloading
-#datadir = "/scratch/pems/"
-datadir = "/home/clark/data/pems/"
-
-# Build dictionary of links of (filename: link)
-filenodes = html.xpath("//a[@href]")
-links = {x.text: baseurl + x.xpath("@href")[0] for x in filenodes}
-
-# Useful to test locally with 2 before full download
-links = dict((links.popitem(), links.popitem()))
-
-
-def scrape(links, cookies, datadir, chunk_size=10240):
+def pems_links(html_table_filename):
     """
-    MUST run sequentially since parallel downloads are blocked
+    Build dictionary of links of (filename: link)
+    """
+    baseurl = "http://pems.dot.ca.gov"
+
+    # After logging on to the website I just copied out the html table
+    # containing the file links
+    html = etree.parse(html_table_filename)
+
+    filenodes = html.xpath("//a[@href]")
+    links = {x.text: baseurl + x.xpath("@href")[0] for x in filenodes}
+
+    return links
+
+
+def download(links, cookies, datadir, chunk_size=10240):
+    """
+    Download links for binary files onto a local machine
+
+    links:      dictionary of links
+    cookies:    to send over with the request
+    datadir:    directory to save the files when downloading
+
+    Runs sequentially since parallel downloads are blocked
     """
     for fname, url in links.items():
         print("downloading {}... ".format(fname))
@@ -39,3 +44,18 @@ def scrape(links, cookies, datadir, chunk_size=10240):
             for chunk in r.iter_content(chunk_size):
                 f.write(chunk)
         print("OK!\n")
+
+
+if __name__ == "__main__":
+
+    # Copy your cookie from the web browser and save it in this file
+    with open("cookie.txt") as f:
+        cookies = {"PHPSESSID": f.read().strip()}
+
+    links = pems_links("dist3_raw30sec_13oct16.html")
+
+    # Useful to test locally with 2 before full download
+    links = dict((links.popitem(), links.popitem()))
+
+    #datadir = "/scratch/pems/"
+    download(links, cookies, datadir="/home/clark/data/pems/district3/")
