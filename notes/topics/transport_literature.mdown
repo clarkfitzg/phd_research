@@ -1,3 +1,10 @@
+Fri Oct 14 14:33:21 PDT 2016
+
+Peter Bickel wrote a paper on PeMS specifically. Probably should print this
+out and read it.
+
+https://arxiv.org/pdf/0804.2982.pdf
+
 Fri Oct  7 08:49:35 PDT 2016
 
 Review on state of the art:
