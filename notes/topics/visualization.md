@@ -77,4 +77,4 @@ Programming assignments graded by unit tests- those are probably not able
 to detect conceptual errors.
 
 http://swirlstats.com/ Interacts with users by asking for input line by
-line. Quite basic from what I see.
+line. Looks basic from what I see. Probably quite useful though.
