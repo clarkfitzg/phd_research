@@ -16,15 +16,17 @@ nice suggestion to look at the Fourier transform.
 
 Thinking about what is missing in my data analysis toolkit now. I could use:
 
-- tools for streaming
-- easier tools for visualization of multivariate time series data
+- More specific tools to process large data sets as a stream
+- easier tools for visualization involving animation
 
+These two could potentially be linked together, with a stream as an input
+to the animation.
 
 ## Interesting other things:
 
 Henrik Bengtsson [future package](https://cran.r-project.org/web/packages/future/vignettes/future-1-overview.html) in R.
-Asynchronous execution provides an interesting way of doing parallelism.
+Asynchronous execution provides an interesting possibilities for doing parallelism.
 
 [Rstudio people](https://github.com/rstudio/tensorflow) are working on
-[tensor flow] https://www.tensorflow.org/. I wonder if this could somehow
+[tensor flow](https://www.tensorflow.org/). I wonder if this could somehow
 be extended to power R transparently to the user.
