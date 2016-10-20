@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 Mon Oct 17 11:33:38 PDT 2016
 
@@ -31,7 +33,7 @@ def main(args):
     fnames = (os.sep.join((args.datadir, x)) for x in os.listdir(args.datadir)
                 if x.endswith(".txt.gz"))
 
-    with gzip.open(args.I80_fname, mode="at") as outfile:
+    with gzip.open(args.outfile, mode="at") as outfile:
         for f in fnames:
             for l in matchlines(f):
                 outfile.write(l)
@@ -46,11 +48,11 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("datadir", default="/scratch/clarkf/pems/district4/",
+    parser.add_argument("--datadir", default="/scratch/clarkf/pems/district4/",
             help="Location of the raw station txt.gz files")
 
-    parser.add_argument("I80_fname",
-            default="/scratch/clarkf/pems/I80/I80_davis.txt.gz",
+    parser.add_argument("--outfile",
+            default="/scratch/clarkf/pems/I80_davis.txt.gz",
             help="File to append all matching rows to")
 
     args = parser.parse_args()
