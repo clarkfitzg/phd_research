@@ -43,7 +43,7 @@ def download(links, cookies, datadir, chunk_size=10240):
         print("OK!\n")
 
 
-def read_station_raw(fname):
+def read_station_raw(fname, **kwargs):
     """
     Read a single raw (30 second) station data file into a Pandas
     data.frame. These tend to be huge.
@@ -53,5 +53,5 @@ def read_station_raw(fname):
     oneday = pd.read_csv(fname,
             header=None,
             names=["timestamp", "ID"] + repeated,
-            )
+            **kwargs)
     return oneday
