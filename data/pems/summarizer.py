@@ -31,7 +31,7 @@ I80["totalflow"] = I80[flowcols].sum(axis=1, skipna=True)
 I80["timestamp"] = pd.to_datetime(I80["timestamp"],
         infer_datetime_format=True)
 
-I80["weekday"] = I80["timestamp"].dt.dayofweek
+I80["weekday"] = I80["timestamp"].dt.weekday
 I80["hour"] = I80["timestamp"].dt.hour
 I80["minute"] = I80["timestamp"].dt.minute
 
@@ -49,6 +49,8 @@ I80["second"] = (30 * np.floor(actual_second / 30)).astype("int")
 # I80["second"].value_counts()
 
 # For each lane and variable compute median values
+# TODO - Better to first compute median and maybe then a conditional median
+# or mode
 I80median = (I80
             .iloc[:, 1:]  # exclude timestamp
             .groupby("ID weekday hour minute second".split())
@@ -60,10 +62,28 @@ I80median.to_csv(datadir + "I80_median.csv.gz",
         compression="gzip",
         )
 
+# Quantiles for weekday flow
+############################################################
+
+groupvars = "ID hour minute second".split()
+
+weekday = (I80
+           [I80["weekday"].isin(range(5))]
+           [["totalflow"] + groupvars]
+           .groupby(groupvars)
+           .quantile([0.1, 0.5, 0.9])
+           )
+
+weekday.to_csv(datadir + "weekday.csv.gz",
+        float_format="%.8g",
+        compression="gzip",
+        )
+
 # Station level table
 ############################################################
 
 idgroup = I80["totalflow"].groupby(I80["ID"])
+
 station_summary = pd.DataFrame({
         "flow_max":     idgroup.max(),
         "flow_99":      idgroup.quantile(0.99),
