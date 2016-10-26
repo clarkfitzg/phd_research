@@ -53,4 +53,8 @@ fivemin = read.csv(paste0(datadir, "d03_text_station_5min_2016_10_25.txt")
 
 }
 
+davis80 = read.table("../davis_80_station_ids.csv")[, 1]
+
+d = fivemin[fivemin[, "Station"] %in% davis80, ]
+
 
