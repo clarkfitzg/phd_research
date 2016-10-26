@@ -3,8 +3,59 @@ Fri Oct  7 15:24:01 PDT 2016
 Reading up on Duncan's RCIndex and RCodeGen packages:
 https://github.com/duncantl/RCodeGen
 
+RCodeGen package can generate R wrapper's to C code. How does this relate
+to [SWIG](http://www.swig.org/)? SWIG appears to do it more generally.
+
+## Notes on paper from RCIndex
+
+RCUDA is mentioned as an example of automatically generating documentation.
+I can't tell if it generates code or documentation- just looks like a bunch
+of string parsing:
+https://github.com/duncantl/RCUDA/blob/master/TU/clang.R
+
+The __Software as Data__ section describes some interesting ways to do code
+analysis.
+
+Nick said something along the lines of "It would be useful to
+programmatically generate bindings for 90% of the functionality of a C
+package that you're interfacing to". This makes sense. But it sounds like
+this can already be done with these packages? Side note- Learning more about C and C++
+would be nice, and tackling this would probably force me to learn more of
+these.
+
 __Translation Unit__ is a C source file after it has been preprocessed.
 This includes recursive expansion of headers (`#include`).
+
+__Cursor__ node in a parse tree
+
+__Token__ Tokenizing step breaks text of code up like `f(x)` into `["f",
+"(", "x", ")"]`. Each of these atomic strings is a token. Tokenizing happens before parsing.
+
+Parsing R's `memory.c`: I would have thought the adjacency matrix would
+have used R's `outer()`. Not important though.
+
+Example of generating registration code:
+
+```
+rg = createRegistrationCode("~/GitWorkingArea/FastCSVSample/src")
+cat("#include <R_ext/Rdynload.h>", rg, sep = "\n", file = "init.c")
+```
+
+Regarding argument types- R doesn't let one specify. It states:
+
+> This could be added to the registration information and allow R to
+> perform run-time checks or coercion to the appropriate types in call to
+> the routine.
+
+This is interesting. Presumably the result is more robust code. If one does
+this more generally it would be nice to have coercion happen in R before it
+calls into C and crashes.
+
+Footnote on page 11 says: _"The code generation options are not relevant as
+we are not generating code, only parsing it"_. But why wouldn't we generate
+it using these tools? Would this approach be any different than the LLVM
+compiler?
+
 
 ### installation notes for RClangSimple
 
