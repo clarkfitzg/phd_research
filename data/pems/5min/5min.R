@@ -57,4 +57,4 @@ davis80 = read.table("../davis_80_station_ids.csv")[, 1]
 
 d = fivemin[fivemin[, "Station"] %in% davis80, ]
 
-
+# Next step- Convert timestamps
