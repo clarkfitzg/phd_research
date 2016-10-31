@@ -13,12 +13,12 @@ Translation of SQL has been done.
 
 ### People
 
-Prem Devanhu, Vladimir Filkov from UC Davis CS dept have done data analysis
+Prem Devanbu, Vladimir Filkov from UC Davis CS dept have done data analysis
 on Github source code and mailing lists.
 
 Kwan-Liu Ma expert on visualization
 
-Steve Eich `CSoft` 1993 Bell Labs _Not finding anything in searches_
+Steve Eich `SeeSoft` 1993 Bell Labs
 
 Networks - Raissa D'souza
 
