@@ -1,0 +1,13 @@
+?pipe
+library(pems)
+pems::read30secd = pems::read30sec("~/data/pems/district3/d03_text_station_raw_2016_04_06.txt.gz")
+d = pems::read30sec("~/data/pems/district3/d03_text_station_raw_2016_04_06.txt.gz")
+dim(d)
+head(d)
+max(d$speed1)
+max(d$speed1, na.rm=TRUE)
+max(d$speed2, na.rm=TRUE)
+mean(is.na(d$speed1))
+mean(is.na(d$speed2))
+# This shows that almost 99.9% of speed data is missing in Sacramento!!
+savehistory("eda_with_r.txt")
