@@ -1,3 +1,23 @@
+Tue Nov  1 09:58:11 PDT 2016
+
+In the docs to `getNativeSymbolInfo()` Stumbled across a link to an old [R
+newsletter](https://www.r-project.org/doc/Rnews/Rnews_2001-3.pdf) where
+Duncan talks about this sort of thing. He writes:
+
+> The new Slcc package has potential to programmatically generate S and C
+> code that provides access to arbitrary C libraries.
+
+The same thing that we were talking about. Maybe it's really hard!!
+
+Thinking about the relation between what Rcpp does and what I might do.
+Rcpp excels at allowing users to speed up a portion of their code by
+writing it in C++. This doesn't require a whole lot of knowledge of C++.
+Writing bindings to a mature C/C++ library is a pretty different task. To
+do this well a developer needs to have a solid understanding of the
+abstractions in the new library.
+
+
+
 Thu Oct 27 15:01:31 PDT 2016
 
 Reviewing what the current state of the art is in auto generating bindings
@@ -46,6 +66,31 @@ Hadley's Advanced R claims that Rcpp handles the memory management.
 TODO - see exactly what Rcpp does to implement `module()`. It may be all we
 need. https://github.com/RcppCore/Rcpp/blob/master/R/Module.R#L162
 
+Looking through `SourceFileAttributesParser::SourceFileAttributesParser` in
+Rcpp's `attributes.cpp` it appears that Rcpp only uses string processing to
+get and manipulate the code structure. So tapping into something like `clang` could
+end up being more robust.
+
+I'll work through an example using the `xml2` package, since it depends on
+Rcpp, it's popular, and Duncan should be very familiar with the internals
+of the C library.
+
+
+TODO - Troubleshoot installation of `xml2` from source. Doesn't work when I
+add in my lines.
+
+1. User calls 
+
+```
+
+Module("
+
+
+```
+
+
+
+
 Uses things like 
 ```
 classes <- .Call( Module__classes_info, xp )
@@ -56,3 +101,5 @@ RCPP_FUN_1(Rcpp::List, Module__classes_info, XP_Module module) {
     return module->classes_info();
 }
 ```
+
+
