@@ -1,3 +1,9 @@
+Wed Nov  2 10:35:35 PDT 2016
+
+Plan for next quarter. Should I TA?
+
+
+
 Thu Oct 27 16:27:31 PDT 2016
 
 When invoking `.Call()` one may pass in the return value and modify it, or

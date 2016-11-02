@@ -81,6 +81,23 @@ we have the mean velocity for 30 second intervals. Then a shockwave lasting
 20-30 seconds would manifest as a lower mean velocity for one or two
 periods.
 
+\cite{williams2003modeling} discuss using ARIMA models for univariate
+traffic streams.
+
+\quote{
+The  ARIMA  ( 1,0,1 ) ( 0,1,1 ) model provides a simple three-parameter
+linear recursive estima-tor. Therefore,  an  appropriately  applied
+seasonal ARIMA modelshould   be   considered   the   parametric   model
+benchmark   forunivariate  traffic  condition  forecasting.  
+}
+
+So we might ask the question: how different are each of these sensors in
+terms of model parameters? We can fit seasonal trends and ARIMA
+models to each of the stations. All the papers I looked at talk about
+predicting traffic conditions.
+
+Areas with few on ramps should be very different than areas with 
+
 \bibliography{citations} 
 
 \bibliographystyle{apalike}
