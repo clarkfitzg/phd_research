@@ -66,6 +66,8 @@
 
 \section{Abstract}
 
+For this project we 
+
 The goal of this project is to search for the presence of congestion
 shockwaves in the raw 2016 PeMS data.
 
@@ -96,7 +98,23 @@ terms of model parameters? We can fit seasonal trends and ARIMA
 models to each of the stations. All the papers I looked at talk about
 predicting traffic conditions.
 
-Areas with few on ramps should be very different than areas with 
+Do they cluster into a few groups?
+Areas with few onramps should be very different than dense urban areas.
+
+Another thing to do- find all the active fixed bottlenecks in the 2016 PeMS data.
+One general heuristic for this is to find all places that the velocity $v$ or
+density $\rho$ is much lower upstream than downstream for at least some
+period of time $T_{\min}$. Then it's reasonable to say there is a
+bottleneck between those two mile markers.
+
+We can do this with a two stage approach. First look at every timestamp and
+check if the average velocity for station $i$ is below some threshold
+$v_{i}$ while station $i + 1$, the next one downstream on the freeway has
+traffic moving at velocity greater than $v_{i + 1}$. If this condition persists for
+longer than $t_{\min}$ then call it a bottleneck between station $i$ and $i
++ 1$. This can then be used to check dimensions of the bottleneck in time
+and space. There we go- that's a great title- Spatial temporal dimensions
+of traffic bottlenecks.
 
 \bibliography{citations} 
 
