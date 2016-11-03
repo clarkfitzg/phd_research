@@ -68,38 +68,13 @@
 
 For this project we 
 
-The goal of this project is to search for the presence of congestion
-shockwaves in the raw 2016 PeMS data.
-
 \section{Review}
 
-\cite{lu2007freeway} describe a numerical algorithm to detect shockwaves
-based on trajectory data. Their vehicle trajectory plots appear to show
-shockwaves that last for 20 to 30 seconds for a fixed location.
+\cite{chung2007relation} describe traffic characteristics at three fixed bottlenecks.
 
-Given sufficiently dense velocity observations over space and time it may
-be possible to recover "average" trajectories. In the case of the PeMS data
-we have the mean velocity for 30 second intervals. Then a shockwave lasting
-20-30 seconds would manifest as a lower mean velocity for one or two
-periods.
-
-\cite{williams2003modeling} discuss using ARIMA models for univariate
-traffic streams.
-
-\quote{
-The  ARIMA  ( 1,0,1 ) ( 0,1,1 ) model provides a simple three-parameter
-linear recursive estima-tor. Therefore,  an  appropriately  applied
-seasonal ARIMA modelshould   be   considered   the   parametric   model
-benchmark   forunivariate  traffic  condition  forecasting.  
-}
-
-So we might ask the question: how different are each of these sensors in
-terms of model parameters? We can fit seasonal trends and ARIMA
-models to each of the stations. All the papers I looked at talk about
-predicting traffic conditions.
-
-Do they cluster into a few groups?
-Areas with few onramps should be very different than dense urban areas.
+\cite{chen2004systematic} describe systematic identification of bottlenecks from 5
+minute loop data. We want to do a similar thing with 30 second data on a larger scale.
+Papers citing this paper also look relevant like the Oregon ones.
 
 Another thing to do- find all the active fixed bottlenecks in the 2016 PeMS data.
 One general heuristic for this is to find all places that the velocity $v$ or
