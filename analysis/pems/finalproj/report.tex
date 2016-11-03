@@ -66,17 +66,9 @@
 
 \section{Abstract}
 
-For this project we 
+Note- These are my initial thoughts before doing the literature review.
 
-\section{Review}
-
-\cite{chung2007relation} describe traffic characteristics at three fixed bottlenecks.
-
-\cite{chen2004systematic} describe systematic identification of bottlenecks from 5
-minute loop data. We want to do a similar thing with 30 second data on a larger scale.
-Papers citing this paper also look relevant like the Oregon ones.
-
-Another thing to do- find all the active fixed bottlenecks in the 2016 PeMS data.
+Goal- find all the active fixed bottlenecks in the 2016 PeMS data.
 One general heuristic for this is to find all places that the velocity $v$ or
 density $\rho$ is much lower upstream than downstream for at least some
 period of time $T_{\min}$. Then it's reasonable to say there is a
@@ -90,6 +82,39 @@ longer than $t_{\min}$ then call it a bottleneck between station $i$ and $i
 + 1$. This can then be used to check dimensions of the bottleneck in time
 and space. There we go- that's a great title- Spatial temporal dimensions
 of traffic bottlenecks.
+
+\section{Review}
+
+\cite{chung2007relation} describe traffic characteristics at three fixed bottlenecks.
+
+\cite{chen2004systematic} describe systematic identification of bottlenecks from 5
+minute loop data. We want to do a similar thing with 30 second data on a larger scale.
+They use velocity measurements, which are not always reliable / available. So it might be 
+better in our case to use occupancy and flow.
+
+The say: "Five-minute data provide sufficient
+resolution for this analysis because the traffic features sought are on
+the order of 30 min or more." So maybe we look for finer features.
+
+\cite{hall1991freeway} use flow and occupancy since velocity is not available.
+
+\begin{quote}
+Averages of flow and occupancy across the three lanes were
+used. The two tended to vary together in the period before
+cu11gesliu11 aud Lu diverge duriug Lhe cuugesled period. Determining
+the exact beginning and end of congestion was,
+however, difficult from these numbers, so the ratio of occupancy
+to flow was used. Three values of the ratio were tested
+for the threshold level: 1.0, 1.1, and 1.2. A ratio of 1.0 gives
+a longer duration of bottleneck flows, some of which were
+very low, suggesting that demand was below capacity. A ratio
+of 1.2 excludes sustained periods (10 min) of high flows (5,800
+vehicles/hr or more). A ratio of 1.1 or above persisting for 3
+min was selected as the criterion for the identification of the
+start of a queue. 
+\end{quote}
+
+\cite{wieczorek2010techniques} applies this to Oregon data.
 
 \bibliography{citations} 
 
