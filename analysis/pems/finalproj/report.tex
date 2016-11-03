@@ -66,9 +66,16 @@
 
 \section{Abstract}
 
-Note- These are my initial thoughts before doing the literature review.
+Goal- Find all the active fixed bottlenecks in the 2016 PeMS data. Quantify
+when and where they exist. Rank them in order of severity. Distinguish
+temporary from permanent bottlenecks. Compare with highway incident data to
+determine which are caused by accidents. 
 
-Goal- find all the active fixed bottlenecks in the 2016 PeMS data.
+To do all this we'll need heuristics and well defined measures for
+comparison. It would be best to take this from the established literature.
+
+Note- These are initial thoughts before doing the literature review.
+
 One general heuristic for this is to find all places that the velocity $v$ or
 density $\rho$ is much lower upstream than downstream for at least some
 period of time $T_{\min}$. Then it's reasonable to say there is a
@@ -82,6 +89,12 @@ longer than $t_{\min}$ then call it a bottleneck between station $i$ and $i
 + 1$. This can then be used to check dimensions of the bottleneck in time
 and space. There we go- that's a great title- Spatial temporal dimensions
 of traffic bottlenecks.
+
+Choosing an appropriate $v_i$ here may be difficult- so it would be best to
+use something different for each station. 
+
+We may want to forget about detecting bottlenecks if accurate data
+are too far apart in space or time- ie. 5 miles is probably too far.
 
 \section{Review}
 
