@@ -11,18 +11,23 @@
 # TODO - move to package once complete
 source("helpers.R")
 
-# Basic cleaning steps
+# Basic cleaning step:
+# Want at least one nonzero value for both flow and occupancy
 ############################################################
 
 d = read30sec("~/data/pems/district3/d03_text_station_raw_2016_04_06.txt.gz")
 
-vals = d[, !(colnames(d) %in% c("timestamp", "ID"))]
+occ = d[, grep("occupancy", colnames(d), value = TRUE)]
+badocc = (occ == 0) | is.na(occ)
+badocc_rows = apply(badocc, 1, all)
 
-badvals = (vals == 0) | is.na(vals)
+flow = d[, grep("flow", colnames(d), value = TRUE)]
+badflow = (flow == 0) | is.na(flow)
+badflow_rows = apply(badflow, 1, all)
 
-badrows = apply(badvals, 1, all)
+badrows = badocc_rows | badflow_rows
 
-d = d[-badrows, ]
+d = d[!badrows, ]
 
 # The distribution of occupancy 1 and 2
 ############################################################
@@ -74,3 +79,5 @@ d$minute = extract_minutes(d$timestamp)
 
 # Start out with one Fwy and Direction, then generalize
 I5N = d[(d$Fwy == 5) & (d$Dir == "N"), ]
+
+# Plot this as an image
