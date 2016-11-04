@@ -1,10 +1,27 @@
 \begin{thebibliography}{}
 
-\bibitem[Lu and Skabardonis, 2007]{lu2007freeway}
-Lu, X.-Y. and Skabardonis, A. (2007).
-\newblock Freeway traffic shockwave analysis: exploring the ngsim trajectory
-  data.
-\newblock In {\em 86th Annual Meeting of the Transportation Research Board,
-  Washington, DC}.
+\bibitem[Chen et~al., 2004]{chen2004systematic}
+Chen, C., Skabardonis, A., and Varaiya, P. (2004).
+\newblock Systematic identification of freeway bottlenecks.
+\newblock {\em Transportation Research Record: Journal of the Transportation
+  Research Board}, (1867):46--52.
+
+\bibitem[Chung et~al., 2007]{chung2007relation}
+Chung, K., Rudjanakanoknad, J., and Cassidy, M.~J. (2007).
+\newblock Relation between traffic density and capacity drop at three freeway
+  bottlenecks.
+\newblock {\em Transportation Research Part B: Methodological}, 41(1):82--95.
+
+\bibitem[Hall and Agyemang-Duah, 1991]{hall1991freeway}
+Hall, F.~L. and Agyemang-Duah, K. (1991).
+\newblock Freeway capacity drop and the definition of capacity.
+\newblock {\em Transportation research record}, (1320).
+
+\bibitem[Wieczorek et~al., 2010]{wieczorek2010techniques}
+Wieczorek, J., Fern{\'a}ndez-Moctezuma, R., and Bertini, R. (2010).
+\newblock Techniques for validating an automatic bottleneck detection tool
+  using archived freeway sensor data.
+\newblock {\em Transportation Research Record: Journal of the Transportation
+  Research Board}, (2160):87--95.
 
 \end{thebibliography}
