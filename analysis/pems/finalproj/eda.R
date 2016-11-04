@@ -8,10 +8,13 @@
 # - R parallel programming
 # - Use C/C++ for speed
 
+# TODO - move to package once complete
+source("helpers.R")
+
 # Basic cleaning steps
 ############################################################
 
-d = pems::read30sec("~/data/pems/district3/d03_text_station_raw_2016_04_06.txt.gz")
+d = read30sec("~/data/pems/district3/d03_text_station_raw_2016_04_06.txt.gz")
 
 vals = d[, !(colnames(d) %in% c("timestamp", "ID"))]
 
@@ -64,4 +67,10 @@ mean_occ = rowMeans(occ, na.rm = TRUE)
 d$low_occ = mean_occ < low_occ_thresh
 d$high_occ = mean_occ > high_occ_thresh
 
+d$minute = extract_minutes(d$timestamp)
 
+# Absolute Postmiles `Abs_PM` start at 0 on the South and West border,
+# increasing when traveling North and East- just like a 2d plot!
+
+# Start out with one Fwy and Direction, then generalize
+I5N = d[(d$Fwy == 5) & (d$Dir == "N"), ]
