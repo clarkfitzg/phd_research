@@ -8,6 +8,8 @@
 # - R parallel programming
 # - Use C/C++ for speed
 
+library(lattice)
+
 # TODO - move to package once complete
 source("helpers.R")
 
@@ -85,27 +87,4 @@ I5N = d[(d$Fwy == 5) & (d$Dir == "N"), ]
 # Plot this as an image
 I5long = I5N[, c("mean_occ", "Abs_PM", "minute")]
 
-# Warnings come from 2 observations per minute. Better way would be to take
-# a larger mean.
-I5wide = reshape(I5long
-                 , timevar = "Abs_PM"
-                 , idvar = "minute"
-                 , direction = "wide"
-                 )
-
-rownames(I5wide) = I5wide$minute
-
-# Take this out and sort it to prepare plotting matrix
-# 1's are necessary since `minute` gets stuck in as the first variable
-miles = as.numeric(gsub("mean_occ\\.", "",  colnames(I5wide)[-1]))
-I5matrix = as.matrix(I5wide[order(I5wide$minute), 1L + order(miles)])
-
-xmile = sort(miles)
-yminute = sort(I5wide$minute)
-milemarker = c(xmile, tail(xmile, 1) + diff(tail(xmile, 2)))
-hour = c(yminute, tail(yminute, 1) + diff(tail(yminute, 2))) / 60
-
-image(x = hour
-      , y = milemarker
-      , z = I5matrix
-      )
+levelplot(mean_occ ~ minute * Abs_PM, data = I5long)
