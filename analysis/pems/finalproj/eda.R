@@ -17,13 +17,15 @@ source("helpers.R")
 
 d = read30sec("~/data/pems/district3/d03_text_station_raw_2016_04_06.txt.gz")
 
+# This step is a little heavy handed, but previous experience suggests that it's
+# necessary, and it simplifies things later
+d[d == 0] = NA
+
 occ = d[, grep("occupancy", colnames(d), value = TRUE)]
-badocc = (occ == 0) | is.na(occ)
-badocc_rows = apply(badocc, 1, all)
+badocc_rows = apply(is.na(occ), 1, all)
 
 flow = d[, grep("flow", colnames(d), value = TRUE)]
-badflow = (flow == 0) | is.na(flow)
-badflow_rows = apply(badflow, 1, all)
+badflow_rows = apply(is.na(flow), 1, all)
 
 badrows = badocc_rows | badflow_rows
 
@@ -67,7 +69,7 @@ low_occ_thresh = 0.2
 high_occ_thresh = 0.3
 
 occ = d[, grep("occupancy", colnames(d), value = TRUE)]
-mean_occ = rowMeans(occ, na.rm = TRUE)
+d$mean_occ = rowMeans(occ, na.rm = TRUE)
 
 d$low_occ = mean_occ < low_occ_thresh
 d$high_occ = mean_occ > high_occ_thresh
@@ -81,3 +83,29 @@ d$minute = extract_minutes(d$timestamp)
 I5N = d[(d$Fwy == 5) & (d$Dir == "N"), ]
 
 # Plot this as an image
+I5long = I5N[, c("mean_occ", "Abs_PM", "minute")]
+
+# Warnings come from 2 observations per minute. Better way would be to take
+# a larger mean.
+I5wide = reshape(I5long
+                 , timevar = "Abs_PM"
+                 , idvar = "minute"
+                 , direction = "wide"
+                 )
+
+rownames(I5wide) = I5wide$minute
+
+# Take this out and sort it to prepare plotting matrix
+# 1's are necessary since `minute` gets stuck in as the first variable
+miles = as.numeric(gsub("mean_occ\\.", "",  colnames(I5wide)[-1]))
+I5matrix = as.matrix(I5wide[order(I5wide$minute), 1L + order(miles)])
+
+xmile = sort(miles)
+yminute = sort(I5wide$minute)
+milemarker = c(xmile, tail(xmile, 1) + diff(tail(xmile, 2)))
+hour = c(yminute, tail(yminute, 1) + diff(tail(yminute, 2))) / 60
+
+image(x = hour
+      , y = milemarker
+      , z = I5matrix
+      )
