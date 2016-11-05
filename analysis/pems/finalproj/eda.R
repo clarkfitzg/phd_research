@@ -17,7 +17,8 @@ source("helpers.R")
 # Want at least one nonzero value for both flow and occupancy
 ############################################################
 
-d = read30sec("~/data/pems/district3/d03_text_station_raw_2016_04_06.txt.gz")
+#d = read30sec("~/data/pems/district3/d03_text_station_raw_2016_04_06.txt.gz")
+d = read30sec("~/data/pems/d04_text_station_raw_2016_05_10.txt.gz")
 
 # This step is a little heavy handed, but previous experience suggests that it's
 # necessary, and it simplifies things later
@@ -56,35 +57,63 @@ hist(occ2)
 # Merge in station metadata
 ############################################################
 
-station = read.table("~/data/pems/district3/d03_text_meta_2016_03_18.txt"
-                     , sep = "\t", header = TRUE)
+station = read.table("~/data/pems/d04_text_meta_2016_10_05.txt"
+                     , sep = "\t"
+                     , header = TRUE
+                     , quote = ""
+                     )
 
-d = merge(d, station[, c("ID", "Abs_PM", "Fwy", "Dir")])
+d = merge(d, station[, c("ID", "Abs_PM", "Fwy", "Dir", "Type")])
 
 
 # Check for bottlenecks
 # Starting with the simplest things that I can possibly do.
 ############################################################
 
-time_thresh = 5  # Units in minutes
-low_occ_thresh = 0.2
-high_occ_thresh = 0.3
+#time_thresh = 5  # Units in minutes
+#low_occ_thresh = 0.2
+#high_occ_thresh = 0.3
 
 occ = d[, grep("occupancy", colnames(d), value = TRUE)]
 d$mean_occ = rowMeans(occ, na.rm = TRUE)
 
-d$low_occ = mean_occ < low_occ_thresh
-d$high_occ = mean_occ > high_occ_thresh
-
 d$minute = extract_minutes(d$timestamp)
+d$hour = d$minute / 60
+
+#d$low_occ = mean_occ < low_occ_thresh
+#d$high_occ = mean_occ > high_occ_thresh
 
 # Absolute Postmiles `Abs_PM` start at 0 on the South and West border,
 # increasing when traveling North and East- just like a 2d plot!
 
-# Start out with one Fwy and Direction, then generalize
-I5N = d[(d$Fwy == 5) & (d$Dir == "N"), ]
+# Start out with one highway and direction, then generalize
+hwy = d[(d$Fwy == 80)
+        & (d$Dir == "E")
+        & (d$Type == "ML")
+        , ]
 
 # Plot this as an image
-I5long = I5N[, c("mean_occ", "Abs_PM", "minute")]
+hwy_long = hwy[, c("mean_occ", "Abs_PM", "hour")]
 
-levelplot(mean_occ ~ minute * Abs_PM, data = I5long)
+# Cheater way to scale
+hwy_long$mean_occ[hwy_long$mean_occ > 0.5] = 0.5
+
+# Interesting how diagonal lines appear that look like this: /
+# I wonder if they are the same slope as the speed limit? that would mean
+# traffic moves somewhat like a convoy.
+
+trellis.device("png"
+               , file = "I80_occupancy.png"
+               , width = 1080
+               , height = 1080
+               , color = FALSE
+               )
+
+levelplot(mean_occ ~ hour * Abs_PM
+          , data = hwy_long
+          , main = "Occupancy across first two lanes\nI80 East on Tuesday, May 10th"
+          )
+
+dev.off()
+
+# TODO - Refactor this and run it on more days.
