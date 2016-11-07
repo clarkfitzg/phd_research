@@ -139,6 +139,9 @@ hwy2 = d5_2[(d5_2$Fwy == 80)
 
 hwy2$timestamp = as.POSIXct(hwy2$timestamp, format = "%m/%d/%Y %H:%M:%S")
 
+# Doing this now so that plots are directly comparable
+hwy2$mean_occ[hwy2$mean_occ > 0.5] = 0.5
+
 trellis.device("png"
                , file = "I80_occupancy_5min.png"
                , width = 1080
@@ -152,3 +155,38 @@ levelplot(mean_occ ~ timestamp * Abs_PM
           )
 
 dev.off()
+
+# Comparing these two graphs we see that the 5 minute data mistakenly
+# "believes" the 0's in the data and even uses them to impute. This is
+# evident in the afternoon at mile 65.
+
+
+# Do we see any CHP incidents around mile 18?
+############################################################
+
+chp = read.csv("~/data/pems/all_text_chp_incident_day_2016_05_10.txt"
+               , header = FALSE)
+
+chp2 = data.frame(incident_id = chp[, 1]
+                  , timestamp = chp[, 4]
+                  , Fwy = chp[, 15]
+                  , Dir = chp[, 16]
+                  , Abs_PM = chp[, 18]
+                  )
+
+chp80 = chp2[(chp2$Fwy == 80)
+             & (chp2$Dir == "E")
+             , ]
+
+# Find the one around mile 18
+# This is incident id 16418691
+focus = chp80[abs(chp80$Abs_PM - 18) < 2, ]
+
+details = read.csv("~/data/pems/all_text_chp_incident_det_day_2016_05_10.txt.gz"
+               , header = FALSE)
+
+details = details[details[, 1] %in% focus$incident_id, ]
+
+# Description says "CZP- Assist with Construction"
+# Duration says 91 minutes - consistent with what we see in graphs.
+chp[chp[, 1] %in% focus$incident_id, ]
