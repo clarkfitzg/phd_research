@@ -44,3 +44,44 @@ extract_minutes = function(ts){
     60L * hours + minutes
 }
 
+
+
+# NOT helpful for getting the actual
+columns_from_html = function(htmlfile){
+
+    tree = XML::htmlParse(htmlfile)
+    rows = XML::getNodeSet(tree, '//div[@id="Help_station_5min"]//tr')
+
+    # These positions may be different
+    readrow = function(row) XML::getChildrenStrings(row)[c(1, 3)]
+    # Some newlines seem to be missing, but oh well.
+
+    cleanrows = lapply(rows, readrow)
+    out = data.frame(do.call(rbind, cleanrows[-1]))
+    colnames(out) = cleanrows[[1]]
+    out
+}
+
+
+#' Read Pems column names and metadata from a saved html file
+#'
+#' @param htmlfile Name of save 
+infer_colnames = function(htmlfile = "5min.html", nlanes = 8){
+
+    columns = columns_from_html(htmlfile)
+    original = as.character(columns[["Name"]])
+    original = gsub("%", "Percent", original)
+
+    pattern = "Lane N"
+    haslanes = grep(pattern, original)
+    lanes = columns[["Name"]][haslanes]
+
+    replaceN = function(N) gsub(pattern, paste("Lane", N), lanes)
+    withN = lapply(seq(nlanes), replaceN)
+
+    withN = c(list(original[- haslanes]), withN)
+    out = unlist(withN)
+    gsub(" ", "", out)
+}
+
+

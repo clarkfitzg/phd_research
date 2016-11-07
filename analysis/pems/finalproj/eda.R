@@ -111,9 +111,44 @@ trellis.device("png"
 
 levelplot(mean_occ ~ hour * Abs_PM
           , data = hwy_long
-          , main = "Occupancy across first two lanes\nI80 East on Tuesday, May 10th"
+          , main = "Occupancy across first two lanes\nI80 East on Tuesday, May 10th\nfrom raw 30 second readings"
           )
 
 dev.off()
 
 # TODO - Refactor this and run it on more days.
+
+# How does this compare with the 5 minute aggregate? Can we observe the
+# same features?
+############################################################
+
+d5 = read.csv("~/data/pems/d04_text_station_5min_2016_05_10.txt.gz"
+              , header = FALSE)
+
+d5_2 = data.frame(timestamp = d5[, 1]
+                  , ID = d5[, 2]
+                  , mean_occ = d5[, 11]
+                  )
+
+d5_2 = merge(d5_2, station[, c("ID", "Abs_PM", "Fwy", "Dir", "Type")])
+
+hwy2 = d5_2[(d5_2$Fwy == 80)
+        & (d5_2$Dir == "E")
+        & (d5_2$Type == "ML")
+        , ]
+
+hwy2$timestamp = as.POSIXct(hwy2$timestamp, format = "%m/%d/%Y %H:%M:%S")
+
+trellis.device("png"
+               , file = "I80_occupancy_5min.png"
+               , width = 1080
+               , height = 1080
+               , color = FALSE
+               )
+
+levelplot(mean_occ ~ timestamp * Abs_PM
+          , data = hwy2
+          , main = "Occupancy across first two lanes\nI80 East on Tuesday, May 10th\nFrom cleaned 5 minute aggregate"
+          )
+
+dev.off()
