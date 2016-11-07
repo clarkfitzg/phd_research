@@ -1,4 +1,45 @@
-Fri Oct  7 15:24:01 PDT 2016
+### Mon Nov  7 11:38:34 PST 2016
+
+`createRegistrationCode()` in RCIndex can look through C++ source and
+generate code. So I need to get this installed and try working with it.
+
+Interesting quote on page 10:
+
+> The R registration mechanism doesn’t currently permit the programmer to
+> specify which type of R object is expected for each parameter in a
+> .Call() routine, e.g., an integer or numeric vector, or a function or a
+> list. The RCIndex functionality does, however, allow us to infer this by
+> analyzing the code within a routine and determining how it is being
+> accessed. This could be added to the registration information and allow R
+> to perform run-time checks or coercion to the appropriate types in call
+> to the routine.
+
+So does the current RCIndex parse the bodies or not? Reading further it
+seems that it does.
+
+There is a lot of material here on navigating the tree. Reads like a
+package vignette. Idea- use variables in function closures to update state
+when writing cursor visitor functions.
+
+Side note - A C macro is used to expand code in a pre processing step.
+
+Not many academic references here.
+
+Application 4.2 for Rdyncall seems to be describing how to build a tool for
+generating the wrapper code. Is this the thing for me to build?
+
+Looks like comparing `=` strings is actually how to check for assignment.
+Seems like it would be more programmatic. See [Stack
+Overflow](http://stackoverflow.com/questions/23227812/get-operator-type-for-cxcursor-binaryoperator).
+
+> Given these basic bindings, we plan to develop additional high-level
+> functionality to process different aspects of native code.
+
+This is probably what I should start doing :)
+
+TODO - read through articles in bib file.
+
+### Fri Oct  7 15:24:01 PDT 2016
 
 Reading up on Duncan's RCIndex and RCodeGen packages:
 https://github.com/duncantl/RCodeGen
