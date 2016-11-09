@@ -37,7 +37,7 @@ Overflow](http://stackoverflow.com/questions/23227812/get-operator-type-for-cxcu
 
 This is probably what I should start doing :)
 
-TODO - read through articles in bib file.
+TODO - read through articles in bib file, along with papers that cite them.
 
 ### Fri Oct  7 15:24:01 PDT 2016
 
