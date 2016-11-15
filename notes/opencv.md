@@ -1,4 +1,9 @@
-Thu Nov 10 09:22:26 PST 2016
+## Mon Nov 14 09:33:22 PST 2016
+
+Going to have a go porting the Rpoppler TU stuff to opencv.
+
+
+## Thu Nov 10 09:22:26 PST 2016
 
 Open CV computer vision http://opencv.org/
 

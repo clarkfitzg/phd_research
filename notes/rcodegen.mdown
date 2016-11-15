@@ -1,3 +1,22 @@
+### Mon Nov 14 09:57:45 PST 2016
+
+How to get performance and new features? Easiest way is to just pick up and
+incorporate things that others already do. Auto bindings make this easy.
+
+Automatically generated bindings are useful because they minimize
+sensitivity to API changes. If everything is hand written then signifcant API
+changes are a __huge__ chore.
+
+Think about an engineer or researcher who is unfamiliar with R, but is very
+familiar with a high performance, specialized C++ library like openCV. It's
+a complete waste to rewrite this in R. Yet if they would like to contribute
+to a research project combining data and prior work in R then there's a
+large barrier. Direct translation of the OO model makes it easier for that
+domain expert to bring their domain knowledge to R. So direct translation
+can be very useful, even if it's not idiomatic in the target language.
+
+Version 3.1 of openCV looks better as it uses GPU.
+
 ### Mon Nov  7 11:38:34 PST 2016
 
 `createRegistrationCode()` in RCIndex can look through C++ source and

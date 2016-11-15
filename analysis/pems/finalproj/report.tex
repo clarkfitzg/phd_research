@@ -132,6 +132,65 @@ start of a queue.
 \cite{zhang2004some} show that Queue Discharge Flows QDF's, normal around 2K
 passenger cars per lane per hour.
 
+Tue Nov 15 08:52:50 PST 2016
+
+A different approach would be to treat the occupancy data as \emph{images}.
+We can use opencv to do this. For each freeway we can take the following
+steps:
+\begin{enumerate}
+    \item Use R to read the raw file and convert to an image with many missing
+        values. This means expansion to a uniformly spaced grid.
+    \item Interpolate missing values. 
+    \item Threshold the image, so for a pixel with density $\rho > \Rho$
+        we define it as high density, otherwise low density. We'll
+        have to experiment to see what the appropriate value of $\Rho$ is
+        but I suspect around 0.3.
+    \item Once this has been done for every day we can compute an average
+        thresholded image showing the areas of high density. This will show
+        recurring bottlenecks. May need to threshold this also.
+    \item Compare each day with the average. The difference will show the
+        unusual patterns that occurred on just one day. Might have to do
+        some denoising here- eliminate points that are not part of a 
+        cluster.
+\end{enumerate}
+
+Once we have the denoised difference we can do the following:
+\begin{enumerate}
+    \item (Optional) Detect shapes that are flat on top, since this is the
+        distinguishing feature of a bottleneck.
+    \item Compute centroid, bounding boxes, and area which will quantify the impact
+        in terms of space and time.
+    \item Join these features to incident data. This likely will require some text
+        analysis.
+\end{enumerate}
+
+Then we can answer questions such as:
+\begin{enumerate}
+    \item How many traffic events occur which have no associated incident
+        data? And what sort of events were they probably?
+    \item What is the impact of an event of type X on a given section of
+        highway? Something along the lines of: When traffic flow is 1500
+        veh per lane per hour in a two lane freeway a collision involving
+        exactly two vehicles typically creates congestion lasting 10-15
+        minutes which propagates back 2-3 miles. 
+    \item How can we model the distribution of traffic incidents, ie.
+        Poisson with some parameters.
+\end{enumerate}
+
+But how can these results be useful more broadly? More accurate
+simulations. Input to real time routing. Impacts of planned construction
+events.
+
+Empirically quantify the impact of various flow levels on congestion.
+I suspect that for a given type of accident total delay experienced by
+travelers increases superlinearly as a function of (flow / capacity).
+Assuming we're looking at uncongested regions. If this holds then it can be
+used as an argument that we need to try to keep (flow / capacity) under
+some level. This could mean taking measures such as toll roads or tax
+credits for employers who find ways to keep employees off roads during peak
+commute hours. My favorite- an argument to make cars more expensive (like
+tolls and mileage tax) and use money to improve public transportation.
+
 \bibliography{citations} 
 
 \bibliographystyle{apalike}
