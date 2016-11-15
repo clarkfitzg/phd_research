@@ -12,7 +12,7 @@ $(TEXFILE).pdf: $(TEXFILE).tex citations.bib
 	pdflatex $<
 
 view:
-	open $(TEXFILE).pdf
+	xdg-open $(TEXFILE).pdf
 
 clean :
 	rm {*.aux,*.bbl,*.blg,*.log,*.out}

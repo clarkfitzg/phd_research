@@ -36,22 +36,22 @@ d = d[!badrows, ]
 
 # The distribution of occupancy 1 and 2
 ############################################################
-
-occ1 = d$occupancy1[!is.na(d$occupancy1)
-                    & d$occupancy1 != 0
-                    ]
-
-occ2 = d$occupancy2[!is.na(d$occupancy2)
-                    & d$occupancy2 != 0
-                    ]
-
-# Shows that occupancy is distributed about like a mixture of an
-# exponential and a point mass near 1. Could also maybe use beta instead of
-# exponential to get it to stay in [0, 1].
-
-par(mfrow=c(1, 2))
-hist(occ1)
-hist(occ2)
+#
+#occ1 = d$occupancy1[!is.na(d$occupancy1)
+#                    & d$occupancy1 != 0
+#                    ]
+#
+#occ2 = d$occupancy2[!is.na(d$occupancy2)
+#                    & d$occupancy2 != 0
+#                    ]
+#
+## Shows that occupancy is distributed about like a mixture of an
+## exponential and a point mass near 1. Could also maybe use beta instead of
+## exponential to get it to stay in [0, 1].
+#
+#par(mfrow=c(1, 2))
+#hist(occ1)
+#hist(occ2)
 
 
 # Merge in station metadata
@@ -91,6 +91,8 @@ hwy = d[(d$Fwy == 80)
         & (d$Dir == "E")
         & (d$Type == "ML")
         , ]
+
+save(hwy, file = "hwy.rda")
 
 # Plot this as an image
 hwy_long = hwy[, c("mean_occ", "Abs_PM", "hour")]

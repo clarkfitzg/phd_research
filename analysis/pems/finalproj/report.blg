@@ -6,45 +6,46 @@ Database file #1: citations.bib
 Warning--there's a number but no volume in chen2004systematic
 Warning--there's a number but no volume in hall1991freeway
 Warning--there's a number but no volume in wieczorek2010techniques
-You've used 4 entries,
+Warning--there's a number but no volume in zhang2004some
+You've used 5 entries,
             1935 wiz_defined-function locations,
-            499 strings with 4521 characters,
-and the built_in function-call counts, 1576 in all, are:
-= -- 154
-> -- 67
-< -- 1
-+ -- 22
-- -- 22
-* -- 147
-:= -- 282
-add.period$ -- 12
-call.type$ -- 4
-change.case$ -- 31
-chr.to.int$ -- 4
-cite$ -- 7
-duplicate$ -- 55
-empty$ -- 106
-format.name$ -- 28
-if$ -- 296
+            504 strings with 4623 characters,
+and the built_in function-call counts, 1982 in all, are:
+= -- 196
+> -- 80
+< -- 2
++ -- 26
+- -- 26
+* -- 185
+:= -- 350
+add.period$ -- 15
+call.type$ -- 5
+change.case$ -- 38
+chr.to.int$ -- 5
+cite$ -- 9
+duplicate$ -- 69
+empty$ -- 136
+format.name$ -- 35
+if$ -- 375
 int.to.chr$ -- 1
 int.to.str$ -- 0
-missing$ -- 4
-newline$ -- 23
-num.names$ -- 12
-pop$ -- 25
+missing$ -- 5
+newline$ -- 28
+num.names$ -- 15
+pop$ -- 30
 preamble$ -- 1
-purify$ -- 31
+purify$ -- 38
 quote$ -- 0
-skip$ -- 37
+skip$ -- 46
 stack$ -- 0
-substring$ -- 105
-swap$ -- 4
+substring$ -- 142
+swap$ -- 5
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 24
-warning$ -- 3
-while$ -- 14
+type$ -- 30
+warning$ -- 4
+while$ -- 18
 width$ -- 0
-write$ -- 54
-(There were 3 warnings)
+write$ -- 67
+(There were 4 warnings)

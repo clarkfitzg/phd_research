@@ -132,6 +132,11 @@ start of a queue.
 \cite{zhang2004some} show that Queue Discharge Flows QDF's, normal around 2K
 passenger cars per lane per hour.
 
+TODO: find papers that quantify traffic impacts of construction and various
+types of accidents.
+
+\section{Image Processing}
+
 Tue Nov 15 08:52:50 PST 2016
 
 A different approach would be to treat the occupancy data as \emph{images}.
@@ -141,9 +146,10 @@ steps:
     \item Use R to read the raw file and convert to an image with many missing
         values. This means expansion to a uniformly spaced grid.
     \item Interpolate missing values. 
-    \item Threshold the image, so for a pixel with density $\rho > \Rho$
+    \item Threshold the image, so for a pixel with density $\rho >
+        \rho_0$
         we define it as high density, otherwise low density. We'll
-        have to experiment to see what the appropriate value of $\Rho$ is
+        have to experiment to see what the appropriate value of $\rho_0$ is
         but I suspect around 0.3.
     \item Once this has been done for every day we can compute an average
         thresholded image showing the areas of high density. This will show
@@ -179,9 +185,9 @@ Then we can answer questions such as:
 
 But how can these results be useful more broadly? More accurate
 simulations. Input to real time routing. Impacts of planned construction
-events.
+events. Scheduling CHP patrols and recovery services.
 
-Empirically quantify the impact of various flow levels on congestion.
+My favorite broad idea: Empirically quantify the impact of various flow levels on congestion.
 I suspect that for a given type of accident total delay experienced by
 travelers increases superlinearly as a function of (flow / capacity).
 Assuming we're looking at uncongested regions. If this holds then it can be
@@ -190,6 +196,12 @@ some level. This could mean taking measures such as toll roads or tax
 credits for employers who find ways to keep employees off roads during peak
 commute hours. My favorite- an argument to make cars more expensive (like
 tolls and mileage tax) and use money to improve public transportation.
+
+Why is this interesting? Interdisciplinary since we combine data munging,
+computer vision, and statistics. Provides motivation for developing
+automatic R / C++ bindings that I'll be working on. Has legitimate possible
+impacts. Most computer vision stuff in traffic works on real cameras.
+Haven't seen any papers that use it for this.
 
 \bibliography{citations} 
 
