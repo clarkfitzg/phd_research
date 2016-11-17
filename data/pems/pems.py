@@ -2,8 +2,8 @@
 Tools for working with PeMS data in Python
 """
 
+import os
 import itertools
-import pandas as pd
 import requests
 from lxml import etree
 
@@ -37,7 +37,7 @@ def download(links, cookies, datadir, chunk_size=10240):
     for fname, url in links.items():
         print("downloading {}... ".format(fname))
         r = requests.get(url, cookies=cookies, stream=True)
-        with open(datadir + fname, "wb") as f:
+        with open(datadir + os.sep + fname, "wb") as f:
             for chunk in r.iter_content(chunk_size):
                 f.write(chunk)
         print("OK!\n")
@@ -48,6 +48,7 @@ def read_station_raw(fname, **kwargs):
     Read a single raw (30 second) station data file into a Pandas
     data.frame. These tend to be huge.
     """
+    import pandas as pd
     p = itertools.product(range(8), "flow occupancy mph".split())
     repeated = [x[1] + str(x[0] + 1) for x in p]
     oneday = pd.read_csv(fname,

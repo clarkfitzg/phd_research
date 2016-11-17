@@ -1,28 +1,46 @@
 #!/usr/bin/env python
 
 """
-Automates download from PeMS of a years worth of 30 second compressed raw
-highway traffic sensor data, which is around 30 GB
+Automates download from PeMS
 
 Run this on poisson, save to scratch partition
 """
 
+import os
 import pems
+
+
+def main(args):
+
+    with open(args.cookie) as f:
+        cookies = {"PHPSESSID": f.read().strip()}
+
+    links = pems.pems_links(args.linkhtml)
+
+    if args.test:
+        links = dict((links.popitem(), links.popitem()))
+
+    pems.download(links, cookies, datadir=args.datadir)
 
 
 if __name__ == "__main__":
 
-    # TODO: clean this up and have the script take all these as command
-    # line args
+    import argparse
+    parser = argparse.ArgumentParser()
 
-    # Copy your cookie from the web browser and save it in this file
-    with open("cookie.txt") as f:
-        cookies = {"PHPSESSID": f.read().strip()}
+    parser.add_argument("--datadir",
+            default=os.getcwd(),
+            help="Location of the raw station txt.gz files")
 
-    links = pems.pems_links("dist4_raw30sec_13oct16.html")
+    parser.add_argument("--linkhtml",
+            help="Html file containing table with links")
 
-    # Useful to test locally with just 2 before full download
-    #links = dict((links.popitem(), links.popitem()))
+    parser.add_argument("--cookie",
+            help="Cookie file containing value corresponding to PHPSESSID")
 
-    datadir = "/scratch/clarkf/pems/district4/"
-    pems.download(links, cookies, datadir=datadir)
+    parser.add_argument("--test", action="store_true",
+            help="Test run with only two links")
+
+    args = parser.parse_args()
+
+    main(args)
