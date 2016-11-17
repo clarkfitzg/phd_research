@@ -35,6 +35,7 @@ read30sec = function(file, lanes = 1:2, numlanes = 8, nrows = -1, ...)
     rawdata
 }
 
+
 #' Extract the minutes 
 #'
 #' @param ts POSIXct timestamp
@@ -45,8 +46,7 @@ extract_minutes = function(ts){
 }
 
 
-
-# NOT helpful for getting the actual
+#' Helper for infer_colnames
 columns_from_html = function(htmlfile){
 
     tree = XML::htmlParse(htmlfile)
@@ -66,8 +66,8 @@ columns_from_html = function(htmlfile){
 #' Read Pems column names and metadata from a saved html file
 #'
 #' @param htmlfile Name of save 
-infer_colnames = function(htmlfile = "5min.html", nlanes = 8){
-
+infer_colnames = function(htmlfile = "5min.html", nlanes = 8)
+{
     columns = columns_from_html(htmlfile)
     original = as.character(columns[["Name"]])
     original = gsub("%", "Percent", original)
@@ -85,3 +85,20 @@ infer_colnames = function(htmlfile = "5min.html", nlanes = 8){
 }
 
 
+cache = function()
+{
+    header = infer_colnames()
+    write.table(header, "header5min.txt", row.names = FALSE, col.names = FALSE)
+
+    # Ugly munging, but what can you do?
+    tree = XML::htmlParse("chp_month.html")
+    rows = XML::getNodeSet(tree, "//tr")
+    readrow = function(row) XML::getChildrenStrings(row)[3]
+    cleanrows = lapply(rows, readrow)
+    chp = unname(unlist(cleanrows[3:22]))
+    chp = gsub(" ", "", chp)
+    chp[grepl("Duration", chp)] = "Duration"
+
+    write.table(chp, "headerCHP.txt", row.names = FALSE, col.names = FALSE)
+
+}
