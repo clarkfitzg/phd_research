@@ -102,3 +102,24 @@ cache = function()
     write.table(chp, "headerCHP.txt", row.names = FALSE, col.names = FALSE)
 
 }
+
+
+readstation = function(file = "~/data/pems/d04_text_meta_2016_10_05.txt")
+{
+    station = read.table(file
+                         , sep = "\t"
+                         , header = TRUE
+                         , quote = ""
+                         , stringsAsFactors = FALSE
+                         )[, c("ID", "Abs_PM", "Fwy", "Dir", "Type")]
+
+    station[, "FwyDir"] = paste0(station[, "Fwy"], station[, "Dir"])
+
+    # Only considering Mainline stations
+    station = station[station[, "Type"] == "ML", ]
+
+    station[, "Type"] = NULL
+    station[, "Fwy"] = NULL
+    station[, "Dir"] = NULL
+    station
+}
