@@ -1,9 +1,9 @@
 # Sets up directory structure to save processed 5min files
 
 args = commandArgs(trailingOnly = TRUE)
-
 datadir = args[1]
 
+source("helpers.R")
 station = readstation()
 
 freeways = unique(station$FwyDir)
@@ -19,4 +19,4 @@ dirbuilder = function(day, fwy)
 
 dirnames = outer(days, freeways, dirbuilder)
 
-dir.create(
+sapply(dirnames, dir.create, recursive = TRUE)
