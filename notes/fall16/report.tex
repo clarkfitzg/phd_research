@@ -75,18 +75,61 @@ Describe 3 or 4 things to focus on, why they're interesting, what are the challe
 and who cares?
 \end{emph}
 
+
 \section{Code Generation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-This 
-
-\section{Software Integration}
-
-
-\section{Transportation}
+This would be an extension of Duncan's work with the RCIndex \cite{R-RCIndex} and
+RCodegen \cite{R-RCodegen} packages, along with other prior work.
 
 
+The first task here is to create software that generates R bindings for an
+existing C and C++ libraries. 
 
-Here's how we cite things \cite{greenwade93}.
+This is useful because writing these bindings by hand
+has several problems: 
+Writing by hand is error prone.
+It's tedious to write 1000's of wrappers.
+Hard to update wrapping package if software version is different.
+
+This is interesting because it allows one to very quickly add new
+capabilities to R as a system. The new capabilities then facilitate rapid
+prototyping and novel types of data analysis, using R as a "glue language".
+
+Duncan describes further applications and motivations in the paper in
+the RCIndex pacakge repository \cite{R-RCIndex}.
+
+The approach in RCIndex is different from existing software like SWIG
+\cite{swig} and Rcpp \cite{R-Rcpp} because it hooks directly into the clang
+compiler rather than processing the text itself. This means we have a code
+analysis tool that will be more robust and consistent with behavior of a compiler. 
+
+\subsection{Challenges}
+
+Garbage collection is potentially difficult. A C routine might allocate
+memory that R knows nothing about. Then how is that memory freed? A
+possible solution to this problem is to look in the body of the code
+itself, which RCIndex doesn't yet do.
+
+
+
+\subsection{Applications}
+
+The mature C++ computer vision library openCV
+\cite{opencv_library} is an example of capabilities that we would like to
+access from within R. It's possible to directly write computer vision
+algorithms in R, but this is a huge amount of duplicated work if a mature
+library already exists.
+
+Another application is cutting edge specialized machine learning code like
+Hogwild++ \cite{zhang2016hogwild}.
+
+
+\section{Transportation Data}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
 
 \bibliography{citations} 
 

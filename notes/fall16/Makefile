@@ -11,6 +11,9 @@ $(TEXFILE).pdf: $(TEXFILE).tex citations.bib
 	pdflatex $<
 	pdflatex $<
 
+rcite: cite.R
+	Rscript $< >> citations.bib
+
 view:
 	open $(TEXFILE).pdf
 
