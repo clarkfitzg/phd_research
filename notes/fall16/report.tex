@@ -66,25 +66,24 @@
 
 This is the final report for Professor Duncan Temple Lang for 8 units of
 credit in Fall 2016.  The tentative plan is to take the qualifying exam in
-Spring 2017. I'll focus on code analysis as the primary topic. Code
-analysis will be used as a base for further work, ie. detecting and using
-parallelism.
+Spring 2017. The focus will be code analysis.
 
 \begin{emph}
-Describe 3 or 4 things to focus on, why they're interesting, what are the challenges,
-and who cares?
+Describe 3 or 4 things to focus on, why they're interesting, what are the
+challenges, and who cares?
 \end{emph}
 
 
 \section{Code Generation}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-This would be an extension of Duncan's work with the RCIndex \cite{R-RCIndex} and
-RCodegen \cite{R-RCodegen} packages, along with other prior work.
-
-
 The first task here is to create software that generates R bindings for an
 existing C and C++ libraries. 
+It should be understood that this task will be used as a base for
+further work, ie. detecting and using parallelism.
+
+This would be an extension of Duncan's work with the RCIndex \cite{R-RCIndex} and
+RCodegen \cite{R-RCodegen} packages, along with other prior work.
 
 This is useful because writing these bindings by hand
 has several problems: 
@@ -99,17 +98,26 @@ prototyping and novel types of data analysis, using R as a "glue language".
 Duncan describes further applications and motivations in the paper in
 the RCIndex pacakge repository \cite{R-RCIndex}.
 
-The approach in RCIndex is different from existing software like SWIG
+\subsection{Challenges}
+
+Memory management and garbage collection is potentially difficult. A C routine might allocate
+memory that R knows nothing about. Then how is that memory protected and freed? A
+possible solution to this problem is to look in the body of the code
+itself, which RCIndex doesn't yet do.
+
+\subsection{Related Work}
+
+Many packages on CRAN simply wrap existing C/C++ libraries. When done
+thoughtfully this can be very useful. Ie. the programmer maps the C/C++ API
+into idiomatic data structures and calls in the new language, in this case
+R. 
+The intent with the code generation is to \emph{augment} rather than
+\emph{replace} such libraries. 
+
+The approach in RCIndex differs from existing software like SWIG
 \cite{swig} and Rcpp \cite{R-Rcpp} because it hooks directly into the clang
 compiler rather than processing the text itself. This means we have a code
 analysis tool that will be more robust and consistent with behavior of a compiler. 
-
-\subsection{Challenges}
-
-Garbage collection is potentially difficult. A C routine might allocate
-memory that R knows nothing about. Then how is that memory freed? A
-possible solution to this problem is to look in the body of the code
-itself, which RCIndex doesn't yet do.
 
 
 
@@ -122,17 +130,131 @@ algorithms in R, but this is a huge amount of duplicated work if a mature
 library already exists.
 
 Another application is cutting edge specialized machine learning code like
-Hogwild++ \cite{zhang2016hogwild}.
+Professor Cho-Jui Hsieh's Hogwild++ \cite{zhang2016hogwild}.
 
 
 \section{Transportation Data}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+In an effort to keep research relevant, it would be good to keep
+applications and use cases in mind. Physical transportation systems provide
+rich sources of open data. An example is Caltrans PeMS (Performance
+Management System), which integrates various data related to vehicle
+traffic on freeways in California \cite{jia2001pems}.
+
+PeMS alone provides 10 TB of data, which is more than enough to create
+computationally demanding problems.
+
+\subsection{Problem}
+
+Use the PeMS data to quantify highway incidents.
+
+The following task is computationally challenging and has a statistical
+flavor.
+
+
+An interesting task is to implement it with several systems and see which
+perform well and why? The systems to consider are distributed R, Python's
+dask, Spark SQL, Postgres. Maybe SAS, Julia, C++, different Spark. The solutions can be compared in terms
+of:
+\begin{enumerate}
+    \item{Complexity} lines of code, background knowledge required.
+        Maintainability and standardization of organization, ie. software
+        engineering.
+        Expect Postgres SQL < Spark < dask < parallel R < C++.
+    \item{Run Time} To run on 1 year of data.
+        Expect Postgres SQL > Spark > dask > C++. Not sure where parallel R
+        would fit in.
+    \item{Flexibility} How easy is it to do something beyond what base SQL
+        allows, for example? Can we inspect intermediate variables, debug,
+        and make plots as we go?
+    \item{Scalability} Will the software scale up to 1 TB, for example?
+\end{enumerate}
+
+Title: Evaluation of state of the art technologies for processing datasets
+on the order of 10 GB. This could result in recommendations to researchers
+and industry on which systems to consider for these types of tasks.
+
+This comparison between technologies could be improved by having a couple
+more practical data analysis examples.
+
+Related article compares Python threading and multiprocessing
+technologies \cite{malakhov2016composable}.
+
+Why is this interesting? Most software comparisons are biased, ie. the
+comparisons are presented by a developer creating new software. For that
+new software to be adopted it should be presented in a favorable light. 
+This is similar to the statistician hunting for new datasets which show the
+advantages of their proposed method. How many datasets are discarded where
+the method fails?
+Further, each of these technologies takes time to learn and understand-
+few people have reason to take the time to learn this.
+
+Academics likely lag far behind industry with these
+
+Questions to answer:
+\begin{enumerate}
+    \item How many traffic events occur which have no associated incident
+        data? And what sort of events were they probably?
+    \item What is the impact of an event of type X on a given section of
+        highway? Something along the lines of: When traffic flow is 1500
+        veh per lane per hour in a two lane freeway a collision involving
+        exactly two vehicles typically creates congestion lasting 10-15
+        minutes which propagates back 2-3 miles. 
+    \item How can we model the distribution of traffic incidents, ie.
+        Poisson with some parameters.
+\end{enumerate}
 
 
 
+A different approach would be to treat the occupancy data as \emph{images}.
+We can use opencv to do this. For each freeway we can take the following
+steps:
+\begin{enumerate}
+    \item Use R to read the raw file and convert to an image with many missing
+        values. This means expansion to a uniformly spaced grid.
+    \item Interpolate missing values. 
+    \item Threshold the image, so for a pixel with density $\rho >
+        \rho_0$
+        we define it as high density, otherwise low density. We'll
+        have to experiment to see what the appropriate value of $\rho_0$ is
+        but I suspect around 0.3.
+    \item Once this has been done for every day we can compute an average
+        thresholded image showing the areas of high density. This will show
+        recurring bottlenecks. May need to threshold this also.
+    \item Compare each day with the average. The difference will show the
+        unusual patterns that occurred on just one day. Might have to do
+        some denoising here- eliminate points that are not part of a 
+        cluster.
+\end{enumerate}
+
+Once we have the denoised difference we can do the following:
+\begin{enumerate}
+    \item (Optional) Detect shapes that are flat on top, since this is the
+        distinguishing feature of a bottleneck.
+    \item Compute centroid, bounding boxes, and area which will quantify the impact
+        in terms of space and time.
+    \item Join these features to incident data. This likely will require some text
+        analysis.
+\end{enumerate}
+
+
+\subsection{Applications}
+
+Self driving cars are poised for widespread adoption which will create
+dramatic change over the next several decades. This will generate rich
+sources of data which can be used to improve the technology and the overall
+transportation system performance.\cite{swan2015connected}
+As such, there will be many research applications.
+
+Of particular interest are problems related to the overall system. Every
+vehicle produces a very rich data stream and there are hundreds of
+thousands of vehicles on the road in an urban area at any given time.
+Then data processing tools need to be flexible, powerful, and scalable to
+handle new problems.
+
+
+\bibliographystyle{plain}
 \bibliography{citations} 
-
-\bibliographystyle{apalike}
 
 \end{document}
