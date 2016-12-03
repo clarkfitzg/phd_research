@@ -221,7 +221,7 @@ indexed by (Date, Time, Freeway, Postmile). So the data looks like table
 
 For each freeway the analyst wants to compute this operation expressed in SQL
 \texttt{
-    SELECT mean(flow) FROM traffic GROUP BY Time, Postmile
+    SELECT Time, Postmile, mean(flow) AS meanflow FROM traffic GROUP BY Time, Postmile
 }
 This amounts to splitting the data a
 
