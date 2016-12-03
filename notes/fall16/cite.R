@@ -3,4 +3,4 @@
 #
 # Rscript cite.R >> citations.bib
 
-knitr::write_bib(c("RCIndex", "RCodeGen", "Rcpp"))
+knitr::write_bib(c("RCIndex", "RCodeGen", "Rcpp", "ddR", "partools"))

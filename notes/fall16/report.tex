@@ -66,7 +66,7 @@
 
 This is the final report for Professor Duncan Temple Lang for 8 units of
 credit in Fall 2016.  The tentative plan is to take the qualifying exam in
-Spring 2017. The focus will be code analysis.
+Spring 2017.
 
 \begin{emph}
 Describe 3 or 4 things to focus on, why they're interesting, what are the
@@ -100,6 +100,8 @@ the RCIndex pacakge repository \cite{R-RCIndex}.
 
 \subsection{Challenges}
 
+This will require me to spend significant time building expertise in C/C++.
+
 Memory management and garbage collection is potentially difficult. A C routine might allocate
 memory that R knows nothing about. Then how is that memory protected and freed? A
 possible solution to this problem is to look in the body of the code
@@ -109,7 +111,7 @@ itself, which RCIndex doesn't yet do.
 
 Many packages on CRAN simply wrap existing C/C++ libraries. When done
 thoughtfully this can be very useful. Ie. the programmer maps the C/C++ API
-into idiomatic data structures and calls in the new language, in this case
+into idiomatic data structures and calls them in the new language, in this case
 R. 
 The intent with the code generation is to \emph{augment} rather than
 \emph{replace} such libraries. 
@@ -131,6 +133,101 @@ library already exists.
 
 Another application is cutting edge specialized machine learning code like
 Professor Cho-Jui Hsieh's Hogwild++ \cite{zhang2016hogwild}.
+
+\section{Chunking for Parallelism}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+A well known technique for parallel computation is to split data into
+chunks and compute on each chunk simultaneously. This approach 
+is useful on large data. Multiplying large block matrices is an example of this.
+
+Many existing software packages for parallel computation requires one to specify the
+chunk size. Examples include ddR \cite{R-ddR} and partools
+\cite{R-partools} in R and dask in Python.
+Yet chunk size strongly impacts
+performance. If it's too small then there will be excessive overhead. If
+it's too large then it won't fit into memory. In both cases performance
+will suffer. But how much will it suffer?
+
+Matloff presents compelling reasons to use a chunk based
+approach for statistical applications \cite{matloff2014software}.
+
+Apache Spark does chunking transparently to the user.
+
+
+Question: How much does chunk size affect performance? How do we choose a
+really good one? How much do we lose by choosing bad ones?
+
+Python's dask library infers appropriate block size for
+\href{https://github.com/dask/dask/pull/1328}{reading CSV files}.
+
+R's bigmemory package uses C++ and a memory mapped file which allows shared
+memory access. \cite{kane2010bigmemory} It's a tool for representing large
+data sets, and the package vignette mentions that chunking can and should
+be used together when possible.
+
+Idea: for a given set of hardware and a given task graph in a given
+computational model there may be
+an optimal chunk size, or a range of chunk sizes with similar performance.
+We'd like to automatically figure that out so the user doesn't have to
+specify. This could potentially be posed as an optimization problem.
+
+I'd expect that a dynamic language calling vectorized C code has some set
+of performance characteristics, while standalone C++ code is quite
+different.
+Extension: What chunking is optimal for GPU?
+
+Allowing \texttt{rechunk()} operations in the middle of the task graph adds
+much more flexibility and complexity. But it might be useful.
+
+Need to be a little careful because the chunking scheme defines the dask
+task graph. Then the semantics are more general than the dask graph. It's
+really similar to optimization.
+
+\subsection{Applications}
+
+When exactly is this useful? Optimization probably works best when we know what we want
+to do- ie. we did the exploratory data analysis on a small subset and we're
+just extending it to the full amount.
+
+Here's the simplest application.
+Consider a CSV file too large for memory, like the NYC taxi data. 
+That will
+be read in chunks. Suppose the data is a table like 
+
+Suppose we're doing something simple, say computing a
+function that's vectorized, ie. it operates on each row. Say we want to
+know the 
+
+\section{Sample Problem}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{table}
+    \begin{tabular}{| l | l | l | l | l |}
+    \hline
+        Date & Time & Freeway & Postmile & Flow \\ \hline
+        1 Apr & 11:00 & I80E & 65 & 105 \\ 
+        1 Apr & 11:05 & I80E & 65 & 87 \\ 
+        $\dots$ & & & & \\ \hline
+    \end{tabular}
+    \caption{Sample traffic data}
+    \label{table:traffic}
+\end{table}
+
+Suppose a directory contains 365 files of traffic data, one for every day.
+Data is characterized by one observation (say vehicular flow)
+indexed by (Date, Time, Freeway, Postmile). So the data looks like table
+\ref{table:traffic}.
+
+For each freeway the analyst wants to compute this operation expressed in SQL
+\texttt{
+    SELECT mean(flow) FROM traffic GROUP BY Time, Postmile
+}
+This amounts to splitting the data a
+
+\begin{enumerate}
+    \item 
+\end{enumerate}
 
 
 \section{Transportation Data}
@@ -245,14 +342,27 @@ Self driving cars are poised for widespread adoption which will create
 dramatic change over the next several decades. This will generate rich
 sources of data which can be used to improve the technology and the overall
 transportation system performance.\cite{swan2015connected}
-As such, there will be many research applications.
+As such, there will be many further research applications.
 
 Of particular interest are problems related to the overall system. Every
-vehicle produces a very rich data stream and there are hundreds of
+vehicle produces large data streams and there are hundreds of
 thousands of vehicles on the road in an urban area at any given time.
 Then data processing tools need to be flexible, powerful, and scalable to
 handle new problems.
 
+\section{What I've learned}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Research can be ambiguous. The line between engineering / implementation
+and research is not totally clear.
+
+Research is about developing new ideas. Engineering is about making
+things that will be adopted because they work and are useful. Ideally these
+two activities overlap, but not every research topic will lead to useful
+software.
+
+As an inexperienced graduate student it's difficult to know whether a topic
+or approach is new or merits further investigation.
 
 \bibliographystyle{plain}
 \bibliography{citations} 
