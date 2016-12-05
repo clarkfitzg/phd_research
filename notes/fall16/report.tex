@@ -229,6 +229,37 @@ This amounts to splitting the data a
     \item 
 \end{enumerate}
 
+\section{Statistically Efficient File Format}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+What file formats exist for tabular data that are:
+\begin{enumerate}
+    \item{fast} Fast read / write operations, maybe in parallel
+    \item{typed} Integers are read in as integers, floats are floats, etc.
+        Factors would be nice to have.
+    \item{efficient} File size no larger than it needs to be, so probably
+        binary rather than text
+    \item{cross platform} Works in R, Python, Julia, etc.
+    \item{iterable} Can take the first $k$ rows and process them
+        sequentially
+    \item{computationally efficient} Works well for parallel block
+        operations with R / Numpy computational model.
+    \item{statistically efficient} Can easily sample iid blocks as in Matloff's
+        software alchemy \cite{matloff2014software}.
+\end{enumerate}
+
+The last item is the novel one.
+
+Seems like the new Apache Arrow and Feather formats are the way forward
+here.
+
+Common statistical methods rely on iid samples. Consider the problem of
+taking a random sample from
+
+Matloff's partools package \cite{R-partools} somewhat resembles ddR and
+dask. cool. I wonder what the underlying files are?
+\texttt{readnscramble()} looks useful for getting a sample of data.
+
 
 \section{Transportation Data}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
