@@ -64,14 +64,14 @@
 \author{Clark Fitzgerald}
 \maketitle
 
-This is the final report for Professor Duncan Temple Lang for 8 units of
+This is the report for Professor Duncan Temple Lang for 8 units of
 credit in Fall 2016.  The tentative plan is to take the qualifying exam in
 Spring 2017.
 
-\begin{emph}
-Describe 3 or 4 things to focus on, why they're interesting, what are the
+\begin{textbf}
+    Task: Describe 3 or 4 things to focus on, why they're interesting, what are the
 challenges, and who cares?
-\end{emph}
+\end{textbf}
 
 
 \section{Code Generation}
@@ -120,8 +120,6 @@ The approach in RCIndex differs from existing software like SWIG
 \cite{swig} and Rcpp \cite{R-Rcpp} because it hooks directly into the clang
 compiler rather than processing the text itself. This means we have a code
 analysis tool that will be more robust and consistent with behavior of a compiler. 
-
-
 
 \subsection{Applications}
 
@@ -236,14 +234,41 @@ This amounts to splitting the data a
 \section{Parallelism through pure functions}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-If we force users to declare and use pure functions then parallelism can be
-made much easier.
-Pure functions refers to those with no side effects that depend only on their
-inputs \cite{wiki:purefunc}.
+Programs using R's \texttt{Apply} family of functions together with pure
+functions\footnote{Pure functions are those that depend only on inputs and
+have no side effects \cite{wiki:purefunc}.} can be easily parallelized
+\cite{bohringer2013dynamic}. Then why not provide a mechanism for users to
+declare pure functions?
+
+Consider an R script with the following form:
+\begin{verbatim}
+data = read.table("data.txt")
+
+y = f(data)
+fdata = lapply(g, data)
+...
+
+write.table(result, "result.txt")
+\end{verbatim}
+
+\texttt{read.table()} and \texttt{write.table()} are not pure functions,
+but suppose that everything consists of calls to pure functions.
+
+If we force users to declare and use pure functions
+ then detecting and using parallelism at the user
+level can be simplified.  \subsection{Related Work}
 
 \subsection{Related Work}
 
-\cite{bohringer2013dynamic}
+This idea came from Böhringer, who describes a relevant algorithm and
+R implementation in a 2013 paper "Dynamic Parallelization of R Functions"
+\cite{bohringer2013dynamic}.
+
+\subsection{Challenges}
+
+User settings could affect results in subtle ways, for example if a 
+
+Functions using random sampling require careful handling.
 
 \section{Statistically Efficient File Format}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
