@@ -68,58 +68,60 @@ This is the report for Professor Duncan Temple Lang for 8 units of
 credit in Fall 2016.  The tentative plan is to take the qualifying exam in
 Spring 2017.
 
-\begin{textbf}
-    Task: Describe 3 or 4 things to focus on, why they're interesting, what are the
-challenges, and who cares?
-\end{textbf}
+\subsection*{Task}
+\textbf{Describe 3 or 4 things to focus on, why they're interesting, what are the
+challenges, and who cares?}
 
 
 \section{Code Generation}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-The first task here is to create software that generates R bindings for an
-existing C and C++ libraries. 
-It should be understood that this task will be used as a base for
-further work, ie. detecting and using parallelism.
+\textbf{Automatically generate R bindings for existing C and C++ libraries}
 
-This would be an extension of Duncan's work with the RCIndex \cite{R-RCIndex} and
-RCodegen \cite{R-RCodegen} packages, along with other prior work.
+It should be understood that
+this task will be used as a base for further work, ie. my PhD thesis will consist
+of more than just this project.  This would be an extension of Temple Lang's
+work with the RCIndex \cite{R-RCIndex} and RCodeGen \cite{R-RCodegen}
+packages, along with other prior work.
 
 This is useful because writing these bindings by hand
 has several problems: 
-Writing by hand is error prone.
-It's tedious to write 1000's of wrappers.
-Hard to update wrapping package if software version is different.
+\begin{enumerate}
+    \item{Error Prone} Computers do repetitive tasks better than humans.
+    \item{Tedious} Nobody wants to spend their time doing this.
+    \item{Versioning} A minor change in a software dependency version ie. 2.1
+        to 2.2 often breaks the bindings.
+\end{enumerate}
 
 This is interesting because it allows one to very quickly add new
 capabilities to R as a system. The new capabilities then facilitate rapid
 prototyping and novel types of data analysis, using R as a "glue language".
-
 Duncan describes further applications and motivations in the paper in
-the RCIndex pacakge repository \cite{R-RCIndex}.
+the RCIndex package repository \cite{R-RCIndex}.
 
 \subsection{Challenges}
 
 This will require me to spend significant time building expertise in C/C++.
 
-Memory management and garbage collection is potentially difficult. A C routine might allocate
-memory that R knows nothing about. Then how is that memory protected and freed? A
-possible solution to this problem is to look in the body of the code
-itself, which RCIndex doesn't yet do.
+Memory management and garbage collection is potentially difficult. A C
+routine might allocate memory that R knows nothing about. Then how is that
+memory protected and freed? A possible solution to this problem is to
+recursively look
+through the body of the code itself, which RCIndex doesn't yet do.
 
 \subsection{Related Work}
 
 Many packages on CRAN simply wrap existing C/C++ libraries. When done
 thoughtfully this can be very useful. Ie. the programmer maps the C/C++ API
-into idiomatic data structures and calls them in the new language, in this case
-R. 
-The intent with the code generation is to \emph{augment} rather than
-\emph{replace} such libraries. 
+into idiomatic data structures and calls them in the new language, in this
+case R.  The intent with the code generation is to \emph{augment} rather
+than \emph{replace} such libraries. 
 
 The approach in RCIndex differs from existing software like SWIG
 \cite{swig} and Rcpp \cite{R-Rcpp} because it hooks directly into the clang
 compiler rather than processing the text itself. This means we have a code
-analysis tool that will be more robust and consistent with behavior of a compiler. 
+analysis and generation tool that will be more robust and consistent with
+behavior of a compiler. 
 
 \subsection{Applications}
 
@@ -129,11 +131,95 @@ access from within R. It's possible to directly write computer vision
 algorithms in R, but this is a huge amount of duplicated work if a mature
 library already exists.
 
-Another application is cutting edge specialized machine learning code like
-Professor Cho-Jui Hsieh's Hogwild++ \cite{zhang2016hogwild}.
+Another application is quickly providing R bindings to cutting edge
+specialized machine learning code like Professor Cho-Jui Hsieh's Hogwild++
+\cite{zhang2016hogwild}.
 
-\section{Chunking for Parallelism}
+\section{Statistically Efficient File Format}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\textbf{Demonstrate a unified file storage / computational model
+that efficiently processes data larger than memory.}
+
+The computational model should be flexible enough to allow the user to
+write a large subset of programs that can easily be done in an expressive
+language like R.  The file format should have the following properties:
+
+\begin{enumerate}
+    \item{Fast} Fast read / write operations, hopefully in parallel
+    \item{Typed} Integers are read in as integers, floats are floats, etc.
+        Factors would be nice to have.
+    \item{Efficient} File size no larger than it needs to be, so store as
+        binary rather than text
+    \item{Portable} Works in R, Python, Julia, etc.
+    \item{Iterable} Can take the first $k$ rows and process them
+        sequentially
+    \item{Computationally efficient} Works well for parallel block
+        operations with R / Numpy vectorized computational model.
+    \item{Statistically efficient} Built in features or attributes to
+        facilitate statistical analysis
+\end{enumerate}
+
+The last two items are the novel ones. By using a file format
+that facilitates a chunk based computational strategy it may be possible to
+realize large gains in performance. One idea to make it statistically
+efficient is to enable it to produce iid blocks as in Matloff's software
+alchemy \cite{matloff2014software}. Another idea is to store summary
+statistics or properties of the data or distribution. If it's known that
+one column is a string with 20 unique values or that another column is
+approximately $\sim N(0, 1)$ that's useful information. 
+
+\subsection{Related Work}
+
+Since 1998 HDF5 has provided most of the desired properties above
+\cite{hdf5}, including
+\href{https://support.hdfgroup.org/HDF5/doc/Advanced/Chunking/}{sophisticated
+chunking} and a flexible
+\href{https://support.hdfgroup.org/HDF5/doc1.6/UG/11_Datatypes.html}{type system}.
+Mario Annau's recent work on R's \href{https://github.com/mannau/h5}{h5
+package} provides R S4 methods for HDF5 data structures.
+
+This year (2016) Wes Mckinney and Hadley Wickham began development on Feather and
+Apache Arrow. From the documentation for Feather, this "provides binary columnar
+serialization for data frames." It uses a common C++ implementation with
+Python and R bindings to support basic types such as numeric, logical,
+dates, and strings. NA's for all types are also supported. So this may also
+be a candidate to build from.
+
+R's iotools package provides exciting high performance tools for reading
+and writing standard text data, ie. CSV files \cite{arnold2015iotools}.
+Pipeline parallelism is explicitly supported. The package is used to
+integrate R with Hadoop Streaming and Spark to process terabyte to petabyte
+scale data.
+
+\subsection{Challenges}
+
+If data exists in memory through both a cached HDF5 chunk and in an R process
+then it potentially uses twice as much memory as needed.
+
+It would also be possible to simply chunk R objects then serialize 
+them to disk. This would be faster than any other form of serialization but
+has the disadvantage of not being portable. It may be possible to use 
+serialization for intermediate steps and save writing to the final file
+format for the last step.
+
+Integrating such a system with typical data sources, ie. plain text files may
+not be as natural. But maybe we can build off iotools here.
+
+\subsection{Applications}
+
+Databases and programming environments store tables in an efficient
+structured format. Yet this structure is often lost when the data is
+written to a text file. Consequently much time in data analysis is
+spent loading, cleaning, and inferring the structure of data. Keeping data
+in a more structured form on disk greatly simplifies the problems and
+ambiguity associated with "data munging".
+
+
+\section{Parallel Chunking on large data}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Speculative evaluation of different chunk schemes.
 
 Idea: Users write normal R code which operates on larger than
 memory data in a single machine. This is done through analysis of the
@@ -185,6 +271,10 @@ much more flexibility and complexity. But it might be useful.
 Need to be a little careful because the chunking scheme defines the dask
 task graph. Then the semantics are more general than the dask graph. It's
 really similar to optimization.
+
+\subsection{Related Projects}
+
+TensorFlow
 
 \subsection{Applications}
 
@@ -238,7 +328,7 @@ Programs using R's \texttt{Apply} family of functions together with pure
 functions\footnote{Pure functions are those that depend only on inputs and
 have no side effects \cite{wiki:purefunc}.} can be easily parallelized
 \cite{bohringer2013dynamic}. Then why not provide a mechanism for users to
-declare pure functions?
+declare and/or detect pure functions?
 
 Consider an R script with the following form:
 \begin{verbatim}
@@ -252,11 +342,11 @@ write.table(result, "result.txt")
 \end{verbatim}
 
 \texttt{read.table()} and \texttt{write.table()} are not pure functions,
-but suppose that everything consists of calls to pure functions.
+but suppose that everything in between consists of a mix of \texttt{Apply} and pure functions.
 
-If we force users to declare and use pure functions
- then detecting and using parallelism at the user
-level can be simplified.  \subsection{Related Work}
+Then the user could mark their functions as \texttt{f = pfunc(function(x)
+{...})}. More ambitiously the syntax could be extended as \texttt{f =
+pfunction(x) {...}}.
 
 \subsection{Related Work}
 
@@ -266,80 +356,13 @@ R implementation in a 2013 paper "Dynamic Parallelization of R Functions"
 
 \subsection{Challenges}
 
-User settings could affect results in subtle ways, for example if a 
+User settings could affect results in subtle ways, for example a user may
+change the option for \texttt{stringsAsFactors} in their local session and
+this change does not propagate to the parallel version.
 
-Functions using random sampling require careful handling.
-
-\section{Statistically Efficient File Format}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-The high level goal here is to demonstrate a system with associated
-techniques that works well on data larger than memory.
-
-Can an existing file format be combined with a chunk based parallel
-computational strategy to produce a system that allows users to write high
-level R code that operates on 
-
-The file format should
-have the following properties:
-
-\begin{enumerate}
-    \item{fast} Fast read / write operations, hopefully in parallel
-    \item{typed} Integers are read in as integers, floats are floats, etc.
-        Factors would be nice to have.
-    \item{efficient} File size no larger than it needs to be, so store as
-        binary rather than text
-    \item{portable} Works in R, Python, Julia, etc.
-    \item{iterable} Can take the first $k$ rows and process them
-        sequentially
-    \item{computationally efficient} Works well for parallel block
-        operations with R / Numpy vectorized computational model.
-    \item{statistically efficient} Can be used to seamlessly produce and
-        compute on iid blocks as in Matloff's
-        software alchemy \cite{matloff2014software}.
-\end{enumerate}
-
-The last two items are the novel ones. By using a file format
-that facilitates a chunk based computational strategy it may be possible to
-realize large gains in performance.
-
-It would also be possible to simply chunk R objects then serialize 
-them to disk. This would be faster than using 
-
-\subsection{Related Work}
-
-Since 1998 HDF5 has provided most of the desired properties above
-\cite{hdf5}, including
-\href{https://support.hdfgroup.org/HDF5/doc/Advanced/Chunking/}{sophisticated
-chunking} and a flexible
-\href{https://support.hdfgroup.org/HDF5/doc1.6/UG/11_Datatypes.html}{type system}.
-Mario Annau's recent work on R's \href{https://github.com/mannau/h5}{h5
-package} provides R S4 methods for HDF5 data structures.
-
-This year (2016) Wes Mckinney and Hadley Wickham began development on Feather and
-Apache Arrow. From the documentation for Feather, this "provides binary columnar
-serialization for data frames." It uses a common C++ implementation with
-Python and R bindings to support basic types such as numeric, logical,
-dates, and strings. NA's for all types are also supported. So this may also
-be a candidate to build from.
-
-R's iotools package provides exciting high performance tools for reading
-and writing standard text data, ie. CSV files \cite{arnold2015iotools}.
-Pipeline parallelism is explicitly supported. The package is used to
-integrate R with Hadoop Streaming and Spark to process terabyte to petabyte
-scale data.
-
-\subsection{Challenges}
-
-Integrating such a system with other data sources
-
-\subsection{Applications}
-
-Databases and programming environments store tables in an efficient
-structured format. Yet this structure is often lost when the data is
-written as a flat text file. Consequently much time in data analysis is
-spent loading, cleaning, and inferring the structure of data.
-
+Functions using random sampling require careful handling, because the RNG
+stream exists in global state. Using a parallel technique like L'Ecuyer's
+may be a way to overcome this.
 
 \section{Transportation Data}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
