@@ -135,11 +135,45 @@ Another application is quickly providing R bindings to cutting edge
 specialized machine learning code like Professor Cho-Jui Hsieh's Hogwild++
 \cite{zhang2016hogwild}.
 
-\section{Statistically Efficient File Format}
+\section{Modern Data Frames Implementation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\textbf{Implement data frames with built in support for parallel operations
+in a modern systems language like Rust or Go}
+
+Much of the functionality for data frames is similar across data analysis
+libraries and also databases. Examples include filtering, basic math,
+grouping operations and summary statistics. Can common core structures
+and algorithms be factored out into a common library and implementation?
+
+By starting with a totally new language this gives an opportunity to build
+data frames in a way that benefits from advances in compiler and
+parallel processing technologies.
+
+\subsection{Related Work}
+
+Python's Pandas package is currently considering a large overhaul by
+\href{https://pandas-dev.github.io/pandas2/internal-architecture.html#building-libpandas-in-c-11-14-for-lowest-level-implementation-tier}{rewriting
+the internals in C++ for a 2.0 version}. The proposed changes include
+copy on write semantics and increased support for missing data, which will
+make behavior very similar to base R's \texttt{data.frame}.
+
+\subsection{Challenges}
+
+Making robust, performant data frames is a very large task. The language
+interfaces will have to be excellent for this to be usable.
+
+\subsection{Applications}
+
+A portable, efficient data frame implementation removed from the specifics
+of any particular language could be used in applications that use
+data frames, for example those currently using SQLite.
+
+\section{Statistically Oriented File Format}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \textbf{Demonstrate a unified file storage / computational model
-that efficiently processes data larger than memory.}
+that efficiently processes data larger than memory}
 
 The computational model should be flexible enough to allow the user to
 write a large subset of programs that can easily be done in an expressive
