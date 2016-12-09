@@ -157,6 +157,9 @@ Python's Pandas package is currently considering a large overhaul by
 the internals in C++ for a 2.0 version}. The proposed changes include
 copy on write semantics and increased support for missing data, which will
 make behavior very similar to base R's \texttt{data.frame}.
+It would be nice to have this implementation available in R.
+
+The Julia language could also be a candidate for an improved data frame.
 
 \subsection{Challenges}
 
@@ -250,14 +253,10 @@ in a more structured form on disk greatly simplifies the problems and
 ambiguity associated with "data munging".
 
 
-\section{Parallel Chunking on large data}
+\section{Chunking approaches to large data}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Speculative evaluation of different chunk schemes.
-
-Idea: Users write normal R code which operates on larger than
-memory data in a single machine. This is done through analysis of the
-user's code.
+\textbf{Speculative evaluation of different chunked computation schemes}
 
 A well known technique for parallel computation is to split data into
 chunks and compute on each chunk simultaneously. This approach 
@@ -270,15 +269,13 @@ Yet chunk size strongly impacts
 performance. If it's too small then there will be excessive overhead. If
 it's too large then it won't fit into memory. In both cases performance
 will suffer. But how much will it suffer?
+Apache Spark does chunking transparently to the user, and it's possible to
+tune it for performance reasons.
 
 Matloff presents compelling reasons to use a chunk based
 approach for statistical applications \cite{matloff2014software}.
 
-Apache Spark does chunking transparently to the user.
-
-
-Question: How much does chunk size affect performance? How do we choose a
-really good one? How much do we lose by choosing bad ones?
+\subsection{Related Work}
 
 Python's dask library infers appropriate block size for
 \href{https://github.com/dask/dask/pull/1328}{reading CSV files}.
@@ -288,9 +285,14 @@ memory access. \cite{kane2010bigmemory} It's a tool for representing large
 data sets, and the package vignette mentions that chunking can and should
 be used together when possible.
 
-Idea: for a given set of hardware and a given task graph in a given
+Google's TensorFlow can express large computational graphs on n dimensional
+arrays (tensors), mostly for machine learning.
+
+\subsection{Challenges}
+
+For a given set of hardware and a given task graph in a given
 computational model there may be
-an optimal chunk size, or a range of chunk sizes with similar performance.
+an optimal chunking scheme, or a range of chunk sizes with similar performance.
 We'd like to automatically figure that out so the user doesn't have to
 specify. This could potentially be posed as an optimization problem.
 
@@ -305,10 +307,6 @@ much more flexibility and complexity. But it might be useful.
 Need to be a little careful because the chunking scheme defines the dask
 task graph. Then the semantics are more general than the dask graph. It's
 really similar to optimization.
-
-\subsection{Related Projects}
-
-TensorFlow
 
 \subsection{Applications}
 
