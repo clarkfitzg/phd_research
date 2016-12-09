@@ -119,7 +119,8 @@ Since 1998 HDF5 has provided most of the desired properties above
 chunking} and a flexible
 \href{https://support.hdfgroup.org/HDF5/doc1.6/UG/11_Datatypes.html}{type system}.
 Mario Annau's recent work on R's \href{https://github.com/mannau/h5}{h5
-package} provides R S4 methods for HDF5 data structures.
+package} provides R S4 methods for HDF5 data structures. Kane's bigmemory
+package provides a file backed array.
 
 This year (2016) Wes Mckinney and Hadley Wickham began development on Feather and
 Apache Arrow. From the documentation for Feather, this ``provides binary columnar
@@ -133,6 +134,7 @@ and writing standard text data, ie. CSV files \cite{arnold2015iotools}.
 Pipeline parallelism is explicitly supported. The package is used to
 integrate R with Hadoop Streaming and Spark to process terabyte to petabyte
 scale data.
+
 
 \subsection{Challenges}
 
@@ -165,7 +167,7 @@ ambiguity associated with `data munging'.
 
 Ethan Anderes has been working on an application with Joseph Guinness to
 use Vecchia's approximation to estimate the likelihood function of $X \sim
-n(0, \Sigma)$ where $X$ is of high dimension, around 1 million. The
+N(0, \Sigma)$ where $X$ is of high dimension, around 1 million. The
 approximation is used because the actual pdf involves $\Sigma^{-1}$ which
 is too expensive to compute \cite{guinness2016permutation}.  The
 approximation can be posed as an embarrassingly parallel problem, so this
@@ -173,7 +175,7 @@ seems like a nice concrete application for a GPU.
 
 The actual computations involve choosing strategies to chunk the data. 
 My research goal is to understand and describe more generally the
-strategies that can be proven effective.
+GPU strategies that can be proven effective.
 
 \subsection{Challenges}
 
@@ -199,9 +201,9 @@ packages, along with other prior work.
 
 Writing R / C bindings by hand has several problems: 
 \begin{enumerate}
-    \item{Error Prone} Computers do repetitive tasks better than humans.
-    \item{Tedious} Nobody wants to spend their time doing this.
-    \item{Versioning} A minor change in a software dependency version ie. 2.1
+    \item{Error Prone:} Computers do repetitive tasks better than humans.
+    \item{Tedious:} Nobody wants to spend their time doing this.
+    \item{Versioning:} A minor change in a software dependency version ie. 2.1
         to 2.2 often breaks the bindings.
 \end{enumerate}
 
@@ -417,12 +419,18 @@ or approach is new or merits further investigation. Even as I write this I
 removed a section after reading an article released on Arxiv two days prior
 doing something very similar \cite{compare_bigdata}. However, the article
 was encouraging because it motivates the other topics.
+Motivating applications are extremely important for developing technology
+and research ideas.
 
 The choices in technology today are vast and often intimidating. Each has
 their pros and cons. At this point I think it's time for me to get my hands
 dirty in learning one (such as C++) at a deeper level, since I'll need to
 have deeper knowledge and experience to push the envelope with research.
+Classes in school can be a distraction in this regard because they're interesting
+so I spend time learning that subject when maybe that time would have been
+better spent on research topics.
 
+\newpage
 \bibliographystyle{plain}
 \bibliography{citations} 
 
