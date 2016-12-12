@@ -16,7 +16,8 @@ board.
 
 Still not totally clear what the groups are. If they're a partition of the
 data, as stated in sec 3.2 then it seems like the assumption is that the
-covariance structure is block diagonal?
+covariance structure is block diagonal? But that's not the case because
+he mentions that case in section 5. Better make some kind of picture here.
 
 > when working with small covariance matrices, the computational demand is
 > often dominated by filling in the entries of the covariance matrix rather
@@ -32,3 +33,23 @@ k-d trees used for this.
 Interesting how he does approximate simulations of n dimensional Gaussian
 with known covariance matrix in O(n) operations. A matrix - vector multiply
 takes O(n^2). I never considered the need to do an approximate simulation.
+Done in this case to quantify uncertainty.
+
+Matèrn covariance function used to simulate. The special case of
+exponential covariance is also used.
+
+Results compared through KL divergence- smaller is better.
+- using more neighbors is better
+- Grouped is better than ungrouped
+- Choice of neighbors (permutations) matters
+
+What exactly is sorting the coordinates? Does this mean that he's using
+neighbors based on the coordinates?
+
+Run time is on the order of 1 minute for exponential covariance.
+
+In the data example in Figure 7 they all seem pretty close to the same
+value. Also this seems to have gracefully handled the missing data? Not
+totally clear what these predictions / interpolations are, and what the
+point is. I guess knowing the covariance is nice for being able to
+simulate.
