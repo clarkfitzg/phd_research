@@ -28,18 +28,6 @@ l_true = logpdf(bigmv, x)
 
 # Tue Dec 13 10:55:32 PST 2016
 
-# Vecchia's in block form.
-# Write it naively first, then come back and optimize for speed,
-# parallelism, and numerical precision.
-#
-# Idea: Given an observation x of length n, split it into subvectors x_i
-# 1) Compute the likelihood for x_1
-# 2) For x_i compute the conditional likelihood given x_i-1
-#
-# This means that the permutation of indices has already happened and Sigma
-# reflects this.
-# I think Guinness's approach is more sophisticated than this.
-
 function logpdf_conditional(x1, x2, Sigma11, Sigma22, Sigma12)
     # log(p(x1|x2)) Straight out of Wikipedia
     Sigma21 = transpose(Sigma12)
@@ -63,7 +51,18 @@ end
 
 
 function vecchia_blockwise(x, Sigma, blocksize = 7)
-    # blocksize is the number of elements per block
+# Vecchia's in block form.
+# blocksize is the number of elements per block.
+# Write it naively first, then come back and optimize for speed,
+# parallelism, and numerical precision.
+#
+# Idea: Given an observation x of length n, split it into subvectors x_i
+# 1) Compute the likelihood for x_1
+# 2) For x_i compute the conditional likelihood given x_i-1
+#
+# This means that the permutation of indices has already happened and Sigma
+# reflects this.
+# I think Guinness's approach is more sophisticated than this.
 
     n = length(x)
     nblocks = div(n, blocksize)
