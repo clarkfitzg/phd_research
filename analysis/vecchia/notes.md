@@ -44,7 +44,23 @@ Results compared through KL divergence- smaller is better.
 - Choice of neighbors (permutations) matters
 
 What exactly is sorting the coordinates? Does this mean that he's using
-neighbors based on the coordinates?
+neighbors based on the coordinates? No, just looked at figure 1. So
+maximizing minimum distance MMD always picks the corners.
+
+Types of groups:
+1. MMD
+2. Random uniform
+3. middle out
+4. Sorted on one coordinate
+
+So what about a neighborhood of points in the metric space sense?
+
+For each particular group we can evaluate the likelihood. But how to get
+from this to the full likelihood approximation? If it's just multiplication
+then it seems like it's equivalent to a permuted block structure in the
+covariance matrix. But what about Vecchia's itself? Suppose you only
+consider the previous 10 observations. Is this something like an AR(10)
+time series model?
 
 Run time is on the order of 1 minute for exponential covariance.
 
@@ -53,3 +69,10 @@ value. Also this seems to have gracefully handled the missing data? Not
 totally clear what these predictions / interpolations are, and what the
 point is. I guess knowing the covariance is nice for being able to
 simulate.
+
+This seems like the same problem, broken down into chunks and then solved
+again? Are we using the full conditional form for each block?
+
+Seems like there might be other ways to do this based on some special form
+of Matérn covariance matrices. Do the matrices themselves define some way
+to split up the computations?
