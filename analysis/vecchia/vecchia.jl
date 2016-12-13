@@ -21,8 +21,10 @@ bigmv = MvNormal(mu, Sigma)
 x = rand(n)
 
 # Evaluate log likelihood
-logpdf(bigmv, x)
+l_true = logpdf(bigmv, x)
 
+# Side note:
+# Disappointing that I can't write this: Sigma[1:3, 1:3]
 
 # Tue Dec 13 10:55:32 PST 2016
 
@@ -48,16 +50,6 @@ function logpdf_conditional(x1, x2, Sigma11, Sigma22, Sigma12)
     return logpdf(dist_cond, x1)
 end
 
-# Disappointing that I can't write this: Sigma[1:3, 1:3]
-
-# Test it out
-x1 = x[1:3]
-x2 = x[4:7]
-S11 = Sigma_float[1:3, 1:3]
-S22 = Sigma_float[4:7, 4:7]
-S12 = Sigma_float[1:3, 4:7]
-l1 = logpdf_conditional(x1, x2, S11, S22, S12)
-
 
 function logpdf_from_slice(x, Sigma, s1, s2)
     # Helper to use slices on larger x, Sigma
@@ -70,16 +62,20 @@ function logpdf_from_slice(x, Sigma, s1, s2)
 end
 
 
-l2 = logpdf_from_slice(x, Sigma_float, 1:3, 4:7)
-
-
 function vecchia_blockwise(x, Sigma, blocksize = 7)
     # blocksize is the number of elements per block
 
     n = length(x)
     nblocks = div(n, blocksize)
+
     # The first block may be smaller than the others
     n1 = rem(n, blocksize)
+    if n1 != 0
+        x0 = MvNormal(PDMat(Sigma[1:n1, 1:n1]))
+        logpdf1 = logpdf(x0, x[1:n1])
+    else
+        logpdf1 = 0
+    end
 
     stops = n1 + blocksize * collect(0:nblocks)
 
@@ -91,4 +87,21 @@ function vecchia_blockwise(x, Sigma, blocksize = 7)
     slicer(i) = max(1, i - blocksize + 1):i
     slices = map(slicer, stops)
 
+    zipped = zip(slices[1:nblocks], slices[2:(nblocks+1)])
+
+    # Is there a more idiomatic way to apply partial args aka curry?
+    # Also I baked in the tuple unpacking...
+    function lpdf(ss)
+        logpdf_from_slice(x, Sigma, ss[1], ss[2])
+    end
+
+    logpdfs = map(lpdf, zipped)
+    return logpdf1 + sum(logpdfs)
+
 end
+
+
+# Testing
+l2 = logpdf_from_slice(x, Sigma_float, 1:3, 4:7)
+
+l_approx = vecchia_blockwise(x, Sigma_float)
