@@ -1,32 +1,9 @@
-# Mon Dec 12 14:01:50 PST 2016
-
 using Distributions
 using PDMats
 
 # Debugger
 using Gallium
 
-# Seed RNG
-srand(37)
-n = 100
-
-# Create covariance matrix to simulate from
-# More typically this might be a Matérn covariance matrix
-Sigma_float = eye(n) + ones(n, n)
-Sigma = PDMat(Sigma_float)
-mu = zeros(n)
-
-bigmv = MvNormal(mu, Sigma)
-
-x = rand(n)
-
-# Evaluate log likelihood
-l_true = logpdf(bigmv, x)
-
-# Side note:
-# Disappointing that I can't write this: Sigma[1:3, 1:3]
-
-# Tue Dec 13 10:55:32 PST 2016
 
 function logpdf_conditional(x1, x2, Sigma11, Sigma22, Sigma12)
     # log(p(x1|x2)) Straight out of Wikipedia
@@ -94,13 +71,8 @@ function vecchia_blockwise(x, Sigma, blocksize = 7)
         logpdf_from_slice(x, Sigma, ss[1], ss[2])
     end
 
+    # Parallelism should happen at this step:
     logpdfs = map(lpdf, zipped)
     return logpdf1 + sum(logpdfs)
 
 end
-
-
-# Testing
-l2 = logpdf_from_slice(x, Sigma_float, 1:3, 4:7)
-
-l_approx = vecchia_blockwise(x, Sigma_float)
