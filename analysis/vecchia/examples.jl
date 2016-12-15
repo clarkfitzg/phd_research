@@ -54,20 +54,6 @@ testSigma = Symmetric(ac.(x .- x', 100))
 logpdf_from_slice(data, testSigma, 1:10, 11:20)
 
 vecchia_blockwise(data, testSigma)
-bigmv2 = MvNormal(mu, Sigma_float)
-
-x = rand(n)
-
-# Side note:
-# Disappointing that I can't write this: Sigma[1:3, 1:3]
-# Because not for end 
-
-# Testing
-l2 = logpdf_from_slice(x, Sigma_float, 1:3, 4:7)
-
-# Evaluate log likelihood
-l_true = logpdf(bigmv, x)
-
 
 
 lltrue = Float64[]
@@ -76,8 +62,11 @@ rhotest = 80:120
 
 for r in rhotest
     Sigma_r = ac.(x .- x', r)
-    push!(lltrue, vecchia_blockwise(data, Sigma_r))
+    mvn = MvNormal(Sigma_r)
+    push!(lltrue, logpdf(mvn, data))
     push!(llapprox, vecchia_blockwise(data, Sigma_r))
 end
 
-plot(ll)
+plot(lltrue - maximum(lltrue))
+
+plot(llapprox - maximum(llapprox))
