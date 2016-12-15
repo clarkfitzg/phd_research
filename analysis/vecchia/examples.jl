@@ -46,7 +46,7 @@ srand(37)
 ac(dx, rho) = exp(-rho * abs(dx)^1.4)
 # Seems important to have regular sequence here for numerical reasons
 # index = -2:0.0002:2 Mac can handle this, desktop can't
-index = -2:0.01:2
+index = -1:0.001:1
 n = length(index)
 rhotrue = 50.
 
@@ -89,6 +89,11 @@ title("True value at 0")
 
 @time logpdf(MvNormal(Sigma), data)
 
+# On old Lenovo desktop:
+# Both around 0.002 seconds for n = 401
+# Both around 0.010 seconds for n = 2001
+# Makes sense, expecting linear scaling in n
 @time vecchia_blockwise(data, Sigma)
+@time vecchia_elementwise(data, Sigma)
 
 # Cholesky also numerically unstable, Vecchia can help here
