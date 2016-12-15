@@ -39,39 +39,47 @@ l_approx = vecchia_blockwise(x, Sigma_float)
 # Working with Ethan
 
 srand(37)
+# Covariance function where closely related points are more correlated
 ac(dx, rho) = exp(-rho * abs(dx)^1.4)
-x = -2:0.0002:2
-n = length(x)
+# Seems important to have regular sequence here for numerical reasons
+# index = -2:0.0002:2 Mac can handle this, desktop can't
+index = -2:0.01:2
+n = length(index)
 rhotrue = 50.
-Sigma = ac.(x .- x', rhotrue)
+
+# Broadcast vectors up to matrix
+distances = index .- index'
+
+Sigma = ac.(distances, rhotrue)
+# Even simulating from a large multivariate normal with a covariance matrix
+# like this is difficult because we need to do a large Cholesky
 ch = chol(Sigma)'
 data = ch * randn(n)
-testSigma = ac.(x .- x', 100)
 
-plot(x, data, ".")
+plot(index, data, ".")
 
 
-logpdf_from_slice(data, testSigma, 1:10, 11:20)
+logpdf_from_slice(data, Sigma, 1:10, 11:20)
 
-vecchia_blockwise(data, testSigma)
+vecchia_blockwise(data, Sigma)
 
 
 lltrue = Float64[]
 llapprox = Float64[]
-rhotest = 80:4:120
+rhotest = 40:60
 for r in rhotest
-    Sigma_r = ac.(x .- x', r)
+    Sigma_r = ac.(distances, r)
     mvn = MvNormal(Sigma_r)
     push!(lltrue, logpdf(mvn, data))
     push!(llapprox, vecchia_blockwise(data, Sigma_r))
 end
 
-plot(lltrue - maximum(lltrue))
-plot(llapprox - maximum(llapprox))
+plot(rhotest - rhotrue, lltrue - maximum(lltrue))
+plot(rhotest - rhotrue, llapprox - maximum(llapprox))
+title("True value at 0")
 
-@time logpdf(MvNormal(testSigma), data)
+@time logpdf(MvNormal(Sigma), data)
 
-@time vecchia_blockwise(data, testSigma)
+@time vecchia_blockwise(data, Sigma)
 
-
-# Cholesky numerically unstable, Vecchia can help here
+# Cholesky also numerically unstable, Vecchia can help here
