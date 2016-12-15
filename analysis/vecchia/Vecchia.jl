@@ -83,9 +83,11 @@ calculation of Sigma when computing x_n+1
 function logpdf_cond(x, Sigma)
     n = length(x)
     L = chol(Sigma)'
-    Ltilde = inv(L)
-    z = Ltilde * x
-    log(Ltilde[n, n]) - 0.5 * (log(2*pi) + z[n]^2)
+    jn = zeros(n)
+    jn[n] = 1.
+    a = L \ jn
+    b = L \ x
+    log(a[n]) - 0.5 * (log(2*pi) + b[n]^2)
 end
 
 
