@@ -39,17 +39,17 @@ l_approx = vecchia_blockwise(x, Sigma_float)
 # Working with Ethan
 
 srand(37)
-ac(dx, rho) = exp(-rho * abs(dx))
-x = -1:0.001:1
+ac(dx, rho) = exp(-rho * abs(dx)^1.4)
+x = -2:0.0002:2
 n = length(x)
-rhotrue = 100.
+rhotrue = 50.
 Sigma = ac.(x .- x', rhotrue)
 ch = chol(Sigma)'
 data = ch * randn(n)
+testSigma = ac.(x .- x', 100)
 
 plot(x, data, ".")
 
-testSigma = Symmetric(ac.(x .- x', 100))
 
 logpdf_from_slice(data, testSigma, 1:10, 11:20)
 
@@ -58,8 +58,7 @@ vecchia_blockwise(data, testSigma)
 
 lltrue = Float64[]
 llapprox = Float64[]
-rhotest = 80:120
-
+rhotest = 80:4:120
 for r in rhotest
     Sigma_r = ac.(x .- x', r)
     mvn = MvNormal(Sigma_r)
@@ -68,5 +67,11 @@ for r in rhotest
 end
 
 plot(lltrue - maximum(lltrue))
-
 plot(llapprox - maximum(llapprox))
+
+@time logpdf(MvNormal(testSigma), data)
+
+@time vecchia_blockwise(data, testSigma)
+
+
+# Cholesky numerically unstable, Vecchia can help here
