@@ -97,3 +97,19 @@ title("True value at 0")
 @time vecchia_elementwise(data, Sigma)
 
 # Cholesky also numerically unstable, Vecchia can help here
+
+# Runtime looks reasonably linear
+times = Float64[]
+nseq = 100:300:3000
+for n in nseq
+    vec = 1:n
+    index = (vec - mean(vec)) / std(vec)
+    distances = abs(index .- index')
+    Sigma = ac.(distances, rhotrue)
+    ch = chol(Sigma)'
+    data = ch * randn(n)
+    tm = @elapsed vecchia_elementwise(data, Sigma)
+    push!(times, tm)
+end
+
+plot(nseq, times, ".")
