@@ -63,7 +63,9 @@ plot(index, data, ".")
 
 logpdf_from_slice(data, Sigma, 1:10, 11:20)
 
+
 vecchia_blockwise(data, Sigma)
+vecchia_elementwise(data, Sigma)
 
 
 lltrue = Float64[]
