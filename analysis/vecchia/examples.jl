@@ -1,6 +1,7 @@
 include("vecchia.jl")
 
 using PyPlot
+
 # Debugger
 using Gallium
 
@@ -64,22 +65,26 @@ plot(index, data, ".")
 logpdf_from_slice(data, Sigma, 1:10, 11:20)
 
 
-vecchia_blockwise(data, Sigma)
-vecchia_elementwise(data, Sigma)
+ltrue = logpdf(MvNormal(Sigma), data)
+lvb = vecchia_blockwise(data, Sigma)
+lve = vecchia_elementwise(data, Sigma)
 
 
 lltrue = Float64[]
-llapprox = Float64[]
+llvblock = Float64[]
+llvelem = Float64[]
 rhotest = 40:60
 for r in rhotest
     Sigma_r = ac.(distances, r)
     mvn = MvNormal(Sigma_r)
     push!(lltrue, logpdf(mvn, data))
-    push!(llapprox, vecchia_blockwise(data, Sigma_r))
+    push!(llvblock, vecchia_blockwise(data, Sigma_r))
+    push!(llvelem, vecchia_elementwise(data, Sigma_r))
 end
 
 plot(rhotest - rhotrue, lltrue - maximum(lltrue))
-plot(rhotest - rhotrue, llapprox - maximum(llapprox))
+plot(rhotest - rhotrue, llvblock - maximum(llvblock))
+plot(rhotest - rhotrue, llvelem - maximum(llvelem))
 title("True value at 0")
 
 @time logpdf(MvNormal(Sigma), data)

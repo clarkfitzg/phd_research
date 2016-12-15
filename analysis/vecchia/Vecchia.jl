@@ -78,14 +78,14 @@ values. ll(x_n | x_n-1 ... x_1) for vector x ~ N(0, Sigma)
 Uses method described in Sec 3.1 of Guinness' paper.
 
 Likely ways to do this more efficiently by updating Cholesky or reusing
-calculation of Sigma here.
+calculation of Sigma when computing x_n+1
 """
 function logpdf_cond(x, Sigma)
     n = length(x)
     L = chol(Sigma)'
     Ltilde = inv(L)
     z = Ltilde * x
-    log(L[n, n]) - 0.5 * (log(2*pi) - z[n]^2)
+    log(Ltilde[n, n]) - 0.5 * (log(2*pi) + z[n]^2)
 end
 
 
