@@ -1,6 +1,9 @@
 include("vecchia.jl")
 
 using PyPlot
+# Debugger
+using Gallium
+
 
 # Seed RNG
 srand(37)
@@ -8,8 +11,7 @@ n = 100
 
 # Create covariance matrix to simulate from
 # More typically this might be a Matérn covariance matrix
-Sigma_float = eye(n) + ones(n, n)
-Sigma = PDMat(Sigma_float)  # Not needed
+Sigma = eye(n) + ones(n, n)
 mu = zeros(n)
 
 bigmv = MvNormal(mu, Sigma)
@@ -48,7 +50,7 @@ n = length(index)
 rhotrue = 50.
 
 # Broadcast vectors up to matrix
-distances = index .- index'
+distances = abs(index .- index')
 
 Sigma = ac.(distances, rhotrue)
 # Even simulating from a large multivariate normal with a covariance matrix
