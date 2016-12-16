@@ -1,0 +1,44 @@
+\begin{thebibliography}{1}
+
+\bibitem{swig}
+David~M. Beazley.
+\newblock Swig: An easy to use tool for integrating scripting languages with c
+  and c++.
+\newblock In {\em Proceedings of the 4th Conference on USENIX Tcl/Tk Workshop,
+  1996 - Volume 4}, TCLTK'96, pages 15--15, Berkeley, CA, USA, 1996. USENIX
+  Association.
+
+\bibitem{opencv_library}
+G.~Bradski.
+\newblock opencv.
+\newblock {\em Dr. Dobb's Journal of Software Tools}, 2000.
+
+\bibitem{R-Rcpp}
+Dirk Eddelbuettel, Romain Francois, JJ~Allaire, Kevin Ushey, Qiang Kou, Douglas
+  Bates, and John Chambers.
+\newblock {\em Rcpp: Seamless R and C++ Integration}, 2016.
+\newblock R package version 0.12.5.
+
+\bibitem{guinness2016permutation}
+Joseph Guinness.
+\newblock Permutation methods for sharpening gaussian process approximations.
+\newblock {\em arXiv preprint arXiv:1609.05372}, 2016.
+
+\bibitem{R-RCIndex}
+Duncan {Temple Lang}.
+\newblock {\em RCIndex: R Interface to the clang parser's C API}, 2016.
+\newblock R package version 0.3-0.
+
+\bibitem{R-RCodegen}
+Duncan {Temple Lang}.
+\newblock {\em RCodeGen: Functionality to help creating code for R, C/C++},
+  2016.
+\newblock R package version 0.2-0.
+
+\bibitem{zhang2016hogwild}
+Huan Zhang, Cho-Jui Hsieh, and Venkatesh Akella.
+\newblock Hogwild++: A new mechanism for decentralized asynchronous stochastic
+  gradient descent.
+\newblock ICDM, 2016.
+
+\end{thebibliography}

@@ -73,6 +73,7 @@ lve = vecchia_elementwise(data, Sigma)
 lltrue = Float64[]
 llvblock = Float64[]
 llvelem = Float64[]
+llvelem1 = Float64[]
 rhotest = 40:60
 for r in rhotest
     Sigma_r = ac.(distances, r)
@@ -80,12 +81,17 @@ for r in rhotest
     push!(lltrue, logpdf(mvn, data))
     push!(llvblock, vecchia_blockwise(data, Sigma_r))
     push!(llvelem, vecchia_elementwise(data, Sigma_r))
+    push!(llvelem1, vecchia_elementwise(data, Sigma_r, 1))
 end
 
 plot(rhotest - rhotrue, lltrue - maximum(lltrue))
+title("True value at 0")
+
 plot(rhotest - rhotrue, llvblock - maximum(llvblock))
 plot(rhotest - rhotrue, llvelem - maximum(llvelem))
-title("True value at 0")
+
+# Conditioning on only one neighbor is not as good as 7
+plot(rhotest - rhotrue, llvelem1 - maximum(llvelem1))
 
 @time logpdf(MvNormal(Sigma), data)
 
@@ -94,7 +100,11 @@ title("True value at 0")
 # Both around 0.010 seconds for n = 2001
 # Makes sense, expecting linear scaling in n
 @time vecchia_blockwise(data, Sigma)
+
 @time vecchia_elementwise(data, Sigma)
+
+# Runtime increases with the number of neighbors
+@time vecchia_elementwise(data, Sigma, 5)
 
 # Cholesky also numerically unstable, Vecchia can help here
 

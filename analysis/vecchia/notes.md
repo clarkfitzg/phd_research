@@ -1,3 +1,11 @@
+Thu Dec 15 15:57:57 PST 2016
+
+Duncan asked me to step back and try to abstract the ideas here.
+
+seeing a balance between improved statistical estimation and
+run time.
+
+
 Mon Dec 12 10:43:46 PST 2016
 
 Reading Joseph Guiness' paper "Permutation Methods for Sharpening
