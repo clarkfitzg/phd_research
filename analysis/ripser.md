@@ -13,6 +13,7 @@ $ which ripser
 
 Now you can do something like this in R:
 ```R
+
 # Operate on a data point cloud represented as a matrix
 m = matrix(c(1,0,
              0,1,
@@ -26,7 +27,22 @@ write.table(m, f, col.names = FALSE, row.names = FALSE)
 
 output = system2("ripser", args = c("--format point-cloud", f)
         , stdout = TRUE)
+
 ```
 
 `output` is a character vector in R which needs to be parsed to perform any
 analysis.
+
+```
+> output
+ [1] "point cloud with 4 points in dimension 2"
+ [2] "distance matrix with 4 points"
+ [3] "value range: [1.41421,2]"
+ [4] "persistence intervals in dim 0:"
+ [5] " [0,1.41421)"
+ [6] " [0,1.41421)"
+ [7] " [0,1.41421)"
+ [8] " [0, )"
+ [9] "persistence intervals in dim 1:"
+[10] " [1.41421,2)"
+```
