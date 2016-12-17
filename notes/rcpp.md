@@ -1,3 +1,15 @@
+Fri Dec 16 17:11:03 PST 2016
+
+Had a go today at writing R bindings for Ripser, a project with Irene Kim.
+Ripser just uses `stdout`, so it works better to use something equivalent to
+the shell to write the interface.
+
+Was fighting for hours with building a simple C++ package in R. I was missing
+the `extern "C"` declaration in front of the routine that causes it to be
+visible  in the DLL. I need to revisit this, learn to better understand the
+`nm` command and write a more proper minimal example without trying to do
+crazy stuff with `cout`.
+
 Tue Nov  1 09:58:11 PDT 2016
 
 In the docs to `getNativeSymbolInfo()` Stumbled across a link to an old [R
