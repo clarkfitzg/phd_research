@@ -1,8 +1,8 @@
-Wed Nov  2 10:35:35 PDT 2016
+Fri Dec 16 13:30:02 PST 2016
 
-Plan for next quarter. Should I TA?
-
-
+Came across some very nice material on R and C++ by Chris Paciorek
+http://www.stat.berkeley.edu/scf/paciorek-cppWorkshop.pdf.
+He works on NIMBLE, might be good to look more into that.
 
 Thu Oct 27 16:27:31 PDT 2016
 
