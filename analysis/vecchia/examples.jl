@@ -21,10 +21,6 @@ bigmv2 = MvNormal(mu, Sigma_float)
 
 x = rand(n)
 
-# Side note:
-# Disappointing that I can't write this: Sigma[1:3, 1:3]
-# Because not for end 
-
 # Testing
 l2 = logpdf_from_slice(x, Sigma_float, 1:3, 4:7)
 
