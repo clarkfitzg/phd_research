@@ -5,7 +5,7 @@ Regularly spaced observations with a highly structured covariance matrix
 may warrant a different estimation / computational approach.
 =#
 
-include("vecchia.jl")
+include("Vecchia.jl")
 
 # In general observations won't be spaced regularly, so we have something
 # like this:

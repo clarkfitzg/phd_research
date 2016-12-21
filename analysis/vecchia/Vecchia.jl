@@ -2,6 +2,20 @@ using Distributions
 
 
 """
+log pdf for multivariate normal x ~ N(0, Sigma)
+Same as logpdf(Distributions::MvNormal(Sigma), x)
+"""
+function logpdf_normal(Sigma, x)
+
+    L = chol(Sigma)'
+    z = L \ x
+
+    return - log(det(L)) - 0.5 * z' * z - 0.5 * n * log(2 * pi)
+
+end
+
+
+"""
 log(p(x1|x2)) Straight out of Wikipedia
 """
 function logpdf_conditional(x1, x2, Sigma11, Sigma22, Sigma12)
@@ -79,6 +93,9 @@ Uses method described in Sec 3.1 of Guinness' paper.
 
 Likely ways to do this more efficiently by updating Cholesky or reusing
 calculation of Sigma when computing x_n+1
+
+Probably better to change the function signature so that Sigma is computed
+inside this function- this requires sending O(n) data rather than O(n^2)
 """
 function logpdf_cond(x, Sigma)
     n = length(x)
