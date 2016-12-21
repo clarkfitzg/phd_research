@@ -41,6 +41,8 @@ end
 Vecchia's approximatation of the log likelihood of x ~ N(0, Sigma)
 
 neighbors is the number of points to condition on.
+
+TODO: Tune this for speed
 """
 function vecchia_elementwise(x, Sigma, neighbors = 10)
 
