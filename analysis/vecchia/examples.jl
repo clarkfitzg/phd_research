@@ -1,4 +1,4 @@
-include("vecchia.jl")
+include("Vecchia.jl")
 
 using PyPlot
 

@@ -1,87 +1,16 @@
-using Distributions
-
-
 """
 log pdf for multivariate normal x ~ N(0, Sigma)
 Same as logpdf(Distributions::MvNormal(Sigma), x), this just removes the
 dependency on the Distributions package
 """
-function logpdf_normal(Sigma, x)
+function logpdf_normal(x, Sigma, mu = 0)
     L = chol(Sigma)'
-    z = L \ x
+    z = L \ (x - mu)
     # Compute it like this to avoid Inf values from det(L)
     logdet = sum(log(diag(L)))
-    return - logdet - 0.5 * z' * z - 0.5 * n * log(2 * pi)
-end
-
-
-"""
-log(p(x1|x2)) Straight out of Wikipedia
-"""
-function logpdf_conditional(x1, x2, Sigma11, Sigma22, Sigma12)
-    Sigma21 = transpose(Sigma12)
-    mu_cond = Sigma12 * (Sigma22 \ x2)
-    Sigma_cond = Sigma11 - Sigma12 * (Sigma22 \ Sigma21)
-    # Dirty hacking for actual numerical symmetry
-    Sigma_cond = 0.5 * (Sigma_cond + Sigma_cond')
-    dist_cond = MvNormal(mu_cond, Sigma_cond)
-    return logpdf(dist_cond, x1)
-end
-
-
-"""
-Helper to use slices on larger x, Sigma
-"""
-function logpdf_from_slice(x, Sigma, s1, s2)
-    x1 = x[s1]
-    x2 = x[s2]
-    S11 = Sigma[s1, s1]
-    S22 = Sigma[s2, s2]
-    S12 = Sigma[s1, s2]
-    logpdf_conditional(x1, x2, S11, S22, S12)
-end
-
-
-"""
-Vecchia's approximatation of the log likelihood of x ~ N(0, Sigma)
-
-Blocksize is the number of elements per block.
-Write it naively first, then come back and optimize for speed,
-parallelism, and numerical precision.
-
-Idea: Given an observation x of length n, split it into subvectors x_i
-1) Compute the likelihood for x_1
-2) For x_i compute the conditional likelihood given x_i-1
-
-This means that the permutation of indices has already happened and Sigma
-reflects this.
-"""
-function vecchia_blockwise(x, Sigma, blocksize = 7)
-
-    n = length(x)
-    nblocks = div(n, blocksize)
-
-    # The first block may be smaller than the others
-    n1 = rem(n, blocksize)
-    if n1 != 0
-        x0 = MvNormal(Sigma[1:n1, 1:n1])
-        logpdf1 = logpdf(x0, x[1:n1])
-    else
-        logpdf1 = 0
-    end
-
-    # Last index of every block
-    stops = n1:blocksize:n
-
-    # Used to index into x and Sigma
-    slices = map(i -> max(1, i - blocksize + 1):i, stops)
-
-    zipped = zip(slices[1:nblocks], slices[2:(nblocks+1)])
-
-    # Written with `map` since parallelism should happen here
-    logpdfs = map(ss -> logpdf_from_slice(x, Sigma, ss[1], ss[2]), zipped)
-
-    return logpdf1 + sum(logpdfs)
+    ll = - logdet - 0.5 * z' * z - 0.5 * n * log(2 * pi)
+    # Maybe there's a more robust way to convert to scalar?
+    return ll[1, 1]
 end
 
 
@@ -104,7 +33,7 @@ function logpdf_cond(x, Sigma)
     jn[n] = 1.
     a = L \ jn
     b = L \ x
-    log(a[n]) - 0.5 * (log(2*pi) + b[n]^2)
+    return log(a[n]) - 0.5 * (log(2*pi) + b[n]^2)
 end
 
 
@@ -113,7 +42,7 @@ Vecchia's approximatation of the log likelihood of x ~ N(0, Sigma)
 
 neighbors is the number of points to condition on.
 """
-function vecchia_elementwise(x, Sigma, neighbors = 7)
+function vecchia_elementwise(x, Sigma, neighbors = 10)
 
     n = length(x)
     if n <= neighbors
@@ -121,10 +50,10 @@ function vecchia_elementwise(x, Sigma, neighbors = 7)
     end
 
     # Exact likelihood for first points
-    mv1 = MvNormal(Sigma[1:neighbors, 1:neighbors])
-    ll = logpdf(mv1, x[1:neighbors])
+    ll = logpdf_normal(x[1:neighbors], Sigma[1:neighbors, 1:neighbors])
 
     # Add in the contribution to log likelihood for each point
+    # This is the computation to potentially put on the GPU
     for i in (neighbors + 1):n
         slice_i = (i - neighbors):i
         x_i = x[slice_i]

@@ -16,9 +16,8 @@ Sigma = A * A'
 
 x = randn(n)
 
-# This one is faster and more robust
+# This one is slightly faster and more robust
 @time ll_true = logpdf(MvNormal(Sigma), x)
-
-@time ll_local = logpdf_normal(Sigma, x)
+@time ll_local = logpdf_normal(x, Sigma)
 
 @test_approx_eq ll_true ll_local
