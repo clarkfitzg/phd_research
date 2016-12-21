@@ -3,15 +3,15 @@ using Distributions
 
 """
 log pdf for multivariate normal x ~ N(0, Sigma)
-Same as logpdf(Distributions::MvNormal(Sigma), x)
+Same as logpdf(Distributions::MvNormal(Sigma), x), this just removes the
+dependency on the Distributions package
 """
 function logpdf_normal(Sigma, x)
-
     L = chol(Sigma)'
     z = L \ x
-
-    return - log(det(L)) - 0.5 * z' * z - 0.5 * n * log(2 * pi)
-
+    # Compute it like this to avoid Inf values from det(L)
+    logdet = sum(log(diag(L)))
+    return - logdet - 0.5 * z' * z - 0.5 * n * log(2 * pi)
 end
 
 
