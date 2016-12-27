@@ -34,6 +34,12 @@ Then compile with
 ```
 cc -o bin/vecAdd_cl vecAdd.c -framework OpenCL
 ```
+However the answer is 40.73, which is far from the expected answer of 1!
+
+This openCL requires a lot of boilerplate. I wonder if we could use the
+code analysis stuff to generate this from say R?
+
+Is it possible to call BLAS from within the kernel function?
 
 
 ## Thu Dec 15 15:57:57 PST 2016
