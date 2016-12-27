@@ -1,4 +1,32 @@
-Thu Dec 15 15:57:57 PST 2016
+## Tue Dec 27 09:59:21 PST 2016
+
+Now trying to get this stuff on the GPU. Looking at the Arrayfire library,
+since it looks like the easiest way to get started here.
+
+There seems to be two options for low level GPU- CUDA and openCL. CUDA is
+specific to nvidia, while openCL is more general. My Mac doesn't have
+an nvidia card, so it looks like openCL.
+
+Would be good to have this computation available and run equally fast on R
+/ Julia / Python. Therefore it makes sense to write it in C++ / openCL and
+write bindings for each language. Also probably don't want to make
+Arrayfire a dependency since we're using a custom kernel anyways.
+
+Not sure how the computational model for the GPU works. I know that you
+don't want to be transferring a ton of data onto the GPU. But where do the
+actual instructions live?
+[Wikipedia](https://en.wikipedia.org/wiki/General-purpose_computing_on_graphics_processing_units)
+helpful here.
+
+The kernel is just the function that's applied to all the data. For this
+application we need to write a custom kernel. [Helpful
+post on arrayfire](http://arrayfire.com/custom-kernels-with-arrayfire/).
+
+Nice simple, explained example from Oak Ridge National Labs
+https://www.olcf.ornl.gov/tutorials/opencl-vector-addition/
+
+
+## Thu Dec 15 15:57:57 PST 2016
 
 Duncan asked me to step back and try to abstract the ideas here.
 
