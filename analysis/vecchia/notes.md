@@ -23,7 +23,17 @@ application we need to write a custom kernel. [Helpful
 post on arrayfire](http://arrayfire.com/custom-kernels-with-arrayfire/).
 
 Nice simple, explained example from Oak Ridge National Labs
-https://www.olcf.ornl.gov/tutorials/opencl-vector-addition/
+https://www.olcf.ornl.gov/tutorials/opencl-vector-addition/ 
+Able to make this example work on my Mac by making one change in
+`vecAdd.c`:
+```
+-#include <CL/opencl.h>
++#include <openCL/opencl.h>
+```
+Then compile with
+```
+cc -o bin/vecAdd_cl vecAdd.c -framework OpenCL
+```
 
 
 ## Thu Dec 15 15:57:57 PST 2016
