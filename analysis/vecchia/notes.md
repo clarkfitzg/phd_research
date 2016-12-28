@@ -40,6 +40,17 @@ This openCL requires a lot of boilerplate. I wonder if we could use the
 code analysis stuff to generate this from say R?
 
 Is it possible to call BLAS from within the kernel function?
+One [SO
+post](http://stackoverflow.com/questions/18709287/calling-blas-routines-inside-opencl-kernels) says no.
+For our application we would need to actually call the Cholesky in the
+kernel, which means we need LAPACK inside the kernel. 
+Most applications use a BLAS / LAPACK accelerated by the GPU, hence one
+doesn't call BLAS inside the kernel functions.
+So our application is the opposite.
+
+It would be possible to implement everything ourselves in the kernel-
+Cholesky, backsolving, etc. But this is a lot of work, and I doubt that it
+will work well.
 
 
 ## Thu Dec 15 15:57:57 PST 2016
