@@ -1,3 +1,26 @@
+## Wed Dec 28 10:21:55 PST 2016
+
+Once again the chunking problem arises- how do we break an array into
+chunks and evaluate that on the GPU? And will this even work? It works fine
+with multiprocessing. But all the (quite simple) GPU programs I've looked
+at seem to operate on one element in an array at a time. Looks like this
+can be done, see [blog
+post](http://gpgpu-computing4.blogspot.com/2009/10/matrix-multiplication-3-opencl.html)
+and developer [article from
+AMD](http://developer.amd.com/resources/articles-whitepapers/opencl-optimization-case-study-simple-reductions/).
+
+[Good
+article](http://downloads.ti.com/mctools/esd/docs/opencl/execution/kernels-workgroups-workitems.html) from TI mentions how important chunking can be:
+
+> simple tweaks to the balance of explicit kernel iteration versus the number
+> of work-items in a work-group can have a very large performance impact.
+
+Definitions of basic openCL concepts from
+[Intel](https://software.intel.com/sites/landingpage/opencl/optimization-guide/Basic_Concepts.htm). 
+A __device__ like CPU or GPU, contains 1 or more __compute units__ like
+cores. __work group__'s are able to execute independently- they contain 1
+or more __work items__ and can have subgroups in openCL 2.0.
+
 ## Tue Dec 27 09:59:21 PST 2016
 
 Now trying to get this stuff on the GPU. Looking at the Arrayfire library,
