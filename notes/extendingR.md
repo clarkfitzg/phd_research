@@ -1,3 +1,6 @@
+
+
+
 Wed Dec 28 16:51:44 PST 2016
 
 > Compiled subroutines dynamically linked to the R process
@@ -24,7 +27,8 @@ Principles:
 
 Mentions `.Primitive()` as being inherently not extensible because it uses
 a fixed internal lookup table for speed. So what is this `.Primitive()`?
-Indeed, looked at the R C code, and it is just a table in the C code.
+Indeed, looked at the R C code, and it is just a table in the C code in
+`src/main/names.c`.
 Interesting to me that the C code for internal things like `do_if`
 corresponding to R's `if()` is
 pretty small, maybe 20 lines.

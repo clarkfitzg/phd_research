@@ -1,3 +1,7 @@
+## Thu Dec 29 10:28:37 PST 2016
+
+
+
 ## Wed Dec 28 10:21:55 PST 2016
 
 Once again the chunking problem arises- how do we break an array into
