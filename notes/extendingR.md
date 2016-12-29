@@ -1,6 +1,17 @@
-Tue Dec 27 16:12:09 PST 2016
+Wed Dec 28 16:51:44 PST 2016
 
+> Compiled subroutines dynamically linked to the R process
 
+What does that mean?
+
+Function OOP:
+
+> The call to the generic is evaluated as a call to the selected method
+
+Ie. `print()`
+
+Encapsulated OOP - methods are part of class definition. The more
+conventional way of doing it.
 
 Thu Dec 22 16:23:56 PST 2016
 

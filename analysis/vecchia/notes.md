@@ -21,6 +21,10 @@ A __device__ like CPU or GPU, contains 1 or more __compute units__ like
 cores. __work group__'s are able to execute independently- they contain 1
 or more __work items__ and can have subgroups in openCL 2.0.
 
+It might be possible to use MAGMA or
+[clBLAS](https://github.com/clMathLibraries/clBLAS) to pull out the
+routines we need.
+
 ## Tue Dec 27 09:59:21 PST 2016
 
 Now trying to get this stuff on the GPU. Looking at the Arrayfire library,
