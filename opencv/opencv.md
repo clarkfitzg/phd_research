@@ -80,3 +80,30 @@ different implications for memory and garbage collection.
 
 TODO: How to observe what bad things can happen when `PROTECT()` isn't used
 in C code.
+
+BUG: 
+```
+Error in .C("cdot", a, n, out) :
+  "cdot" not resolved from current namespace (Callexample)
+```
+
+This one is an easy fix. It just means that the cdot function can't be
+found. This can happen:
+
+- The function `cdot` isn't actually there
+- The library didn't export it.
+- `extern` is not declared with the function using `.Call`
+
+Fought for a long time not realizing that `.C()` returns a list of modified args
+rather than actually updating the R objects in place. I must be confusing
+it with `.Call()`. Pain could have been avoided by a closer reading of the
+docs- I was just going off of the R Extensions manual and missed the little
+`$ab`.
+
+Interesting that the R Extensions Manual points out that C interfaces are
+to be preferred over C++ for better portability (5.6.1 External C++ code).
+
+I'm looking at the C code written to use `.Call()`, and thinking that it's
+unappealing to me because it mixes two languages. I wonder if it could be
+rewritten such that all the error checking and R specific building,
+memory management, etc, happens seperately from the actual numerical code.
