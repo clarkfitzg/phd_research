@@ -87,10 +87,10 @@ Error in .C("cdot", a, n, out) :
   "cdot" not resolved from current namespace (Callexample)
 ```
 
-This one is an easy fix. It just means that the cdot function can't be
+This means that the cdot function can't be
 found. This can happen:
 
-- The function `cdot` isn't actually there
+- The function `cdot` isn't actually there.
 - The library didn't export it.
 - `extern` is not declared with the function using `.Call`
 
@@ -107,3 +107,8 @@ I'm looking at the C code written to use `.Call()`, and thinking that it's
 unappealing to me because it mixes two languages. I wonder if it could be
 rewritten such that all the error checking and R specific building,
 memory management, etc, happens seperately from the actual numerical code.
+
+All the basic templates are written to compute the l2 norm of a vector.
+Benchmarks show `.C()` to be the slowest, presumably because of
+unnecessary copying in that case. For a vector of 1 million numbers the C
+version is a bit under 1 ms, while vanilla R is 3 ms.

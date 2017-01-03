@@ -1,3 +1,6 @@
+Simon Urbanek wrote an R / OpenCL package in 2012. Everything I'm
+interested in it seems like Simon has done significant work on.
+
 Do basic computations in R like `+` for vectors use BLAS? No, they need to
 handle NA's. It's done explicitly in the C code `arithmetic.c` which loops
 through each pair of elements in two integer vectors and calls `R_integer_plus`
