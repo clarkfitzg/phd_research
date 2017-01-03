@@ -32,3 +32,11 @@ Indeed, looked at the R C code, and it is just a table in the C code in
 Interesting to me that the C code for internal things like `do_if`
 corresponding to R's `if()` is
 pretty small, maybe 20 lines.
+
+`.Primitive()` actually seems bad for OOP. How do we write `+` or `length`
+methods for objects? Could look in the `Matrix` package and see how it's
+done. Pretty cool, they use S4 classes and lots of virtual classes. Looks
+like it's just the regular S4 `setMethod()`. Then how does it actually
+work?
+
+TODO: Visualize the Matrix OO hierarchy, ie. with GraphViz

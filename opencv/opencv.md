@@ -92,7 +92,7 @@ found. This can happen:
 
 - The function `cdot` isn't actually there.
 - The library didn't export it.
-- `extern` is not declared with the function using `.Call`
+- For C++, `extern` is not declared with the function using `.Call`
 
 Fought for a long time not realizing that `.C()` returns a list of modified args
 rather than actually updating the R objects in place. I must be confusing
@@ -112,3 +112,10 @@ All the basic templates are written to compute the l2 norm of a vector.
 Benchmarks show `.C()` to be the slowest, presumably because of
 unnecessary copying in that case. For a vector of 1 million numbers the C
 version is a bit under 1 ms, while vanilla R is 3 ms.
+
+But I still need to do an OO version of the template. This is more subtle.
+Should the data stay in C++ and only move to R when required?
+Is S4 or RC better?
+
+Another learning moment: when defining S4 methods like for `+` the method
+signatures must match. Ie. the args must be named `e1, e2`.
