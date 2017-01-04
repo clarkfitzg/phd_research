@@ -92,7 +92,19 @@ found. This can happen:
 
 - The function `cdot` isn't actually there.
 - The library didn't export it.
-- For C++, `extern` is not declared with the function using `.Call`
+- For C++, `extern C` is not used.
+
+Note that `extern C` is not specific to R at all. It just turns off name
+mangling to make it compatible with C.
+
+From http://www.agner.org/optimize/calling_conventions.pdf
+
+> The extern "C" attribute is only allowed for functions that can be coded
+> in C. Hence, overloaded functions and member functions cannot have the
+> extern "C" attribute.
+
+If this is the case, then how can we bring methods with various classes
+into R? Do we need to do our own name mangling?
 
 Fought for a long time not realizing that `.C()` returns a list of modified args
 rather than actually updating the R objects in place. I must be confusing
@@ -108,14 +120,63 @@ unappealing to me because it mixes two languages. I wonder if it could be
 rewritten such that all the error checking and R specific building,
 memory management, etc, happens seperately from the actual numerical code.
 
-All the basic templates are written to compute the l2 norm of a vector.
-Benchmarks show `.C()` to be the slowest, presumably because of
-unnecessary copying in that case. For a vector of 1 million numbers the C
-version is a bit under 1 ms, while vanilla R is 3 ms.
-
-But I still need to do an OO version of the template. This is more subtle.
-Should the data stay in C++ and only move to R when required?
-Is S4 or RC better?
+All the [basic
+templates](https://github.com/clarkfitzg/templates/tree/master/R) are
+written to compute the l2 norm of a vector.  Benchmarks show `.C()` to be
+the slowest, presumably because of unnecessary copying in that case. For a
+vector of 1 million numbers the C version is a bit under 1 ms, while
+vanilla R is 3 ms.
 
 Another learning moment: when defining S4 methods like for `+` the method
 signatures must match. Ie. the args must be named `e1, e2`.
+
+## OO links between R / C++
+
+But I still need to do an OO version of the template. This is more subtle.
+Should the data stay in C++ and only move to R when required?
+Is S4 or RC better? How to call a method from within R?
+
+Now that I've thought more about this it makes more sense when I look 
+at what Duncan did with `Rrawpoppler`. Especially important is the file
+`src/Rpoppler.h` that contains the definition of `GET_REF`.
+
+```
+#define GET_REF(obj, type) \
+  (type *) R_ExternalPtrAddr(GET_SLOT(obj, Rf_install("ref")))
+```
+
+I guess we need to know the type when get the reference because we're
+dealing with just a memory address, so nothing else is known?
+
+TODO: The R extensions manual has a [whole
+section](https://cran.r-project.org/doc/manuals/r-release/R-exts.html#External-pointers-and-weak-references)
+on this. Read and understand :)
+
+Let's look at what happens in some of this generated code.
+
+```
+extern "C"                                  // R uses this to link
+SEXP R_Page_getNum(SEXP r_tthis)            // SEXP input and output
+{
+    Page *tthis = GET_REF(r_tthis, Page);   // Recover the original C++ Page object
+    int ans;
+    ans = tthis->getNum();                  // Call getNum() method for tthis
+    SEXP r_ans = Rf_ScalarInteger(ans);     // Convert to R object and return
+    return(r_ans);
+}
+
+// Only difference below is that the code creates a new C++ object.
+
+extern "C"
+SEXP R_Page_getMediaBox(SEXP r_tthis)
+{
+    Page *tthis = GET_REF(r_tthis, Page);
+    PDFRectangle * ans;
+    ans = tthis->getMediaBox();
+    SEXP r_ans = R_createRef(ans, "PDFRectanglePtr", NULL);
+    return(r_ans);
+}
+```
+
+Name mangling format seems to be `R_Class_method`. But will this work if
+there are multiple methods corresponding to various arguments?
