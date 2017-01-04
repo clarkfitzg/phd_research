@@ -180,3 +180,26 @@ SEXP R_Page_getMediaBox(SEXP r_tthis)
 
 Name mangling format seems to be `R_Class_method`. But will this work if
 there are multiple methods corresponding to various arguments?
+
+## Necessary files / code
+
+I'm starting to tease out what files are necessary 
+and similar for any OO system connecting to R. It will be a good
+exercise to get this working in the very simple case, this can also be a
+test for RCodegen.
+
+Once I figure this out what is necessary we could make a function in
+RcodeGen that builds these R packages with everything they need.
+
+- `src/Rpoppler.h` contains the definition of `GET_REF`
+- `src/createRef.cc` is the actual implementation of the reference system.
+
+```
+clark@DSI-CF ~/dev/R-3.3.1
+$ grep -r "Rf_install(" *
+src/include/Rinternals.h:SEXP Rf_install(const char *);
+```
+
+I want to know what `Rf_install` does. How can I find this out? My goal
+above was to look at the actual definition, but grepping only finds this
+one file.
