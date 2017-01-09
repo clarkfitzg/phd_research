@@ -181,6 +181,10 @@ SEXP R_Page_getMediaBox(SEXP r_tthis)
 Name mangling format seems to be `R_Class_method`. But will this work if
 there are multiple methods corresponding to various arguments?
 
+This is really the same idea as a `SEXP` in C code, but inverted.
+Everything can be represented as something, say a `CPPOBJ` in R. This
+correspondence could be made tighter or looser as is convenient.
+
 ## Necessary files / code
 
 I'm starting to tease out what files are necessary 
