@@ -1,25 +1,14 @@
 ## Mon Jan 16 11:08:10 PST 2017
 
-Broader thought: OpenCL describes two common styles of parallelism.
-__Task__ parallelism is when each task is independent, so they can
-therefore happen in parallel. __Data__ parallelism is when the same
-function can be applied in parallel to every element of a data structure.
-The `future` package is very much task parallelism, while things like
-`parallel::apply` type functions are data based. Are there cases when it
-is beneficial to combine the two? Certainly:
-
-```
-a %<-% sapply(bigX, slowFUN)
-b <- mean(a)
-```
-
-Right now it's not clear how to combine these two strategies with `future`.
-
 ```
 
 library("future")
 
 ```
+
+## Syntax
+
+Defines a new operator `%<-%` for asynchronous assignment.
 
 ## Evaluation Strategies
 
@@ -95,10 +84,6 @@ OK![1] "numeric"
 ```
 
 
-## Syntax
-
-Defines a new operator `%<-%` for asynchronous assignment.
-
 ## Miscellaneous
 
 Uses [globals package](https://github.com/HenrikBengtsson/globals) which
@@ -123,7 +108,42 @@ this](https://cran.r-project.org/web/packages/future/vignettes/future-3-topologi
 
 `backtrace(f)` provides a way to debug futures that fail.
 
+Supporting packages `globals` and `listenv` are generally useful, and so
+have been made into their own packages. A nice way to reuse code and
+separate out functionality.
+
+`demo("mandelbrot", package="future", ask=FALSE)` provides a compelling
+visual demo.
+
 ## Critiques
+
+There are a few technical gotchas that are well described in a
+[vignette](https://cran.r-project.org/web/packages/future/vignettes/future-2-issues.html).
+
+Broader thought: OpenCL describes two common styles of parallelism.
+__Task__ parallelism is when each task is independent, so they can
+therefore happen in parallel. __Data__ parallelism is when the same
+function can be applied in parallel to every element of a data structure.
+The `future` package is very much task parallelism, while the parallel
+constructs that I'm familiar with in R like the `parallel::apply` type
+functions are data based. Are there cases when it is beneficial to combine
+the two? Certainly:
+
+```
+a %<-% sapply(bigX, slowFUN)
+b <- mean(a)
+```
+
+Right now it's not clear how to combine these two strategies with `future`.
+
+Current implementation blocks when all the workers are busy. The
+alternative is to manage a queue. Henrik has already thought of this:
+
+> The only work around for this is to have an internal queue of futures
+> that will be resolved as resources gets available. However, going down
+> that path is major work and basically risks reinventing job schedulers
+> and / or BatchJobs.
+
 
 ## Don't Understand
 
@@ -136,5 +156,23 @@ and recommended only for interactive prototyping. This seems unnecessary.
 > a %<-% {cat("OK!"); 10} %plan% lazy
 > a
 OK![1] 10
+
+```
+
+## Experiments
+
+```
+
+plan("eager")
+
+plan("multiprocess")
+
+a %<-% {cat("start\n")
+    Sys.sleep(10)
+    cat("end\n")
+    10
+} %lazy% FALSE
+
+b %<-% {cat("hey\n"); 10} %lazy% TRUE
 
 ```
