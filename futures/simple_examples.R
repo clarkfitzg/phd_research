@@ -3,9 +3,25 @@
 
 library("future")
 
-
-slow1 = function(sleep = 5)
+slow_add = function(x, sleep = 2)
 {
     Sys.sleep(sleep)
-    1
+    x + 1
 }
+
+
+plan(multicore, workers = 3)
+
+# Both blocks can execute at the same time.
+# Let's check to see if they do.
+
+a1 %<-% slow_add(1)
+b1 %<-% slow_add(a1)
+c1 %<-% slow_add(b1)
+
+a2 %<-% slow_add(1)
+b2 %<-% slow_add(a2)
+c2 %<-% slow_add(b2)
+
+# Hmmm sourcing this script takes 9 seconds. I expected it to take either 6
+# or 12.

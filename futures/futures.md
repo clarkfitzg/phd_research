@@ -144,6 +144,32 @@ alternative is to manage a queue. Henrik has already thought of this:
 > that path is major work and basically risks reinventing job schedulers
 > and / or BatchJobs.
 
+Consider the following code:
+
+```
+
+slow_add = function(x, sleep = 2)
+{
+    Sys.sleep(sleep)
+    x + 1
+}
+
+# Both blocks of code can execute at the same time.
+
+a1 %<-% slow_add(1)
+b1 %<-% slow_add(a1)
+c1 %<-% slow_add(b1)
+
+a2 %<-% slow_add(1)
+b2 %<-% slow_add(a2)
+c2 %<-% slow_add(b2)
+
+```
+
+With 2 slave processes this can potentially run in 3 * sleep time = 6 seconds.
+But because of the above reason it doesn't- it's blocked after the second
+line as b1 is evaluated by a different process. Similar to pipelining idea
+in Spark.
 
 ## Don't Understand
 

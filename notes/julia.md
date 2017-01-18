@@ -1,3 +1,15 @@
+Wed Jan 18 08:49:06 PST 2017
+
+The [ParallelAccelerator
+Package](http://julialang.org/blog/2016/03/parallelaccelerator) from Intel
+compiles Julia into OpenMP C++. They take regular user code, identify
+parallel patterns and make them actually run in parallel. Besides map,
+reduce, and array comprehensions they use a
+pattern I wasn't familiar with: stencil computations which iteratively
+update an array according to a fixed pattern. Side note- It's a shame they
+didn't plot their blurring example.  Nick and I could aspire to making
+something like this.
+
 Wed Nov  2 09:55:22 PDT 2016
 
 Ethan shared some links with me on how Julia exposes C code.
