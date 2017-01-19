@@ -1,3 +1,16 @@
+## Wed Jan 18 15:09:00 PST 2017
+
+What does it mean to compile something with OpenMP? That it can use
+multithreading? Can a compiler make a for loop parallel automatically?
+
+`#pragma` directives let one do implementation dependent things. For
+example, this lets one use the optional double precision extension in
+OpenCL:
+
+```
+#pragma OPENCL EXTENSION cl_khr_fp64 : enable
+```
+
 ## Fri Jan 13 09:17:21 PST 2017
 
 I was interested in how R handles NA's so I looked through the source code

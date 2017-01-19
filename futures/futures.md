@@ -84,7 +84,7 @@ OK![1] "numeric"
 ```
 
 
-## Miscellaneous
+## Globals
 
 Uses [globals package](https://github.com/HenrikBengtsson/globals) which
 builds on the `codetools` package to identify and handle global variables.
@@ -92,9 +92,16 @@ builds on the `codetools` package to identify and handle global variables.
 > identifying globals from static code inspection alone is a challenging
 > problem.
 
-globals need to be identified so that they can be exported to the processes
+Globals need to be identified so that they can be exported to the processes
 that are evaluating them. If they are small and there are few of them, it's
 no problem to send them over. If they're huge then it can be a problem.
+
+Different strategies can be selected:
+"Conservative" tries to find __only__ those that it's sure are globals.
+"Liberal" tries to find __all__ the globals, and may include extras.
+
+How does it do it? By walking through all the expressions via
+`codetools::walkCode`.
 
 ## Good Points
 
@@ -109,7 +116,7 @@ this](https://cran.r-project.org/web/packages/future/vignettes/future-3-topologi
 `backtrace(f)` provides a way to debug futures that fail.
 
 Supporting packages `globals` and `listenv` are generally useful, and so
-have been made into their own packages. A nice way to reuse code and
+have been made into their own packages. A nice way to organize code and
 separate out functionality.
 
 `demo("mandelbrot", package="future", ask=FALSE)` provides a compelling
@@ -154,7 +161,7 @@ slow_add = function(x, sleep = 2)
     x + 1
 }
 
-# Both blocks of code can execute at the same time.
+# In theory, the first 2 blocks of code can execute at the same time.
 
 a1 %<-% slow_add(1)
 b1 %<-% slow_add(a1)
@@ -164,12 +171,41 @@ a2 %<-% slow_add(1)
 b2 %<-% slow_add(a2)
 c2 %<-% slow_add(b2)
 
+sapply(c(c1, c2), slow_add)
+
 ```
 
 With 2 slave processes this can potentially run in 3 * sleep time = 6 seconds.
 But because of the above reason it doesn't- it's blocked after the second
 line as b1 is evaluated by a different process. Similar to pipelining idea
 in Spark.
+
+## Further Thoughts
+
+Static analysis opens up some new possibilities. For example, running code
+out of order or detecting parallel patterns and executing in parallel.
+
+What if you know how long each computation will take? This is theoretically
+impossible, and practically it's hard to know with stochastic, iterative
+computations. But it may be possible to know approximately how long each
+line of code takes to run.  This adds something to the computational task
+graph. Then it may be possible to take the static analysis and transform it
+into a mathematical optimization problem.
+
+Would lines of code be a good unit? Maybe not,
+since these should collapse into the same things:
+```
+
+b = f1(a)
+b = f2(b)
+b = f3(b)
+
+OR
+
+b = f3(f2(f1(a)))
+```
+
+
 
 ## Don't Understand
 
