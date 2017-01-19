@@ -3,7 +3,21 @@
 What does it mean to compile something with OpenMP? That it can use
 multithreading? Can a compiler make a for loop parallel automatically?
 
-`#pragma` directives let one do implementation dependent things. For
+```
+int main(int argc, char **argv)
+{
+    int a[100000];
+
+    #pragma omp parallel for
+    for (int i = 0; i < 100000; i++) {
+        a[i] = 2 * i;
+    }
+
+    return 0;
+}
+```
+
+`#pragma` preprocessor directives let one do implementation dependent things. For
 example, this lets one use the optional double precision extension in
 OpenCL:
 
