@@ -30,8 +30,8 @@ a %<-% slow1()
 
 ```
 
-Evaluation of expressions happen locally, as in a function, so it can't
-modify global state.
+Evaluation of expressions happen in a local environment that's fixed when
+the future is created, as in a function, so it can't modify global state.
 
 ```
 
@@ -98,10 +98,30 @@ no problem to send them over. If they're huge then it can be a problem.
 
 Different strategies can be selected:
 "Conservative" tries to find __only__ those that it's sure are globals.
-"Liberal" tries to find __all__ the globals, and may include extras.
+"Liberal" tries to find __all__ the globals, and may identify variables
+that are not actually globals.
 
 How does it do it? By walking through all the expressions via
 `codetools::walkCode`.
+
+From the documentation for `globals::globalsOf`:
+
+```
+Examples:
+
+     b <- 2
+     expr <- substitute({ a <- b; b <- 1 })
+
+     ## Will _not_ identify 'b' (because it's also a local)
+     globalsC <- globalsOf(expr, method="conservative")
+     print(globalsC)
+
+     ## Will identify 'b'
+     globalsL <- globalsOf(expr, method="liberal")
+     print(globalsL)
+```
+
+
 
 ## Good Points
 
