@@ -121,8 +121,6 @@ Examples:
      print(globalsL)
 ```
 
-
-
 ## Good Points
 
 Requires consistent behavior across different evaluation strategies,
@@ -171,6 +169,11 @@ alternative is to manage a queue. Henrik has already thought of this:
 > that path is major work and basically risks reinventing job schedulers
 > and / or BatchJobs.
 
+Asynchronous techniques are useful for programming on networks, because
+each call is inexpensive, yet it takes a relatively long time for a
+response over the network. It's not clear that `future` would help
+tremendously for this application.
+
 Consider the following code:
 
 ```
@@ -204,6 +207,19 @@ in Spark.
 
 Static analysis opens up some new possibilities. For example, running code
 out of order or detecting parallel patterns and executing in parallel.
+
+It might be possible to detect errors around argument classes. But this
+would break R's lazy evaluation semantics and really only makes sense for
+S4 methods.
+
+```
+
+> a %<-% sum("this will fail")
+> a + 10
+Error: invalid 'type' (character) of argument
+
+```
+
 
 What if you know how long each computation will take? This is theoretically
 impossible, and practically it's hard to know with stochastic, iterative
@@ -258,3 +274,5 @@ a %<-% {cat("start\n")
 b %<-% {cat("hey\n"); 10} %lazy% TRUE
 
 ```
+
+## Experiments
