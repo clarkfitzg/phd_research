@@ -206,6 +206,9 @@ image(x = x, y = y, z = density2
 lapply(s, function(l) lines(l, lwd = 3, col = "orange"))
 
 # Annotations
+# Thu Jan 26 08:45:17 PST 2017
+# I was playing around with different values here, so these annotations no
+# longer will make sense in the plot.
 text(0.003, 0.84, "Jam", col = "white", pos = 4)
 text(0.043, 0.84, "Congested", pos = 4)
 text(0.002, 0.6, "Empty", pos = 4)
