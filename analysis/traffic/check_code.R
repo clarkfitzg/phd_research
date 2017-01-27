@@ -1,7 +1,7 @@
 # Thu Jan 26 08:34:41 PST 2017
 
 # Analyzing code in the traffic simulation script
-# Going through the docs here:
+# Going through the very helpful docs here:
 # http://www.omegahat.net/CodeDepends/design.pdf
 
 library(CodeDepends)
@@ -20,8 +20,13 @@ methods(class = class(script))
 # Looks reasonable
 unique(getVariables(script))
 
+# And what about makeCallGraph?
 tg = makeTaskGraph(fname)
 
+# Looks like the global variables, ie. not builtin or funcs from packages
+glb = getInputs(script)
+
+#vg = makeVariableGraph(fname, vars)
 vg = makeVariableGraph(fname)
 
 pdf("simple2.pdf")
@@ -30,6 +35,5 @@ plot(vg, main = "Variables")
 plot(tg, main = "Tasks")
 dev.off()
 
-
-tg_edges = edges(tg)
-
+# Shows when we can remove the variables
+timelines = getDetailedTimelines(script)
