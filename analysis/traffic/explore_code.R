@@ -1,9 +1,5 @@
 # Thu Jan 26 08:34:41 PST 2017
 
-# Analyzing code in the traffic simulation script
-# Going through the very helpful docs here:
-# http://www.omegahat.net/CodeDepends/design.pdf
-
 library(CodeDepends)
 library(Rgraphviz)
 

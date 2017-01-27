@@ -3,8 +3,8 @@
 # simple. Linear model!
 
 n = 10
-y = rnorm(n)
 
+y = rnorm(n)
 x = 1:n
 
 # Will this formula object be correctly handled?

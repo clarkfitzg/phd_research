@@ -5,6 +5,8 @@ n = 10
 
 y = rnorm(n)
 x = 1:n
+# Never used
+z = runif(n)
 
 df_xy = data.frame(x = x , y = y)
 
