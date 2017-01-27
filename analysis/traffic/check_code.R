@@ -7,7 +7,7 @@
 library(CodeDepends)
 library(Rgraphviz)
 
-fname = "traffic_sim.R"
+fname = "simple1.R"
 
 script = readScript(fname)
 
@@ -21,16 +21,11 @@ methods(class = class(script))
 unique(getVariables(script))
 
 tg = makeTaskGraph(fname)
+vg = makeVariableGraph(fname)
 
-# This is nice, but labels should be visible
-pdf("taskgraph.pdf", width = 20, height = 12)
+# Hmmm, this isn't what I expected. Thought there would be 
+plot(vg)
 
-gv_attrs = list(graph = list()
-                , node = list(fontsize = 12, width = 1)
-                , edge = list()
-                )
-plot(tg, attrs = gv_attrs)
 
-dev.off()
-
+tg_edges = edges(tg)
 
