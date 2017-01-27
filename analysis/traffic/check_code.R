@@ -7,7 +7,7 @@
 library(CodeDepends)
 library(Rgraphviz)
 
-fname = "simple1.R"
+fname = "simple2.R"
 
 script = readScript(fname)
 
@@ -21,10 +21,14 @@ methods(class = class(script))
 unique(getVariables(script))
 
 tg = makeTaskGraph(fname)
+
 vg = makeVariableGraph(fname)
 
-# Hmmm, this isn't what I expected. Thought there would be 
-plot(vg)
+pdf("simple2.pdf")
+par(mfrow = c(1, 2))
+plot(vg, main = "Variables")
+plot(tg, main = "Tasks")
+dev.off()
 
 
 tg_edges = edges(tg)
