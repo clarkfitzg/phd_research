@@ -1,7 +1,4 @@
-# Fri Jan 27 17:14:23 PST 2017
-
 library(CodeDepends)
-library(Rgraphviz)
 
 fname = "simple2.R"
 

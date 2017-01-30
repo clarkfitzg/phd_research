@@ -3,7 +3,7 @@
 library(CodeDepends)
 library(Rgraphviz)
 
-fname = "simple2.R"
+fname = "simple3.R"
 
 script = readScript(fname)
 
@@ -33,3 +33,5 @@ dev.off()
 
 # Shows when we can remove the variables
 timelines = getDetailedTimelines(script)
+
+v = 
