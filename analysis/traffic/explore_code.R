@@ -33,5 +33,3 @@ dev.off()
 
 # Shows when we can remove the variables
 timelines = getDetailedTimelines(script)
-
-v = 

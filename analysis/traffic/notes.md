@@ -10,11 +10,14 @@ Other things that I can think of:
 - Separate single scripts into multiple scripts if they actually have two
   independent sequences of computation.
 
+These ideas stay much closer to the syntax and language of R compared to
+what Nick is doing.
+
 ## TODO
 
 - X Write manual parallel evaluation of the script
 - Put the graph into a data structure handling the parallel blocks.
-- X Write automated output.
+- Write automated output.
 
 ## The right data structure
 
@@ -44,7 +47,12 @@ which certainly does something weird. But what?
 Haven't yet checked things like:
 `<<-, assign`
 
+Recursion? Iterating updates?
+
 ## Permuting lines of code
+
+There are many possible scripts that can become the same task graph. The
+task then is to pick the best one of these scripts.
 
 Thought: Lines of code can run as task parallel if and only if permutation
 preserves the semantics of the program.
