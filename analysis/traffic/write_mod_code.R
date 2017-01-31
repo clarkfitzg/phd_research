@@ -40,7 +40,7 @@ print_to_char = function(x, nchars = 10000L)
     sink()
     out = readChar(f, nchars)
     unlink(f)
-    # Drop the trailing \n
+    # Drop the trailing newline
     gsub("\n$", "", out)
 }
 
@@ -68,6 +68,8 @@ makeTaskGraph2 = function(doc, frags = readScript(doc), info = as(frags, "Script
 
 
 tg2 = makeTaskGraph2(fname)
+
+nodes(tg2)
 
 # FINALLY figured out how to change the fontsize. Ack.
 x = layoutGraph(tg2)
