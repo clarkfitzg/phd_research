@@ -1,5 +1,6 @@
 library(CodeDepends)
 library(graph)
+library(Rgraphviz)
 
 
 fname = "simple3.R"
@@ -47,7 +48,6 @@ print_to_char = function(x, nchars = 10000L)
 
 tg = makeTaskGraph(fname)
 
-nodes(tg) = as.list(frags)
 
 makeTaskGraph2 = function(doc, frags = readScript(doc), info = as(frags, "ScriptInfo"))
 {
@@ -81,5 +81,5 @@ dev.off()
 
 # Another thing to do here is to just use a table mapping integers to
 # expressions
-expr_int = data.frame(int = as.character(seq_along(frags)))
-expr_int$expr = as(frags, "list")
+#expr_int = data.frame(int = as.character(seq_along(frags)))
+#expr_int$expr = as(frags, "list")
