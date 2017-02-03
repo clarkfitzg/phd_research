@@ -52,7 +52,10 @@ end
 
 b = runboot(nboots)
 
+# Runs in about 9.2 ms on Mac. And they're all unique and look to be in the
+# right ballpark. That means it seems to have worked!
+#
 # 19.3 ms on Pearson. Strange that the mac is so much faster.
-# Runs in about 9.2 ms. And they're all unique and look to be in the right
-# ballpark. That means it seems to have worked!
 @benchmark runboot(nboots)
+
+# If I bump the nboots up to 5000 then they both run at about ~27 ms.
