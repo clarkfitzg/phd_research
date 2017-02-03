@@ -39,7 +39,6 @@ __kernel void bootbeta(__global const float *x
 		, int n
         )
 """
-
 function runboot(nboots)
     queue(kernel, nboots, nothing
         , xd
@@ -59,3 +58,7 @@ b = runboot(nboots)
 @benchmark runboot(nboots)
 
 # If I bump the nboots up to 5000 then they both run at about ~27 ms.
+
+# How to remove the allocated buffers on the device? Are they
+# tied to the normal Julia garbage collection? Not important in this
+# application, but would be nice to know.
