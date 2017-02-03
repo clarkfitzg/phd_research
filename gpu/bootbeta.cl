@@ -1,5 +1,8 @@
-// https://en.wikipedia.org/wiki/Linear_congruential_generator
-// Using glibc version
+/* A simple random number generator
+ * https://en.wikipedia.org/wiki/Linear_congruential_generator
+ * Using glibc version
+ */
+
 int next_rand(int x)
 {
     // (ax + c) % m
@@ -7,7 +10,14 @@ int next_rand(int x)
 }
 
 
-// n is the length of x, y
+/* Fitting univariate OLS can be posed as a stream computation. 
+ * This kernel combines the stream with the bootstrap, so that each thread
+ * computes a pair of coefficients from bootstrap data.
+ *
+ * n is the length of x, y
+ * betas is a column major array of dimension (2 x nthreads)
+ */
+
 __kernel void bootbeta(__global const float *x
         , __global const float *y
         , __global float *betas
