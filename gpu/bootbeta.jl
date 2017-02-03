@@ -5,7 +5,7 @@ b0 = 1
 b1 = 5
 sigma = 10
 n = Int32(10_000)
-nboots = Int32(1_000)
+nboots = Int32(1000)
 
 srand(37)
 x = Float32.(rand(n))
@@ -52,6 +52,7 @@ end
 
 b = runboot(nboots)
 
+# 19.3 ms on Pearson. Strange that the mac is so much faster.
 # Runs in about 9.2 ms. And they're all unique and look to be in the right
 # ballpark. That means it seems to have worked!
 @benchmark runboot(nboots)
