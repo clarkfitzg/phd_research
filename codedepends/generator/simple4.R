@@ -2,8 +2,6 @@
 # How to simultaneously evaluate two blocks of code in R?
 # Assuming they're independent
 
-library(future)
-
 # start point
 n = 10
 
