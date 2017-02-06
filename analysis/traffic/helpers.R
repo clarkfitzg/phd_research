@@ -1,3 +1,8 @@
+library(CodeDepends)
+library(graph)
+library(Rgraphviz)
+
+
 # Capture printed output through a temporary file.
 # Hopefully there's a better way to do this!
 print_to_char = function(x, nchars = 10000L)

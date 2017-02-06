@@ -1,4 +1,5 @@
 
+
 What are all the useful things to do when rewriting code?  Duncan's very
 helpful docs here http://www.omegahat.net/CodeDepends/design.pdf give a
 handful of reasons.
@@ -48,6 +49,15 @@ Haven't yet checked things like:
 `<<-, assign`
 
 Recursion? Iterating updates?
+
+For printing and plotting I took the naive approach of using the variable
+names as node names in the graph. But this doesn't work because the graph
+expects unique node names, so code that reassigns variables generates the
+same name. `CodeDepends` gets around it by concatenating what looks like
+the first argument with the function name, and then something with `Task`.
+But this doesn't look right:
+
+![](2blocks.png)
 
 ## Permuting lines of code
 

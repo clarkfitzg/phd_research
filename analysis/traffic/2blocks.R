@@ -7,16 +7,15 @@ library(future)
 # start point
 n = 10
 
-cat("1st block started.\n")
+# 1st block
 x = rnorm(n)
-Sys.sleep(3)
 x = x + 5
-cat("1st block done.\n")
+x = x + 10
 
-cat("2nd block started.\n")
+# 2nd block
 y = rnorm(n)
-Sys.sleep(3)
 y = y + 5
-cat("2nd block done.\n")
+y = y + 10
 
+# Barrier- code must finish before here.
 z = x + y

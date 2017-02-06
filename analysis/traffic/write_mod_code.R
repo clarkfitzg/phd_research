@@ -1,7 +1,3 @@
-library(CodeDepends)
-library(graph)
-library(Rgraphviz)
-
 source("helpers.R")
 
 fname = "simple3.R"
@@ -27,7 +23,9 @@ nodes(tg2)
 
 # FINALLY figured out how to change the fontsize. Ack.
 png("code_graph.png", width = 1080, height = 1500)
+
 plot_big(tg2)
+
 dev.off()
 
 
