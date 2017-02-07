@@ -67,3 +67,39 @@ plot_big = function(g, fontsize = 40)
     nodeRenderInfo(lg) = list(fontsize = fontsize, lty = 0)
     renderGraph(lg)
 }
+
+# Pulling out of CodeDepends to reason through this.
+getDependsOn = function(var, info, vars = character())
+{
+	# Where does var appear as an input?
+    w = sapply(info, function(x) var %in% x@inputs)
+	# All the variables
+    ans = unique(unlist(c(lapply(info[w], getVariables))))
+    if (length(vars)) {
+        # Can't do match here, because it makes NA's which you can't build
+        # a graph of later.
+        #list(edges = match(ans, vars))
+        list(edges = intersect(ans, vars))
+    }
+    else ans
+}
+
+# Really only care about the variables that are defined in this script.
+# Reading through the docs, it seems that this may be the intended
+# behavior?
+# TODO: Ask Duncan - I don't know what's going on with these functions,
+# they seem to be computing everything in the signature.
+variable_graph = function(doc)
+{
+
+    frags = readScript(doc)
+    info = as(frags, "ScriptInfo")
+    inputs = getInputs(frags)
+    vars = unlist(lapply(inputs, function(x) x@outputs))
+    vars = unique(vars)
+    edges = lapply(vars, getDependsOn, info = info, vars = vars)
+
+    #vars = makeNodeLabs(vars)
+    names(edges) = vars
+    new("graphNEL", nodes = vars, edgeL = edges, edgemode = "directed")
+}

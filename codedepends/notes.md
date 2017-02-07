@@ -102,7 +102,7 @@ dev.off()
 }
 ```
 
-Here's the task graph when this change is made:
+The task graph looks closer to my mental model when this change is made:
 
 ![](traffic/traffic_sim2.png)
 
@@ -149,10 +149,37 @@ supply = function(density, lanes) {
 }
 ```
 
+These are not pure functions, for convenience they use global variables like
+`critical_density`.
+
 I'd expect to see dependencies (edges) based on where these functions are
 used. For example, `supply()` above uses another function `fd()` defined in
-the script. But maybe these are in another graph?
+the script. But maybe this stuff is in another graph- say the variable one?
 
+Not sure what's going on with the self referential nodes 40, 42, 44. 
+Appears to happen since I'm building up a list on the fly, referring to
+that existing list.
+
+```
+> frags2[c(40, 42, 44)]
+An object of class "Script"
+[[1]]
+s$firstcar$y = firstcar(s$firstcar$x)
+
+[[2]]
+s$nojam$y = nojam(s$nojam$x)
+
+[[3]]
+s$shock2$y = shock2(s$shock2$x)
+```
+
+Below is the variable graph. This looks reasonable, but I don't see
+anything with the function dependencies. For example, `iterate()` is the
+main function that calls all the helper functions like `supply(),
+demand()`, but we don't see those edges. This is the same issue as the task
+graph.
+
+![](traffic/vargraph.png)
 
 ## Detection:
 
