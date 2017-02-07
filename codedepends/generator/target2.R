@@ -19,7 +19,7 @@ library(parallel)
 n = 10
 
 
-block1 = mcparallel({
+mcparallel({
     cat("1st block\n")
     Sys.sleep(1)
     x1 = rnorm(n)
@@ -32,7 +32,7 @@ block1 = mcparallel({
 })
 
 
-block2 = mcparallel({
+mcparallel({
     cat("2nd block\n")
     Sys.sleep(1)
     y1 = runif(n)
@@ -46,8 +46,9 @@ block2 = mcparallel({
 # Or think of it as a fork / join.
 ############################################################
     collected = mccollect()
-    cat("Collected.\n")
+    message("Collected.\n")
 
+    # Pull these objects into the global environment
     for(process in collected)
     {
         for(varname in names(process))

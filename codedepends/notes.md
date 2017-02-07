@@ -1,4 +1,5 @@
 
+## General
 
 What are all the useful things to do when rewriting code?  Duncan's very
 helpful docs here http://www.omegahat.net/CodeDepends/design.pdf give a
@@ -19,6 +20,21 @@ what Nick is doing.
 - X Write manual parallel evaluation of the script
 - Put the graph into a data structure handling the parallel blocks.
 - Write automated output.
+
+## Detection:
+
+Not sure how to generally detect where the possibilities for
+parallel are. In a simple case of k obvious threads with one common
+ancestor and common child there is an obvious option:
+
+Remove the common ancestor and child and select the k disjoint subgraphs
+between them.
+
+Alternatively:
+
+1. Start at the top of the graph, and move down until one node has
+multiple children. Gather those child threads into 2 groups.
+2. Same thing starting at the bottom.
 
 ## The right data structure
 
