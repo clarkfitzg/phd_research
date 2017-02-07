@@ -39,12 +39,12 @@ multiple children. Gather those child threads into 2 groups.
 The most straightforward thing to do right now is take a more complex
 graph, say something like this:
 
-![]("larger_graph.png")
+![](larger_graph.png)
 
 And attempt to collapse the structure into one where the parallel threads
 become obvious:
 
-![]("simple_graph.png")
+![](simple_graph.png)
 
 The essential part for the multiprocessing is to have many "adjacent"
 threads (is there a correct graph term for this?)
