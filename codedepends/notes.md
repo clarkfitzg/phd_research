@@ -9,6 +9,7 @@ Other things that I can think of:
 
 - Given a big ugly script, pull out the minimal set of code to produce a
   final result. For example, everything needed to make `plot(finalresult)`.
+- Parse Rhistory to find the minimal set of code to reproduce a result.
 - Separate single scripts into multiple scripts if they actually have two
   independent sequences of computation.
 
@@ -20,6 +21,64 @@ what Nick is doing.
 - X Write manual parallel evaluation of the script
 - Put the graph into a data structure handling the parallel blocks.
 - Write automated output.
+
+## Traffic Script Example
+
+I fed in a script that performs some simple numerical approximation work
+for traffic simulation. Here's the task graph:
+
+![](traffic/traffic_sim.png)
+
+We see that these parameters are the important inputs:
+
+```
+> frags = readScript(fname)
+> # Important inputs
+> frags[c(1, 6, 9, 10, 14)]
+
+[[1]]
+two6 = TRUE
+
+[[2]]
+if (two6) {
+    dt_seconds = 0.3
+    dx_feet = 26.4
+    plotname = "dx26.pdf"
+}
+
+[[3]]
+miles = 1
+
+[[4]]
+regions_per_quadrant = round(miles/(4 * dx))
+
+[[5]]
+jam_density = 280
+
+```
+
+This looks correct- changes here affect every aspect of the execution.
+
+```
+> # Final results
+> frags[c(48, 49, 61)]
+
+[[1]]
+image(x = x, y = y, z = density2, useRaster = TRUE, col = brewer.pal(9,
+    "Blues"), xlab = "Time (hours)", ylab = "Position (miles)",
+    xlim = range(x), main = ttl, sub = "Orange lines are theoretical shockwaves")
+
+[[2]]
+lapply(s, function(l) lines(l, lwd = 3, col = "orange"))
+
+[[3]]
+image(x = x, y = y, z = density2, useRaster = TRUE, col = brewer.pal(9,
+    "Blues"), xlab = "Time (hours)", ylab = "Position (miles)",
+    xlim = range(x), main = "Starting with uniform density")
+
+```
+
+These also make sense, the main products are a few plots.
 
 ## Detection:
 

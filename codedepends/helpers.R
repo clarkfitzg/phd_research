@@ -25,9 +25,8 @@ print_to_char = function(x, nchars = 10000L)
 # want to verify, ie. = becomes <-
 makeTaskGraph2 = function(doc, frags = readScript(doc), info = as(frags, "ScriptInfo"))
 {
-    doc = fname
-    frags = readScript(doc)
-    info = as(frags, "ScriptInfo")
+    #TODO: looks weird in here
+
     nm = sapply(frags, print_to_char)
     # Causes warning since invalid object
     names(info) = nm
@@ -38,6 +37,26 @@ makeTaskGraph2 = function(doc, frags = readScript(doc), info = as(frags, "Script
     })
 
     new("graphNEL", nodes = nm, edgeL = edges, edgemode = "directed")
+}
+
+
+# Label the nodes with just the number of the expression. This is easier to
+# print, and we can easily use numbers to pull the index back out.
+makeNumberTaskGraph = function(doc)
+{
+    frags = readScript(doc)
+    info = as(frags, "ScriptInfo")
+
+    edges = lapply(info, function(x) {
+        list(edges = getPropagateChanges(getVariables(x), info,
+            index = TRUE))
+    })
+
+    nd = as.character(seq(length(info)))
+
+    names(edges) = nd
+
+    new("graphNEL", nodes = nd, edgeL = edges, edgemode = "directed")
 }
 
 
