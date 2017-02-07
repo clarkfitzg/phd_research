@@ -66,3 +66,4 @@ cat('\n# This block represents boilerplate for a barrier
 \n')
 
 cat(lines[length(lines)])
+sink()
