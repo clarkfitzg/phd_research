@@ -78,7 +78,81 @@ image(x = x, y = y, z = density2, useRaster = TRUE, col = brewer.pal(9,
 
 ```
 
-These also make sense, the main products are a few plots.
+These also make sense, the main products are a few plots. But this fails to
+capture the holistic plotting call- Every bit of plotting between:
+```
+pdf(...)
+...
+dev.off()
+```
+is needed to produce the complete plot.
+
+Most of the right hand side calculates a theoretical result, while the left
+hand side does the numerical approximation. They come together when
+expression 49 draws the theoretical lines onto an image of the numerical
+values.
+
+One way to make `CodeDepends` recognize this dependence is to put all the
+plotting call stuff in braces to make it a single expression:
+```
+{
+pdf(...)
+...
+dev.off()
+}
+```
+
+Here's the task graph when this change is made:
+
+![](traffic/traffic_sim2.png)
+
+Expression 47 is the big plot that brings everything together. Previously
+all those `text()` calls were single unconnected nodes, since they were
+hand selected to get a nice visual result.
+
+```
+> frags2[[47]]
+{
+    pdf(plotname)
+    image(x = x, y = y, z = density2, useRaster = TRUE, col = brewer.pal(9,
+        "Blues"), xlab = "Time (hours)", ylab = "Position (miles)",
+        xlim = range(x), main = ttl, sub = "Orange lines are theoretical shockwaves")
+    lapply(s, function(l) lines(l, lwd = 3, col = "orange"))
+    text(0.003, 0.84, "Jam", col = "white", pos = 4)
+    text(0.043, 0.84, "Congested", pos = 4)
+    text(0.002, 0.6, "Empty", pos = 4)
+    text(0.04, 0.25, "Lane Increase", pos = 4)
+    text(0.03, 0.5, "Uncongested", pos = 4)
+    text(0.0064, 0.38, "First Car", pos = 4)
+    text(0.05, 0.62, "Standing Shock", pos = 2)
+    text(0.016, 0.88, "Jam Dispersing", pos = 4)
+    text(0.019, 0.69, "Secondary\nShock", pos = 1)
+    dev.off()
+}
+```
+
+Other interesting pieces are nodes which don't have outgoing edges.
+
+- 47, 48 do plotting, this makes perfect sense
+- 26 calls `library()`
+- 20 - 24 define functions used for the numerical simulation
+- 32 defines a single function.
+
+For example:
+
+```
+> frags2[21]
+
+supply = function(density, lanes) {
+    congested = density > (lanes * critical_density)
+    ifelse(congested, fd(density, lanes), lanes * maxflow)
+}
+```
+
+I'd expect to see dependencies (edges) based on where these functions are
+used. For example, `supply()` above uses another function `fd()` defined in
+the script. But maybe these are in another graph?
+
 
 ## Detection:
 
