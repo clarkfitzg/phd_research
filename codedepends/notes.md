@@ -173,13 +173,14 @@ s$nojam$y = nojam(s$nojam$x)
 s$shock2$y = shock2(s$shock2$x)
 ```
 
-Below is the variable graph. This looks reasonable, but I don't see
+![](traffic/vargraph.png)
+
+This is the variable graph. This looks reasonable, but I don't see
 anything with the function dependencies. For example, `iterate()` is the
 main function that calls all the helper functions like `supply(),
 demand()`, but we don't see those edges. This is the same issue as the task
 graph.
 
-![](traffic/vargraph.png)
 
 ## Detection:
 
