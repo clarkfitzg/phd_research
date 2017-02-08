@@ -1,9 +1,14 @@
 # Wed Feb  8 11:11:22 PST 2017
 #
 # How much time does it take to fork()?
+#
+# Summary:
+# Overhead for mcparallel() with collect() is 1.5 ms
+# Starting R and doing a trivial eval in my terminal takes 150 - 200 ms
+# Same with Python is around 20 - 50 ms.
+
 
 library(microbenchmark)
-
 library(parallel)
 
 
@@ -49,3 +54,18 @@ microbenchmark({
     mcparallel({a = 1:1e6L})
     mccollect()
 }, times = 50L)
+
+
+# This is different since the forked processes will persist on the machine.
+cl = makeCluster(2L, "FORK")
+
+a = 1
+# 220 microseconds. An order of magnitude faster than forking
+microbenchmark(clusterExport(cl, "a"))
+
+# Sanity check
+clusterEvalQ(cl, a)
+
+a = 1:1e6L
+# 5 - 40 ms. That's not terrible. Pretty variable though.
+microbenchmark(clusterExport(cl, "a"))
