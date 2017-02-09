@@ -1,4 +1,3 @@
-## Main idea:
 
 > Let us change our traditional attitude to the construction of programs.
 > Instead of imagining that our main task is to instruct a computer what to
@@ -7,14 +6,20 @@
 
 - Don Knuth
 
+## Main idea:
+
 One can inspect the code itself at a high level from within R, programming
 on the language and potentially making changes to how the evaluation
 happens.
 
 ## Changes to Make
 
-- `makeTaskGraph` should also work for functions, not just scripts.
-- dependency graphs should represent functions that are created and called.
+Dependency graphs should include functions that are created and called
+later.
+
+`makeTaskGraph()` should also work for functions, not just scripts.
+
+Handle `source()`
 
 ## Lofty Goals
 
