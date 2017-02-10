@@ -75,12 +75,106 @@
 \section{Introduction}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+The idea behind code analysis is to treat the code itself as a data
+structure. This is an old idea, the R language reference cites the Lisp
+language as the inspiration.
 
-\section{Introduction}
+The interpreter works in a simple way. The \texttt{Rscript} command will go
+through a file line by line and parses then
+evaluates each statement. R's \texttt{source()} function on the other hand
+first parses the whole thing, and then evaluates it all. We propose to
+first parse and then examine whole scripts at a time, from just a couple
+lines to a few hundred lines of code.  The whole script is parsed into a
+directed graph data structure. Nodes contain the expressions and the edges
+contain the dependence information.  TODO: but what about control flow?
+loops?
+
+
+\section{Applications}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+What are all the useful things to do when rewriting code?  Duncan's very
+helpful docs here http://www.omegahat.net/CodeDepends/design.pdf give a
+handful of reasons.
+
+Other things that I can think of:
+
+- Given a big ugly script, pull out the minimal set of code to produce a
+  final result. For example, everything needed to make `plot(finalresult)`.
+- Parse Rhistory to find the minimal set of code to reproduce a result.
+- Separate single scripts into multiple scripts if they actually have two
+  independent sequences of computation.
+
+These ideas stay much closer to the syntax and language of R compared to
+what Nick is doing.
+
+\section{Detecting Parallelism}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Not sure how to generally detect where the possibilities for
+parallel are. In a simple case of k obvious threads with one common
+ancestor and common child there is an obvious option:
+
+Remove the common ancestor and child and select the k disjoint subgraphs
+between them.
+
+Alternatively:
+
+1. Start at the top of the graph, and move down until one node has
+multiple children. Gather those child threads into 2 groups.
+2. Same thing starting at the bottom.
+
+The most straightforward thing to do right now is take a more complex
+graph, say something like this:
+
+\centerline{\includegraphics{../codedepends/larger_graph.png}}
+
+
+And attempt to collapse the structure into one where the parallel threads
+become obvious:
+
+\centerline{\includegraphics{../codedepends/simple_graph.png}}
+
+The essential part for the multiprocessing is to have many "adjacent"
+threads (is there a correct graph term for this?)
+Optionally the adjacent threads can share a common parent and or child
+nodes.
+
+\section{The right data structure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+If the intermediate variable `b` is not used anywhere we probably want to
+collapse the following into a single block of code, since it has to happen
+sequentially. Therefore adding `future` here can't help at all. Unless it
+should happen at the same time as another block... then two blocks can
+execute simulataneously.
+
+\begin{verbatim}
+# Begin block
+a = 100
+b = a + 5
+c = sum(b)
+# end block
+\end{verbatim}
+
+\section{Hard things}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+`fit = lm(y ~ x)` doesn't detect the dependency of `fit` on `x, y`.
+
+Following the control flow for `lm` we see the following calls:
+`model.matrix.lm`, `model.frame.default`, `as.formula`. But eventually this
+`y ~ x` itself must be evaluated in which case `.Primitive("~")` is called,
+which certainly does something weird. But what?
+
+Haven't yet checked things like:
+`<<-, assign`
+
+Recursion? Iterating updates?
+
 \newpage
+
 \bibliographystyle{plain}
 \bibliography{citations} 
 
