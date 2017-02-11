@@ -3,3 +3,8 @@ data/*
 *.log
 *.log.*
 *.pdf
+
+*.aux
+*.bbl
+*.blg
+*.out

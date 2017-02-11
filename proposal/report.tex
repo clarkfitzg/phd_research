@@ -89,6 +89,57 @@ directed graph data structure. Nodes contain the expressions and the edges
 contain the dependence information.  TODO: but what about control flow?
 loops?
 
+\section{Dependencies}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+We need to start out with some definitions and basic concepts to make all
+of this precise. The following material is from the R
+Language Reference \cite{Rlang}.
+
+``A \textbf{statement} is a
+syntactically correct collection of tokens.'' Less formally one can think of
+a statement as a single line of code. The `line' rule doesn't always hold in practice,
+since a semicolon can put two statements on one line, and a single
+statement may span multiple lines.
+
+\begin{verbatim}
+# Two statements on line
+a <- 1; b <- 2
+
+# One statement on multiple lines
+plot(lm(y ~ x,
+        data = xydata))
+\end{verbatim}
+
+``An \textbf{expression} contains one or more statements.'' Expression objects
+in the langauge contain parsed but unevaluated statements.
+
+Statements can be grouped together using braces to form a \textbf{block}.
+
+\begin{verbatim}
+{
+a <- 1
+b <- 2
+}
+\end{verbatim}
+
+TODO: Not sure how to handle blocks. One option is to go inside them and
+look at all the individual statements. The other option, which seems easier
+at first, is to do what CodeDepends does and group them into one
+single logical unit. Presumably if a programmer writes a block like this
+they intend the whole thing to execute together. One typically sees blocks
+along with \texttt{if} statements.
+
+But in the end I think I'll have to go inside the blocks. For example, to
+get a minimum set of code to perform a final operation one would need to go
+into a block.
+
+\section{Related Work}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Jim Hester's covr package \cite{R-covr} checks unit test coverage of R
+code. It is a practical example of computing on the language,
+programmatically modifying the code by recording calls as they are made.
 
 \section{Applications}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -99,6 +150,8 @@ helpful docs here http://www.omegahat.net/CodeDepends/design.pdf give a
 handful of reasons.
 
 Other things that I can think of:
+
+Identification and elimination of dead code.
 
 - Given a big ugly script, pull out the minimal set of code to produce a
   final result. For example, everything needed to make `plot(finalresult)`.
