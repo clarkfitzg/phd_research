@@ -112,7 +112,8 @@ plot(lm(y ~ x,
 \end{verbatim}
 
 ``An \textbf{expression} contains one or more statements.'' Expression objects
-in the langauge contain parsed but unevaluated statements.
+in the langauge contain parsed but unevaluated statements. A
+\textbf{symbol} is a variable name such as \textbf{a, b} above.
 
 Statements can be grouped together using braces to form a \textbf{block}.
 
@@ -133,6 +134,19 @@ along with \texttt{if} statements.
 But in the end I think I'll have to go inside the blocks. For example, to
 get a minimum set of code to perform a final operation one would need to go
 into a block.
+
+So how do we detect dependencies in code?
+
+The nodes in the graph are blocks of code.
+A block may do several things
+\begin{itemize}
+    \item Use an existing symbol
+    \item Update an existing symbol
+    \item Define a new symbol
+\end{itemize}
+
+If it uses an existing symbol \texttt{x} then we define an edge from the last block
+that updated \texttt{x}.
 
 \section{Related Work}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
