@@ -1,4 +1,5 @@
 ex = parse(text = "
+           # Hey dude
            a <- 10
            b <- a + 5
            plot(a)

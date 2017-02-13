@@ -111,11 +111,15 @@ plot(lm(y ~ x,
         data = xydata))
 \end{verbatim}
 
+\textbf{symbol} is a variable name such as \textbf{a, b} above.  We'll use
+the words symbol, variable, and name interchangeably.
+
 ``An \textbf{expression} contains one or more statements.'' Expression objects
-in the langauge contain parsed but unevaluated statements. A
-\textbf{symbol} is a variable name such as \textbf{a, b} above.
+in the langauge contain parsed but unevaluated statements. 
 
 Statements can be grouped together using braces to form a \textbf{block}.
+Since expressions can be nested, we can consider a block just a special
+type of expression.
 
 \begin{verbatim}
 {
@@ -131,7 +135,8 @@ single logical unit. Presumably if a programmer writes a block like this
 they intend the whole thing to execute together. One typically sees blocks
 along with \texttt{if} statements.
 
-But in the end I think I'll have to go inside the blocks. For example, to
+But in the end I think I'll have to recurse inside the expressions at the
+script level, but not down into the supporting library R code. For example, to
 get a minimum set of code to perform a final operation one would need to go
 into a block.
 
@@ -140,16 +145,78 @@ So how do we detect dependencies in code?
 Idea talking with math student- count the incoming and outgoing edges. Use
 this info.
 
-The nodes in the graph are blocks of code.
-A block may do several things
-\begin{itemize}
-    \item Use an existing symbol
-    \item Update an existing symbol
-    \item Define a new symbol
-\end{itemize}
+\section{Graph Construction}
 
-If it uses an existing symbol \texttt{x} then we define an edge from the last block
-that updated \texttt{x}.
+The graphs can be built sequentially, as the script is parsed.
+
+The nodes in the graph are code expressions.
+An expression may do any combination of the following things:
+\begin{enumerate}
+    \item Define new symbols
+    \item Use existing symbols
+    \item Redefine existing symbols
+\end{enumerate}
+
+Consider the following simple script:
+
+\begin{verbatim}
+x <- 1:10   # expression 1
+plot(x)     # expression 2
+x <- 1:5    # expression 3
+plot(x)     # expression 4
+\end{verbatim}
+
+The first expression defines the new symbol \texttt{x}. The third
+expression redefines \texttt{x} without making use of the existing
+definition.
+
+The second expression uses \texttt{x}, so we define an edge from node 1 to 2.
+More generally we define an edge from the most recent expression that
+updated \texttt{x}. Therefore the fourth expression creates an edge from 3
+to 4.
+
+The complete graph is then:
+
+\begin{verbatim}
+1 -> 2
+3 -> 4
+\end{verbatim}
+
+But how will we know if the symbol exists? After parsing we could
+potentially see the timelines recording which symbols live, and if they are
+ever removed. This may depend on conditional statements, which we can't
+know. The safe thing then seems to just assume that they will be used.
+
+TODO: Is this just for the global namespace? How will it be different for
+others? I think it's ok to just focus on the globals first. Environments in
+general may require more thought.
+
+\section{Code graph and parse tree }
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The code graph and related data structures have some relation to the parsed
+script. Since the parser doesn't care about white space different scripts
+can produce the same parse tree. But scripts only differing in white space
+can be considered the same, which gives a 1 to 1 relationship between
+scripts and parse trees. 
+
+Many parse trees can give rise to the same code graph. For
+example, the code graph shouldn't care if one uses \texttt{<-} or
+\texttt{=} for assignment. Nor will it care about the ordering of two
+adjacent lines assigning a symbol to a literal constant:
+
+\begin{verbatim}
+a <- 1
+b <- 2
+\end{verbatim}
+
+Therefore we lose information by converting from a parse tree to this code
+graph.
+
+\section{How CodeDepends works}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 
 \section{Related Work}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -157,6 +224,11 @@ that updated \texttt{x}.
 Jim Hester's covr package \cite{R-covr} checks unit test coverage of R
 code. It is a practical example of computing on the language,
 programmatically modifying the code by recording calls as they are made.
+
+Gives me an idea... a similar strategy might work to collect timings and
+resource usage for functions called with various data sizes. Then we can
+use this info to programmatically modify the code: ie. if $n > 1000$ then
+run a multicore version.
 
 \section{Applications}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
