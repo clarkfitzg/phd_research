@@ -111,8 +111,11 @@ plot(lm(y ~ x,
         data = xydata))
 \end{verbatim}
 
-\textbf{symbol} is a variable name such as \textbf{a, b} above.  We'll use
-the words symbol, variable, and name interchangeably.
+\textbf{symbol} is a variable name such as \textbf{a, b} above.  The words
+symbol, variable, and name are used interchangeably. For consistency I'll
+stick with symbol.
+
+Assignment is the binding of a symbol to an R object. Complex assignment
 
 ``An \textbf{expression} contains one or more statements.'' Expression objects
 in the langauge contain parsed but unevaluated statements. 
@@ -142,7 +145,7 @@ into a block.
 
 So how do we detect dependencies in code?
 
-Idea talking with math student- count the incoming and outgoing edges. Use
+Idea talking with math students- count the incoming and outgoing edges. Use
 this info.
 
 \section{Graph Construction}
@@ -191,6 +194,12 @@ TODO: Is this just for the global namespace? How will it be different for
 others? I think it's ok to just focus on the globals first. Environments in
 general may require more thought.
 
+``R adheres to a set of rules that are called lexical scope. This means the
+variable bindings in effect at the time the expression was created are used
+to provide values for any unbound symbols in the expression.''
+\cite{Rlang} A primary goal is to respect R's lexical scoping rules.
+
+
 \section{Code graph and parse tree }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -203,7 +212,7 @@ scripts and parse trees.
 Many parse trees can give rise to the same code graph. For
 example, the code graph shouldn't care if one uses \texttt{<-} or
 \texttt{=} for assignment. Nor will it care about the ordering of two
-adjacent lines assigning a symbol to a literal constant:
+adjacent lines binding a symbol to a literal constant:
 
 \begin{verbatim}
 a <- 1
@@ -216,6 +225,29 @@ graph.
 \section{How CodeDepends works}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+The parsing uses an object oriented wrapper around R's builtin \texttt{parse()}
+which handles different file types and other arguments.
+
+The workhorse function looks to be \texttt{getInputs.language()}. This
+takes in an expression. It recurses through expressions until it finds
+calls, functions, or ???.
+For functions it uses
+\texttt{codetools::findGlobals()} to record global usage and function
+calls.
+For the rest it uses a collector object to move through the code and
+collect information about variable names, side effects, and functions
+called. There are many special cases handled in functionHandlers.R, such as
+\texttt{\$, rm, for} and non standard evaluation. Seems quite complicated.
+Comments mention dplyr operations.
+
+How much of this complexity can be handled by something like
+\texttt{getParseData()}? This provides a nice data frame. I think that I
+need to graph this to see how well I understand it.
+
+From what I see here CodeDepends uses the tokens
+somewhat indirectly, through functions like \texttt{is.name()}. 
+How long would it take to refactor CodeDepends so that I understand it?
+
 
 
 \section{Related Work}
@@ -225,10 +257,11 @@ Jim Hester's covr package \cite{R-covr} checks unit test coverage of R
 code. It is a practical example of computing on the language,
 programmatically modifying the code by recording calls as they are made.
 
-Gives me an idea... a similar strategy might work to collect timings and
+TODO Gives me an idea... a similar strategy might work to collect timings and
 resource usage for functions called with various data sizes. Then we can
 use this info to programmatically modify the code: ie. if $n > 1000$ then
-run a multicore version.
+run a multicore version. This is something like Profile Guided Optimization
+(PGO) https://en.wikipedia.org/wiki/Profile-guided_optimization.
 
 \section{Applications}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

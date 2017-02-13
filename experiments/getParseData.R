@@ -3,7 +3,10 @@ ex = parse(text = "
            a <- 10
            b <- a + 5
            plot(a)
+           fit <- lm(a ~ b)
 ")
+
+ex1 = ex[[1]]
 
 # Two expressions here
 
