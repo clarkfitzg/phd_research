@@ -8,6 +8,8 @@
 
 # This is a language object of length 3. The first element is `{`, the
 # other two are the two lines.
+# It would probably be straightforward to recurse inside these with
+# CodeDepends
 {
     a = 10
     b = 20

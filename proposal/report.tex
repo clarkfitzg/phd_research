@@ -297,6 +297,12 @@ use this info to programmatically modify the code: ie. if $n > 1000$ then
 run a multicore version. This is something like Profile Guided Optimization
 (PGO). This technique is now being used for Python. Could R use it too?
 
+Maybe a simpler way to do this is to just use the built in profiler. Use
+the results to determine whether parallelization is worth it, and maybe set
+some bounds for expected performance changes. There may be potential to use
+statistical methods for this.
+
+
 \section{Applications}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
