@@ -6,6 +6,8 @@
 
 library(igraph)
 
+igraph_options(plot.layout=layout_as_tree)
+
 ex = parse(text = "
            # Hey dude
            a <- 10
@@ -21,3 +23,4 @@ colnames(p2) = c("from", "to", "label")
 
 g = igraph::graph_from_data_frame(p2)
 
+plot(g)
