@@ -206,11 +206,15 @@ to provide values for any unbound symbols in the expression.''
 \section{Code graph and parse tree }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-The code graph and related data structures have some relation to the parsed
-script. Since the parser doesn't care about white space different scripts
-can produce the same parse tree. But scripts only differing in white space
-can be considered the same, which gives a 1 to 1 relationship between
-scripts and parse trees. 
+The code graph and related data structures are related to the parsed
+script, which we'll refer to as the \textbf{parse tree}. Since the parser
+doesn't care about white space different scripts can produce the same parse
+tree. R's \texttt{getParseData()} preserves all of the source
+information, and this can be very helpful for debugging or IDE's. Later
+this might be useful for injecting code.
+For our immediate purposes scripts differing only in comments and white space can be
+considered the same, which gives a 1 to 1 relationship between scripts and
+parse trees. 
 
 Many parse trees can give rise to the same code graph. For
 example, the code graph shouldn't care if one uses \texttt{<-} or
@@ -244,6 +248,12 @@ graph.
 \caption{Different representations of the script in Listing \ref{list:ab}}
 %\label{fig:test}
 \end{figure}
+
+For visualizing the control flow and dependencies it's important to have the entire
+expression available in the node as in Figure \ref{fig:codegraph}. This
+lets users easily connect the graph with the source file. Another thought
+that would make this easier- put the source code line number along with the
+line of code.
 
 
 \section{How CodeDepends works}
