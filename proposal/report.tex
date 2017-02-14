@@ -222,6 +222,17 @@ b <- 2
 Therefore we lose information by converting from a parse tree to this code
 graph.
 
+\lstinputlisting[language=R, caption=Simple script, label=list:ab]{../experiments/ast/ab.R}
+
+\begin{figure}
+    \caption{The AST for the script in Listing \ref{list:ab}}
+    \centering
+    \includegraphics[width=0.8\textwidth]{../experiments/ast/ast.pdf}
+    \label{fig:ast}
+\end{figure}
+
+
+
 \section{How CodeDepends works}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -261,7 +272,7 @@ TODO Gives me an idea... a similar strategy might work to collect timings and
 resource usage for functions called with various data sizes. Then we can
 use this info to programmatically modify the code: ie. if $n > 1000$ then
 run a multicore version. This is something like Profile Guided Optimization
-(PGO) https://en.wikipedia.org/wiki/Profile-guided_optimization.
+(PGO). This technique is now being used for Python. Could R use it too?
 
 \section{Applications}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
