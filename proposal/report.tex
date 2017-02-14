@@ -17,7 +17,10 @@
 \usepackage{graphicx}               
 % \centerline{\includegraphics{figure.pdf}}
 
-% Allows hyperlinks
+% subfigures, side by side
+\usepackage{subcaption}
+
+% hyperlinks
 \usepackage{hyperref}
 
 % Blocks of code
@@ -225,12 +228,22 @@ graph.
 \lstinputlisting[language=R, caption=Simple script, label=list:ab]{../experiments/ast/ab.R}
 
 \begin{figure}
-    \caption{The AST for the script in Listing \ref{list:ab}}
+\centering
+\begin{subfigure}{.6\textwidth}
     \centering
-    \includegraphics[width=0.8\textwidth]{../experiments/ast/ast.pdf}
+    \includegraphics[width=.8\linewidth]{../experiments/ast/ast.pdf}
+    \caption{Parse tree}
     \label{fig:ast}
+\end{subfigure}%
+\begin{subfigure}{.4\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{../experiments/ast/codegraph.pdf}
+  \caption{Expression dependency graph}
+  \label{fig:codegraph}
+\end{subfigure}
+\caption{Different representations of the script in Listing \ref{list:ab}}
+%\label{fig:test}
 \end{figure}
-
 
 
 \section{How CodeDepends works}
