@@ -44,15 +44,21 @@ makeTaskGraph2 = function(doc, frags = readScript(doc), info = as(frags, "Script
 # print, and we can easily use numbers to pull the index back out.
 makeNumberTaskGraph = function(doc)
 {
+
     frags = readScript(doc)
     info = as(frags, "ScriptInfo")
 
-    # WHERE to pass this arg??
+    # WHERE to pass this arg to inputCollector?? Doesn't seem to be any top
+    # level way.
     # , funcsAsInputs = TRUE
+
+    # x is of class ScriptNodeInfo, so it calls that method for
+    # getVariables
     edges = lapply(info, function(x) {
-        list(edges = getPropagateChanges(getVariables(x, functions = TRUE), info,
+        list(edges = getPropagateChanges(getVariables(x, ), info,
             recursive = FALSE, index = TRUE))
     })
+    # With recursive the graph is huge.
 
     nd = as.character(seq(length(info)))
 
@@ -60,6 +66,37 @@ makeNumberTaskGraph = function(doc)
 
     new("graphNEL", nodes = nd, edgeL = edges, edgemode = "directed")
 }
+
+
+# Label the nodes with just the number of the expression. This is easier to
+# print, and we can easily use numbers to pull the index back out.
+# Wed Feb 15 11:18:24 PST 2017
+# Another crack at it. Trying to get the function dependencies to show.
+makeNumberTaskGraph2 = function(doc)
+{
+
+    frags = readScript(doc)
+    info = as(frags, "ScriptInfo")
+
+    # None of these contained the UDF's. Which is probably why it fails!!
+    allinputs = lapply(info, function(x) x@inputs)
+
+
+
+    getPropagateChanges("fd", info, index = TRUE)
+
+    edges = lapply(info, function(x) {
+        list(edges = getPropagateChanges(getVariables(x, ), info,
+            recursive = FALSE, index = TRUE))
+    })
+
+    nd = as.character(seq_along(info))
+
+    names(edges) = nd
+
+    new("graphNEL", nodes = nd, edgeL = edges, edgemode = "directed")
+}
+
 
 
 # Hacking to get the fontsize legible for code graph.
