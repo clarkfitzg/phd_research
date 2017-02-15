@@ -47,9 +47,11 @@ makeNumberTaskGraph = function(doc)
     frags = readScript(doc)
     info = as(frags, "ScriptInfo")
 
+    # WHERE to pass this arg??
+    # , funcsAsInputs = TRUE
     edges = lapply(info, function(x) {
-        list(edges = getPropagateChanges(getVariables(x), info,
-            index = TRUE))
+        list(edges = getPropagateChanges(getVariables(x, functions = TRUE), info,
+            recursive = FALSE, index = TRUE))
     })
 
     nd = as.character(seq(length(info)))
