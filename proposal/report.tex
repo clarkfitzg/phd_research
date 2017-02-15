@@ -255,6 +255,10 @@ lets users easily connect the graph with the source file. Another thought
 that would make this easier- put the source code line number along with the
 line of code.
 
+Duncan was pointing out how I don't need the edge connecting the first line
+to the last line in Figure \ref{fig:codegraph}, because it's implied by the
+path through the intermediate node. True. So I could go through and remove
+those edges. How to do that?
 
 \section{How CodeDepends works}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -275,14 +279,17 @@ called. There are many special cases handled in functionHandlers.R, such as
 Comments mention dplyr operations.
 
 How much of this complexity can be handled by something like
-\texttt{getParseData()}? This provides a nice data frame. I think that I
-need to graph this to see how well I understand it.
+\texttt{getParseData()}? This provides a nice data frame. The graph
+representation is here in Figure \ref{fig:ast}.
 
 From what I see here CodeDepends uses the tokens
 somewhat indirectly, through functions like \texttt{is.name()}. 
 How long would it take to refactor CodeDepends so that I understand it?
 
-
+Alternatively I can write a simplified version that detects functions like
+I want it to. This would teach me more about the parse tree and make me
+appreciate what CodeDepends does. I can also use the igraph library.
+Regarding simplification, I can just look at the basic syntax and not 
 
 \section{Related Work}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -299,8 +306,8 @@ run a multicore version. This is something like Profile Guided Optimization
 
 Maybe a simpler way to do this is to just use the built in profiler. Use
 the results to determine whether parallelization is worth it, and maybe set
-some bounds for expected performance changes. There may be potential to use
-statistical methods for this.
+some bounds for expected performance changes if one uses various forms of
+parallelism. There may be potential to use statistical methods for this.
 
 
 \section{Applications}

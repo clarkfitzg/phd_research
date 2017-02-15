@@ -1,0 +1,10 @@
+Package: exgraph
+Type: Package
+Title: Create Dependency Graphs For R Expressions
+Version: 0.1
+Date: 2017-02-14
+Author: Clark Fitzgerald
+License: BSD
+Imports: igraph
+Suggests: testthat
+RoxygenNote: 6.0.1
