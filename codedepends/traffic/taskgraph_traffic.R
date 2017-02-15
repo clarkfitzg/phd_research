@@ -12,21 +12,6 @@ dev.off()
 
 frags = readScript(fname)
 
-charfrags = unlist(sapply(frags, as.character))
-grep("fd", charfrags)
-
-# at index 20
-# fd() is a user defined function called within the supply() function,
-# among other places. So the result from below should not be
-# empty
-coll = inputCollector(funcsAsInputs = TRUE)
-info = lapply(frags, getInputs, collector = coll)
-getPropagateChanges("fd", frags, info, recursive = TRUE)
-
-# What is the meaning of the outputs slot in this object:
-info[[20]]
-# Is it all the variables that have been used until now? Strange.
-
 # Important inputs
 frags[c(1, 6, 9, 10, 14)]
 
