@@ -286,15 +286,81 @@ to the last line in Figure \ref{fig:codegraph}, because it's implied by the
 path through the intermediate node. True. So I could go through and remove
 those edges. How to do that?
 
-This would then help me see where the parallelism is.
+This would then help me see where the parallelism is, and put it in an
+appropriate data structure.
 
-To do this I need to remove the edge if there is an alternate 
+To do this I need to remove single edges if a path of 
+
+But the task graph is not the same as control flow. Control flow is things
+like for, while, return, etc. The task graph is a higher level construct. 
+Nodes are R expressions that appear at the top level of a script, which
+means all control flow is captured \emph{inside} a node. Create an edge
+from node $A$ to $B$ if $B$ uses a variable that was most recently updated
+in $A$. There is some ambiguiity here, since variables may be created
+within conditional statements. In that case we can take the conservative
+approach of just creating the edge. An example:
+
+\begin{verbatim}
+# coinflip() randomly returns TRUE or FALSE
+x <- 10
+if(coinflip()) x <- 20
+if(coinflip()) x <- 30
+y <- x + 1
+\end{verbatim}
+
+But is the task graph a DAG? Yes, I think it has to be, unless you're doing
+something totally weird.  The reason is that R scripts execute
+sequentially, they don't have a GOTO statement. It's true that loops can
+repeat the same lines of code many times, but \texttt{for()\{...\}} and 
+\texttt{while()\{...\}} are just single top level expressions- we're not
+expanding them out in the graph $n$ times. This is an argument in favor of
+not recursing into these expressions- if we do then it opens up many
+problems. 
+
+One could make the argument that calling \texttt{source()} on some script
+a couple different times in a program can make for repeated code which
+causes trouble with the DAG. One way of handling this is to go read the
+contents of the file being sourced, then consider this statement just like
+any other- taking in variables and producing them.
+
+We can also introduce an artificial (graph style) source and sink representing the
+beginning and end of the program, respectively.
+
+Variable updates don't need to be DAGS- but then again it doesn't make
+perfect sense to talk about control flow in terms of variables.
+
+\section{Task Graph Literature Review}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Most of these highly cited papers seem to focus on making systems faster
+and more efficient. What about the value of looking at a task graph for
+educational / explanation purposes?
+
+Ferrante et. al. introduce the program dependence graph.
+\cite{ferrante1987}. The approach I'm looking at now should be higher level
+than this, because this explicitly handles control flow. I can get out of
+this by only looking at the top level statements in a script. The control
+flow there is super simple- all the statements execute in order!
+
+TODO: see which graph definitions we can borrow from this and other papers-
+ie. ``hammock''.
+
+\cite{cosnard1995automatic} describe constructing a task graph based on
+annotating the source code the program. They go into every iteration of the
+loop, which differes from what I'm proposing.
+
+\cite{adve2004parallel} presents a model for predicting the run time of
+programs based on a task graph. 
+Their definitions on page 98 are nice and clear, I should use them.
+Based on the graphs of their figures the
+programs seem very like very regular, well defined algorithmic programs. A
+general data analysis script in R is probably much more variable than this.
 
 \section{How CodeDepends works}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 The parsing uses an object oriented wrapper around R's builtin \texttt{parse()}
-which handles different file types ie. script or Rmd among other arguments.
+which handles different file types ie. script or dynamic documents among other arguments.
 This doesn't directly expose code comments.
 At first glance it seems CodeDepends uses the tokens
 more indirectly, through functions like \texttt{is.name()}. 
