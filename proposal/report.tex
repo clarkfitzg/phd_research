@@ -202,13 +202,39 @@ variable bindings in effect at the time the expression was created are used
 to provide values for any unbound symbols in the expression.''
 \cite{Rlang} A primary goal is to respect R's lexical scoping rules.
 
+Let $k$ be the number of cores on a machine.
+To accelerate code by running in parallel the best possible case is if
+we can keep all $k$ cores busy at once. This will happen if there are $nk$
+expressions which can be independently scheduled for some positive integer
+$n$. Additionaly, each expression should take long enough that
+it's worth the overhead of using an additional R process to evaluate it.
+On a two core machine that script might look something like:
+
+\begin{verbatim}
+# These could be run in parallel
+a <- long_running_func()
+b <- long_running_func()
+\end{verbatim}
+
+Side note- where exactly is the overhead of using multiple processes? Is
+there latency? There's certainly a limit to how much data we move.
+
+The worst possible case is if the second long running computation depends
+on the first, and everything else depends on the second. Then it must run
+in serial so multiprocessing can't help.
+
+\begin{verbatim}
+a <- long_running_func()
+b <- long_running_func2(a)  # depends on a
+# Now perform many operations on b
+\end{verbatim}
 
 \section{Code graph and parse tree }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 The code graph and related data structures are related to the parsed
 script, which we'll refer to as the \textbf{parse tree}. Since the parser
-doesn't care about white space different scripts can produce the same parse
+doesn't care about spaces, tabs, and comments,  different scripts can produce the same parse
 tree. R's \texttt{getParseData()} preserves all of the source
 information, and this can be very helpful for debugging or IDE's. Later
 this might be useful for injecting code.
@@ -260,36 +286,46 @@ to the last line in Figure \ref{fig:codegraph}, because it's implied by the
 path through the intermediate node. True. So I could go through and remove
 those edges. How to do that?
 
+This would then help me see where the parallelism is.
+
+To do this I need to remove the edge if there is an alternate 
+
 \section{How CodeDepends works}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 The parsing uses an object oriented wrapper around R's builtin \texttt{parse()}
-which handles different file types and other arguments.
+which handles different file types ie. script or Rmd among other arguments.
+This doesn't directly expose code comments.
+At first glance it seems CodeDepends uses the tokens
+more indirectly, through functions like \texttt{is.name()}. 
 
-The workhorse function looks to be \texttt{getInputs.language()}. This
-takes in an expression. It recurses through expressions until it finds
-calls, functions, or ???.
-For functions it uses
-\texttt{codetools::findGlobals()} to record global usage and function
-calls.
-For the rest it uses a collector object to move through the code and
-collect information about variable names, side effects, and functions
-called. There are many special cases handled in functionHandlers.R, such as
-\texttt{\$, rm, for} and non standard evaluation. Seems quite complicated.
-Comments mention dplyr operations.
+The workhorse functions are in \texttt{CodeDepends.R}. Overall, the
+approach resembles \texttt{codetools::walkCode} as discussed in
+\ref{chambers2016extending}. Essentially it walks the tree of code, calling
+a function to collect usage information.
 
-How much of this complexity can be handled by something like
-\texttt{getParseData()}? This provides a nice data frame. The graph
-representation is here in Figure \ref{fig:ast}.
+When analyzing a single expression, first a 
+collector object is created with \texttt{inputCollector()}. This is a
+closure that maintains a list of everything in the expression that has been seen
+so far: files, variables, function calls, etc. It returns a list of
+functions to update the data in the closure.
 
-From what I see here CodeDepends uses the tokens
-somewhat indirectly, through functions like \texttt{is.name()}. 
-How long would it take to refactor CodeDepends so that I understand it?
+\texttt{getInputs.language()} takes a collector object and
+recurses through expressions until it finds the leaf nodes which can be functions, calls, assignments,
+names, literals, or pairlists. Upon finding one of these leaf nodes it
+calls the collector object. 
+Many special cases of functions are handled in functionHandlers.R, such as
+\texttt{\$, rm, for} as well as non standard evaluation. Special attention seems
+to have been paid to dplyr operations.
 
-Alternatively I can write a simplified version that detects functions like
-I want it to. This would teach me more about the parse tree and make me
-appreciate what CodeDepends does. I can also use the igraph library.
-Regarding simplification, I can just look at the basic syntax and not 
+As a user I'd like a clean, well defined entry point and API for this
+stuff. The problem I had today was trying to pass arguments into
+\texttt{inputCollector}. I did this by hacking through the code of
+\texttt{makeTaskGraph}.
+
+TODO: Ask Duncan where the separation between CodeDepends and CodeAnalysis
+should be. How about makeTaskGraph? Probably first I should just look more
+in CodeAnalysis to see what's there.
 
 \section{Related Work}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -297,9 +333,17 @@ Regarding simplification, I can just look at the basic syntax and not
 Jim Hester's covr package \cite{R-covr} checks unit test coverage of R
 code. It is a practical example of computing on the language,
 programmatically modifying the code by recording calls as they are made.
+He pointed out a nice relevant idea distinguishing between AST's, parse
+trees, and "lossless syntax trees":
+\url{https://news.ycombinator.com/item?id=13628412}
+
+So if I'm going to programmatically modify the source code then this should really
+respect things like comments and whitespace. This could be more difficult
+than it appears on the surface.
 
 TODO Gives me an idea... a similar strategy might work to collect timings and
-resource usage for functions called with various data sizes. Then we can
+resource usage for functions called with various data sizes. We could
+attach timings to each expression. Then we can
 use this info to programmatically modify the code: ie. if $n > 1000$ then
 run a multicore version. This is something like Profile Guided Optimization
 (PGO). This technique is now being used for Python. Could R use it too?

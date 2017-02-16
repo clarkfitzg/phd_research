@@ -159,6 +159,8 @@ the script. But maybe this stuff is in another graph- say the variable one?
 Not sure what's going on with the self referential nodes 40, 42, 44. 
 Appears to happen since I'm building up a list on the fly, referring to
 that existing list.
+I think CodeDepends gets it wrong because the name of the list element
+accessed by `$` is the same as the function name being called.
 
 ```
 > frags2[c(40, 42, 44)]

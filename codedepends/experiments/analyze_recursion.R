@@ -1,12 +1,15 @@
 # Tue Feb 14 13:45:47 PST 2017
 
-library(CodeDepends)
-library(Rgraphviz)
+source("../helpers.R")
 
+tg = makeNumberTaskGraph("recursion.R")
 
-cg = makeCallGraph("recursion.R")
+plot(tg)
 
-# Neither of these have any edges because the function itself isn't handled
-# like a newly defined variable.
-tg = makeTaskGraph("recursion.R")
-vg = makeVariableGraph("recursion.R")
+# Why is there no edge between 1 and 2?
+# Because the function `factorial` that I've defined is also in the base
+# package. This is related to the arguments for
+# CodeDepends::inputCollector()
+# Probably wouldn't be too bad to add it in.
+
+s = readScript("recursion.R")
