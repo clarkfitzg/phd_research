@@ -284,12 +284,18 @@ line of code.
 Duncan was pointing out how I don't need the edge connecting the first line
 to the last line in Figure \ref{fig:codegraph}, because it's implied by the
 path through the intermediate node. True. So I could go through and remove
-those edges. How to do that?
+those edges. How to do that? Can a dominator tree help with this? It's nto
+a
 
 This would then help me see where the parallelism is, and put it in an
 appropriate data structure. Once I do that I can collapse simple threads
 consisting of chains of nodes with single inputs and outputs
 down into something like this:
+
+Looking at some of Nicks stuff- what I'm really thinking about is breaking
+up the basic blocks into expressions and looking at relationships between
+them, with parallelism as one potential end goal. He's looking
+more carefully at the control flow implied by how the user wrote the code.
 
 \begin{verbatim}
 A may have many incoming edges, C may have many outgoing edges.
@@ -309,7 +315,7 @@ means all control flow is captured \emph{inside} a node. Create an edge
 from node $A$ to $B$ if $B$ uses a variable that was most recently updated
 in $A$. There is some ambiguiity here, since variables may be created
 within conditional statements. In that case we can take the conservative
-approach of just creating the edge. An example:
+approach of just creating all the edges. An example:
 
 \begin{verbatim}
 # coinflip() randomly returns TRUE or FALSE
