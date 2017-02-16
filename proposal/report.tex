@@ -287,9 +287,20 @@ path through the intermediate node. True. So I could go through and remove
 those edges. How to do that?
 
 This would then help me see where the parallelism is, and put it in an
-appropriate data structure.
+appropriate data structure. Once I do that I can collapse simple threads
+consisting of chains of nodes with single inputs and outputs
+down into something like this:
 
-To do this I need to remove single edges if a path of 
+\begin{verbatim}
+A may have many incoming edges, C may have many outgoing edges.
+
+Then:
+A -> B -> C   becomes a single node ABC
+\end{verbatim}
+
+This will preserve the semantics and the ideal parallelism. Proof?
+It also leaves a data structure that's as simple as it can be, which is
+what I'd want to use when actually modifying the source code.
 
 But the task graph is not the same as control flow. Control flow is things
 like for, while, return, etc. The task graph is a higher level construct. 
@@ -355,6 +366,25 @@ Their definitions on page 98 are nice and clear, I should use them.
 Based on the graphs of their figures the
 programs seem very like very regular, well defined algorithmic programs. A
 general data analysis script in R is probably much more variable than this.
+
+This is one way to distinguish and justify my work here as different from
+CS- general forms of scripting and data analysis are usually quite
+different than a pure focus on algorithms.
+
+Nice explanation of program dependence graph (PDG):
+
+\begin{quote}
+    A PDG node represents
+    an arbitrary sequential computation (e.g., a basic block, a
+    statement, or an operation). An edge in a PDG represents
+    a control dependence or a data dependence. PDGs do not
+    contain any artificial sequencing constraints from the
+    program text; they reveal the ideal parallelism in a
+    program. \cite{sarkar1991automatic} 
+\end{quote}
+
+We can borrow their idea of distinguishing ideal parallelism from useful
+parallelism. Overhead makes these two different.
 
 \section{How CodeDepends works}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
