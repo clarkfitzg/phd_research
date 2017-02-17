@@ -392,6 +392,12 @@ Nice explanation of program dependence graph (PDG):
 We can borrow their idea of distinguishing ideal parallelism from useful
 parallelism. Overhead makes these two different.
 
+The hierarchical task graph was introduced in \cite{girkar1992automatic}
+for the purpose of detecting task parallelism in source code for use in compilers.
+As in the others, it incorporates the control flow for a fine grained
+parallelism. They allow `compound nodes' containing nested htg's.
+
+
 \section{How CodeDepends works}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
