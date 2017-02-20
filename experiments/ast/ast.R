@@ -1,4 +1,7 @@
-# Mon Feb 13 16:58:24 PST 2017
+# Mon Feb 20 11:54:51 PST 2017
+# Very weird - this runs fine when I `source()` it from an R prompt, but
+# doesn't run with Rscript command line
+
 #
 # Goal: plot the AST
 

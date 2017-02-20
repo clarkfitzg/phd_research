@@ -397,6 +397,10 @@ for the purpose of detecting task parallelism in source code for use in compiler
 As in the others, it incorporates the control flow for a fine grained
 parallelism. They allow `compound nodes' containing nested htg's.
 
+As of 2009, most efforts to parallelize R have focused on the lower level
+programming mechanisms. These needed to be in place before any higher level
+automatic detection could be built and function.
+\cite{schmidberger2009state} 
 
 \section{How CodeDepends works}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -450,7 +454,8 @@ respect things like comments and whitespace. This could be more difficult
 than it appears on the surface.
 
 TODO Gives me an idea... a similar strategy might work to collect timings and
-resource usage for functions called with various data sizes. We could
+resource usage for functions called with various data sizes. This could be
+implemented with something like \texttt{System.time()}. We could
 attach timings to each expression. Then we can
 use this info to programmatically modify the code: ie. if $n > 1000$ then
 run a multicore version. This is something like Profile Guided Optimization
@@ -459,12 +464,24 @@ run a multicore version. This is something like Profile Guided Optimization
 Maybe a simpler way to do this is to just use the built in profiler. Use
 the results to determine whether parallelization is worth it, and maybe set
 some bounds for expected performance changes if one uses various forms of
-parallelism. There may be potential to use statistical methods for this.
+parallelism. 
+
+There may be potential to use statistical methods for this.
+Run it many times, collecting profiling results for various values and use
+this as the training data. After all, we have easy access to all the
+machine learning type things that we need. We can use it to automatically
+tune. But this implies that there is some way to tune it. Right now the
+only "trick" I have up my sleeve is to try to parallelize it.
+
+The vignette in Tierney's \texttt{proftools} package has some nice examples
+of visualizing profiling data. The call graphs and related visualizations
+are conceptually similar to what I have in mind.
+Wickham's \texttt{profvis} integrates with the IDE to indicate the actual
+line of source code along with the related timing info.
 
 
 \section{Applications}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 What are all the useful things to do when rewriting code?  Duncan's very
 helpful docs here http://www.omegahat.net/CodeDepends/design.pdf give a
@@ -482,6 +499,13 @@ Identification and elimination of dead code.
 
 These ideas stay much closer to the syntax and language of R compared to
 what Nick is doing.
+
+I've been considering this for the purpose of analyzing, accelerating and
+optimizing essentially single scripts. But how important is this generally?
+It only matters if someone's script runs slow. Probably this mostly happens
+due to one large computation. If they're doing two large and independent
+computations in one script shouldn't that be two scripts? But these tools
+should be able to split them up at that level if I ask them to.
 
 \section{Detecting Parallelism}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
