@@ -408,6 +408,39 @@ slightly higher level. The hope is that staying at a high level will make
 this more productive / easier to reason about and use than a low level
 thing that examines every bit of control flow.
 
+So I wonder how much this has to be tied to R? CodeDepends is of course
+purely for R. But other tools exist to manipulate parse trees independently
+of any language, for example
+\url{https://github.com/tree-sitter/tree-sitter}. Differences among
+languages... it would have to recognize that a Python methods often mutate
+their objects, for example:
+
+\begin{verbatim}
+x = [3, 1, 2]
+x.sort()        # Sorts x in place, returning None
+\end{verbatim}
+
+LLVM has some functionality for working with these use / def chains
+\cite{Lattner2004}. For example:
+\url{http://llvm.org/docs/ProgrammersManual.html#iterating-over-def-use-use-def-chains}.
+Following their terminology, an object of class \texttt{Value} is used by
+potentially many objects of class \texttt{User}. The \emph{def-use} chain
+is the list of all \texttt{Users} for a particular \texttt{Value}. I think
+of this as all the places in the code where this variable propagates. In
+contrast, the \emph{use-def} chain is the list of all \texttt{Values} for a
+particular \texttt{User}. This is all the inputs to a newly
+created object. There's room for both of these chains to be expanded recursively.
+
+In this example the def-use chain for \texttt{x} is only \texttt{[y]}, but the
+recursive one is \texttt{[y, z]}. The use-def chain for \texttt{y} is
+\texttt{[z]}.
+
+\begin{verbatim}
+x = 10
+y = x + 5
+z = y + 2
+\end{verbatim}
+
 \section{How CodeDepends works}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
