@@ -404,7 +404,9 @@ automatic detection could be built and function.
 
 What I'm looking at is very close to the Use-define chain.
 \url{https://en.wikipedia.org/wiki/Use-define_chain}. But I'm staying just
-slightly higher level.
+slightly higher level. The hope is that staying at a high level will make
+this more productive / easier to reason about and use than a low level
+thing that examines every bit of control flow.
 
 \section{How CodeDepends works}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -510,6 +512,10 @@ It only matters if someone's script runs slow. Probably this mostly happens
 due to one large computation. If they're doing two large and independent
 computations in one script shouldn't that be two scripts? But these tools
 should be able to split them up at that level if I ask them to.
+
+Remove all objects as soon as they're finished being used in the script. If
+creating many large intermediate objects this could help with not using
+excessive memory.
 
 \section{Detecting Parallelism}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
