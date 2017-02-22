@@ -92,6 +92,11 @@ directed graph data structure. Nodes contain the expressions and the edges
 contain the dependence information.  TODO: but what about control flow?
 loops?
 
+Big point- Compilers have used all manners of static analysis and
+intermediate optimizations to create more efficient code. Interpreted
+languages are much more limited. But why not build refactoring tools that
+can improve the performance?
+
 \section{Dependencies}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -408,6 +413,13 @@ slightly higher level. The hope is that staying at a high level will make
 this more productive / easier to reason about and use than a low level
 thing that examines every bit of control flow.
 
+The Use-definition chain has been around since at least 1978
+when it was used to remove dead (unused) code\cite{kennedy1978use}. This
+reference has a nice consideration of what makes a computation useful or
+not. It defines it recursively- something is useful if it's used later by another
+computation. But this seems like it would lead to destroying the whole
+program one variable at a time if you keep applying it.
+
 So I wonder how much this has to be tied to R? CodeDepends is of course
 purely for R. But other tools exist to manipulate parse trees independently
 of any language, for example
@@ -432,14 +444,18 @@ particular \texttt{User}. This is all the inputs to a newly
 created object. There's room for both of these chains to be expanded recursively.
 
 In this example the def-use chain for \texttt{x} is only \texttt{[y]}, but the
-recursive one is \texttt{[y, z]}. The use-def chain for \texttt{y} is
-\texttt{[z]}.
+recursive one is \texttt{[y, z, z2]}. The use-def chain for \texttt{y} is
+\texttt{[z, z2]}.
 
 \begin{verbatim}
 x = 10
 y = x + 5
 z = y + 2
+z2 = y + 100
 \end{verbatim}
+
+We might be able to use this along with R code to determine if an R
+function calling C code is pure.
 
 \section{How CodeDepends works}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

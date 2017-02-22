@@ -6,6 +6,8 @@ source("../helpers.R")
 
 tg = makeNumberTaskGraph("dollars.R")
 
+tg = CodeDepends::makeTaskGraph("dollars.R")
+
 plot(tg)
 
 
