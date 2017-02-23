@@ -4,9 +4,18 @@ library(CodeDepends)
 library(igraph)
 
 
+#" Index Of Most Recent Update
+#"
+#" @param varname variable name
+#" @param info object of class \code{CodeDepends::ScriptInfo}
+most_recent_update = function(varname, info)
+{
+}
+
+
 #" Expression Dependency Graph
 #"
-#" Create a DAG representing minimal set of expression dependencies
+#" Create a DAG representing a minimal set of expression dependencies
 #"
 #" @param script as returned from \code{\link[CodeDepends]{readScript}}
 depend_graph = function(script)
@@ -15,8 +24,20 @@ depend_graph = function(script)
     info = as(script, "ScriptInfo")
     n = length(info)
 
-    # TODO: Add real code
-    make_graph(numeric(), n = 1)
+    # Degenerate cases
+    if (n == 0){
+        return(make_empty_graph())
+    }
+    if (n == 1){
+        # Graph with one node, no edges.
+        return(make_graph(numeric(), n = 1))
+    }
+
+    for(i in 2:n){
+    }
+
+    graph_from_edgelist(edges)
+
 }
 
 
@@ -40,7 +61,7 @@ test_that("Degenerate cases, 0 or 1 nodes", {
 
     s0 = readScript(txt = "
     ")
-    g0 = make_graph(numeric(), n = 0)
+    g0 = make_empty_graph()
     gd0 = depend_graph(s0)
     expect_samegraph(g0, gd0)
 

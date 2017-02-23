@@ -601,6 +601,22 @@ nodes.
 \section{The right data structure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+I want to work with a DAG constraining the order in which the statements
+must execute. This DAG can initially be built sequentially with the following
+algorithm:
+
+\begin{verbatim}
+for statement in allstatements
+    for input variable x in statement
+        create an edge from the most recently seen statement which outputs x
+\end{verbatim}
+
+It's not sufficient to just draw a single edge for 
+
+TODO:
+Can this be a tree? Yes. Is it always a tree? I don't think so... Maybe
+once extraneous stuff is trimmed off?
+
 If the intermediate variable `b` is not used anywhere we probably want to
 collapse the following into a single block of code, since it has to happen
 sequentially. Therefore adding `future` here can't help at all. Unless it

@@ -1,5 +1,5 @@
-# An example of an update that may or may not happen.
-
-a = 1
-if(sample(c(TRUE, FALSE), 1)) a = a + 1
-print(a)
+# Will there be an edge from the first to the last node?
+y = 10
+x = 100
+y = x + 5
+plot(x, y)
