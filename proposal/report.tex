@@ -534,6 +534,27 @@ are conceptually similar to what I have in mind.
 Wickham's \texttt{profvis} integrates with the IDE to indicate the actual
 line of source code along with the related timing info.
 
+Knitr (TODO cite) facilitates reproducible computations for
+chunks of code in Rmarkdown documents. One feature it enables is caching,
+ie. it doesn't need to run a chunk of code if nothing has changed. One can
+manually specify the chunk dependencies by relative or absolute indices,
+ie. -2 for the chunk 2 blocks in front of the current chunk, or 1 for the
+first chunk. This seems unreliable because it requires the user to
+accurately infer the dependency information, and it doesn't automatically
+adjust if one inserts new chunks in the document.
+
+Knitr also has an \texttt{autodep} option to infer this dependency
+information. This works by comparing the global variables existing before
+and after running the code in each chunk. It stores this information in
+special files. So it doesn't use any static analysis of the code.
+
+But the structure of knitr blocks here is actually very appealing- this is
+a great use case for the parallelism. Why not evaluate the chunks in
+parallel if you can? I wonder how difficult it would be to hook into
+knitr's system... And while I'm at it, why not Jupyter Notebooks? If I can
+figure out how to build an equivalent dependency graph for Python that
+would be great.
+
 
 \section{Applications}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -611,7 +632,12 @@ for statement in allstatements
         create an edge from the most recently seen statement which outputs x
 \end{verbatim}
 
-It's not sufficient to just draw a single edge for 
+But why am I interested in this DAG? More interesting is the partial
+ordering that comes from it.
+
+It's not sufficient to just draw a single edge for the most recently used
+variable. This will make a tree, but then it won't necessarily contain all
+the dependency info.
 
 TODO:
 Can this be a tree? Yes. Is it always a tree? I don't think so... Maybe
