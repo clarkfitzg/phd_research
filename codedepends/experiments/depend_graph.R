@@ -28,7 +28,12 @@ most_recent_update = function(varname, info)
 depend_graph = function(script)
 {
 
-    info = as(script, "ScriptInfo")
+    # A list of ScriptNodeInfo objects. May be useful to do more with
+    # these later, so might want to save or return this object.
+    info = lapply(script, function(x){
+        getInputs(x, collector = inputCollector(checkLibrarySymbols = TRUE))
+    })
+
     n = length(info)
 
     # Degenerate cases
@@ -87,6 +92,21 @@ test_that("Degenerate cases, 0 or 1 nodes", {
     gd1 = depend_graph(s1)
 
     expect_samegraph(g1, gd1)
+
+})
+
+
+test_that("User defined functions are dependencies", {
+
+    s = readScript(txt = "
+    f2 = function() 2
+    x = f2()
+    ")
+
+    desired = make_graph(c(1, 2))
+    actual = depend_graph(s)
+
+    expect_samegraph(desired, actual)
 
 })
 
