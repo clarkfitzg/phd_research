@@ -4,6 +4,9 @@ library(CodeDepends)
 library(igraph)
 
 
+igraph_options(plot.layout=layout_as_tree)
+
+
 #" Index Of Most Recently Defined Varname
 #"
 #" @param varname variable name
@@ -49,7 +52,9 @@ depend_graph = function(script)
     }
 
     edgemat = matrix(edges, ncol = 2)
-    graph_from_edgelist(edgemat)
+    g = graph_from_edgelist(edgemat)
+    # Removes multiple edges
+    simplify(g)
 }
 
 
@@ -95,6 +100,7 @@ test_that("Self referring node does not appear", {
 
     desired = make_graph(c(1, 2))
     actual = depend_graph(s)
+
     expect_samegraph(desired, actual)
 
 })
