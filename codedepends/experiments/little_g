@@ -1,0 +1,7 @@
+/* Created by igraph @VERSION@ */
+digraph {
+  0;
+  1;
+
+  0 -> 1;
+}

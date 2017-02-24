@@ -57,6 +57,8 @@ depend_graph = function(script)
     }
 
     # Checking if the node labels are correct
+    # Problem seems to be that it switches to 0 based indexing when writing
+    # to dot
     #edges = as.character(edges)
     #edgemat = matrix(edges, ncol = 2)
     g = make_graph(edges, n = n)
