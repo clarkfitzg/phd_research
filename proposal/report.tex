@@ -97,6 +97,19 @@ intermediate optimizations to create more efficient code. Interpreted
 languages are much more limited. But why not build refactoring tools that
 can improve the performance?
 
+Why this matters. It's reasonable to try to improve code performance if
+slow speed affects many users. For scripts, superficially it might appear
+that few people are affected. Indeed, if a researcher writes one script that
+takes a couple minutes to run, and they run it a couple times then it
+doesn't matter much, and there's no point in attempting to accelerate it.
+However, these same sorts of "scripts" can be used in more serious ways.
+For example, scripts can be used as Extract Transform Load (ETL) tools that
+run as batch jobs every day or every hour. Then the script runs
+many times, so it's important to realize more performance. For
+ease of use and maintainability it's nice to have automatic tools to
+accelerate the performance. One can write natural, beginner level scripts
+and have them run much faster.
+
 \section{Dependencies}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -417,8 +430,12 @@ The Use-definition chain has been around since at least 1978
 when it was used to remove dead (unused) code\cite{kennedy1978use}. This
 reference has a nice consideration of what makes a computation useful or
 not. It defines it recursively- something is useful if it's used later by another
-computation. But this seems like it would lead to destroying the whole
-program one variable at a time if you keep applying it.
+computation. This is combined with the ``base case'' of usefulness- there's
+a set of operations that are considered intrinsically useful. This author
+considers calls to subroutines and branch test instructions as
+intrinsically useful. We might take this idea and tweak it a little- define
+R expressions as intrinsically useful if they have a side effect, ie. any
+plotting commands, saving data to disk, etc.
 
 So I wonder how much this has to be tied to R? CodeDepends is of course
 purely for R. But other tools exist to manipulate parse trees independently
@@ -632,12 +649,15 @@ for statement in allstatements
         create an edge from the most recently seen statement which outputs x
 \end{verbatim}
 
-But why am I interested in this DAG? More interesting is the partial
-ordering that comes from it.
-
 It's not sufficient to just draw a single edge for the most recently used
 variable. This will make a tree, but then it won't necessarily contain all
 the dependency info.
+
+But why am I interested in this DAG? Maybe more interesting is the partial
+ordering that comes from it. And the threads. So maybe I need to think
+about how to go from the DAG to the partial ordering. Wikipedia article for
+partially ordered sets cites the set of vertices of a DAG ordered by
+reachability as an example.
 
 TODO:
 Can this be a tree? Yes. Is it always a tree? I don't think so... Maybe

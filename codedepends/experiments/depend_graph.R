@@ -4,18 +4,22 @@ library(CodeDepends)
 library(igraph)
 
 
-#" Index Of Most Recent Update
+#" Index Of Most Recently Defined Varname
 #"
 #" @param varname variable name
 #" @param info object of class \code{CodeDepends::ScriptInfo}
 most_recent_update = function(varname, info)
 {
+    outputs = sapply(info, function(x) varname %in% x@outputs)
+    tail(which(outputs), 1)
 }
 
 
 #" Expression Dependency Graph
 #"
-#" Create a DAG representing a minimal set of expression dependencies
+#" Create a DAG representing a set of expression dependencies.
+#" I'm not yet trying to take the minimal set of such dependencies, because
+#" it's not clear that this is necessary.
 #"
 #" @param script as returned from \code{\link[CodeDepends]{readScript}}
 depend_graph = function(script)
@@ -33,11 +37,19 @@ depend_graph = function(script)
         return(make_graph(numeric(), n = 1))
     }
 
+    edges = numeric()
     for(i in 2:n){
+        for(varname in info[[i]]@inputs){
+            # Only check the previous uses in info
+            usage = most_recent_update(varname, info[seq(i-1)])
+            if(length(usage) == 1){
+                edges = append(edges, c(usage, i))
+            }
+        }
     }
 
-    graph_from_edgelist(edges)
-
+    edgemat = matrix(edges, ncol = 2)
+    graph_from_edgelist(edgemat)
 }
 
 
@@ -51,9 +63,7 @@ library(testthat)
 # Could define Ops to get ==, but this is sufficient
 expect_samegraph = function(g1, g2)
 {
-    diff = g1 %m% g2
-    expect_equal(gsize(diff), 0)
-    expect_equal(gorder(diff), 0)
+    expect_true(isomorphic(g1, g2))
 }
 
 
@@ -70,6 +80,7 @@ test_that("Degenerate cases, 0 or 1 nodes", {
     ")
     g1 = make_graph(numeric(), n = 1)
     gd1 = depend_graph(s1)
+
     expect_samegraph(g1, gd1)
 
 })
@@ -85,6 +96,7 @@ test_that("Self referring node does not appear", {
     desired = make_graph(c(1, 2))
     actual = depend_graph(s)
     expect_samegraph(desired, actual)
+
 })
 
 
