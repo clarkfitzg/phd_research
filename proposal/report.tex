@@ -250,6 +250,10 @@ b <- long_running_func2(a)  # depends on a
 \section{Code graph and parse tree }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+I want a data structure that captures all of the constraints for the order
+in which the code statements must be run. Preferably the minimal
+set of constrains.
+
 The code graph and related data structures are related to the parsed
 script, which we'll refer to as the \textbf{parse tree}. Since the parser
 doesn't care about spaces, tabs, and comments,  different scripts can produce the same parse

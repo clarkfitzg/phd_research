@@ -56,8 +56,10 @@ depend_graph = function(script)
         }
     }
 
-    edgemat = matrix(edges, ncol = 2)
-    g = graph_from_edgelist(edgemat)
+    # Checking if the node labels are correct
+    #edges = as.character(edges)
+    #edgemat = matrix(edges, ncol = 2)
+    g = make_graph(edges, n = n)
     # Removes multiple edges
     simplify(g)
 }
