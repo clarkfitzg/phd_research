@@ -130,4 +130,20 @@ test_that("Self referring node does not appear", {
 })
 
 
+test_that("Assignment order respected", {
+
+    s = readScript(txt = "
+    x = 1
+    x = 2
+    y = 2 * x
+    ")
+
+    desired = make_graph(c(1, 2, 2, 3))
+    actual = depend_graph(s)
+
+    expect_samegraph(desired, actual)
+
+})
+
+
 } # end tests

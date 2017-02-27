@@ -110,6 +110,16 @@ ease of use and maintainability it's nice to have automatic tools to
 accelerate the performance. One can write natural, beginner level scripts
 and have them run much faster.
 
+On a broader note, this is about embedding more intelligence into the code
+and the system. As an end user it's convenient if a system will just ``do
+the right thing'', or adjust to different work loads and data sizes on the
+fly. I rarely know if something will be more efficient if
+run with a multicore lapply versus a regular lapply. Then it would be
+better for me if the system chose the right one for me.
+
+How well will all of this handle non standard evaluation and different
+paradigms like dplyr and pipes?
+
 \section{Dependencies}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -247,12 +257,28 @@ b <- long_running_func2(a)  # depends on a
 # Now perform many operations on b
 \end{verbatim}
 
+\section{Optimization Problem}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Consider the problem of whether or not to run blocks of code in parallel.
+I'm thinking of this as an integer programming problem. 
+The directed edges in the graph are the constraints, ie. an edge $A
+\rightarrow B$ implies that $A$ must happen before $B$.
+
+It resembles a
+variation of a scheduling problem. The main constraints are that any variables
+used in one computation must be available when it begins to run. Another
+constraint is that k cores can be active at one time.
+
+The other way general way to do this is running with several different data sizes. This
+gives us a sample that we can run statistics on.
+
 \section{Code graph and parse tree }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 I want a data structure that captures all of the constraints for the order
 in which the code statements must be run. Preferably the minimal
-set of constrains.
+set of constraints.
 
 The code graph and related data structures are related to the parsed
 script, which we'll refer to as the \textbf{parse tree}. Since the parser
@@ -340,12 +366,18 @@ within conditional statements. In that case we can take the conservative
 approach of just creating all the edges. An example:
 
 \begin{verbatim}
-# coinflip() randomly returns TRUE or FALSE
+# coinflip(p) randomly returns TRUE or FALSE with probability p
 x <- 10
-if(coinflip()) x <- 20
-if(coinflip()) x <- 30
+if(coinflip(p1)) x <- 20
+if(coinflip(p2)) x <- 30
 y <- x + 1
 \end{verbatim}
+
+Thinking harder about this, it's not necessary that the code runs in order,
+because the \texttt{if(coinflip())} lines don't use \texttt{x} as an input.
+But it is necessary that the assignments into the global workspace happen
+in order. Then there are two types of constraints to have the correct
+semantics- a weaker one for evaluation and a stronger one for assignment. 
 
 But is the task graph a DAG? Yes, I think it has to be, unless you're doing
 something totally weird.  The reason is that R scripts execute
@@ -698,6 +730,25 @@ Haven't yet checked things like:
 `<<-, assign`
 
 Recursion? Iterating updates?
+
+Random number generation across processes. I'll need to make sure that it's
+possible to reproduce random things. In general it's not going to be the
+same if it's single threaded or multithreaded, but this is true in general,
+so I don't need to worry about it.
+
+\begin{quote}
+     The behaviour with ‘mc.set.seed = TRUE’ is different only if
+     ‘RNGkind("L'Ecuyer-CMRG")’ has been selected.  Then each time a child
+     is forked it is given the next stream (see ‘nextRNGStream’).  So if
+     you select that generator, set a seed and call ‘mc.reset.stream’ just
+     before the first use of ‘mcparallel’ the results of simulations will
+     be reproducible provided the same tasks are given to the first,
+     second, ...  forked process.
+
+     -R documentation for parallel::mcparallel
+\end{quote}
+
+
 
 \newpage
 
