@@ -173,20 +173,4 @@ test_that("Assignment order respected", {
 })
 
 
-test_that("Chains not too long", {
-
-    s = readScript(txt = "
-    x = 1:10
-    plot(x)
-    y = 2 * x
-    ")
-
-    desired = make_graph(c(1, 2, 1, 3))
-    actual = depend_graph(s)
-
-    expect_samegraph(desired, actual)
-
-})
-
-
 } # end tests

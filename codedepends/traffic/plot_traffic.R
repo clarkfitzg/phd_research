@@ -1,4 +1,4 @@
-source("../experiments/depend_graph.R")
+source("../depend_graph.R")
 
 #igraph_options(plot.layout=layout_as_tree)
 
