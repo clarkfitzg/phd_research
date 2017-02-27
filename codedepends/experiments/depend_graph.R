@@ -22,7 +22,7 @@ usage_chain = function(varname, inout_vars)
 {
     uses = sapply(inout_vars, function(used) varname %in% used)
 
-    n = length(uses)
+    n = sum(uses)
 
     # No edges
     if(n <= 1){
@@ -31,7 +31,8 @@ usage_chain = function(varname, inout_vars)
 
     use_index = which(uses)
     s = seq(n - 1)
-    shuffle(use_index[s], use_index[s + 1])
+    out = shuffle(use_index[s], use_index[s + 1])
+    out
 }
 
 
