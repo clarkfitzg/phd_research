@@ -373,11 +373,24 @@ if(coinflip(p2)) x <- 30
 y <- x + 1
 \end{verbatim}
 
-Thinking harder about this, it's not necessary that the code runs in order,
-because the \texttt{if(coinflip())} lines don't use \texttt{x} as an input.
-But it is necessary that the assignments into the global workspace happen
-in order. Then there are two types of constraints to have the correct
+Thinking harder about this, it is necessary that the assignments into the
+global workspace happen in order. But it's not necessary that the code runs
+in order, because the \texttt{if(coinflip())} lines don't use \texttt{x} as
+an input. Then there are two types of constraints to have the correct
 semantics- a weaker one for evaluation and a stronger one for assignment. 
+
+Here's a related case:
+
+\begin{verbatim}
+x <- f(...)
+x <- 10
+y <- x + 1
+\end{verbatim}
+
+Here the line \texttt{x <- f(...)} is unneeded, as are all lines just done
+in support of this operation. This suggests that as a first pass we would
+want to identify and remove unnecessary code. Then we can assume every
+line of code that remains needs to run.
 
 But is the task graph a DAG? Yes, I think it has to be, unless you're doing
 something totally weird.  The reason is that R scripts execute
@@ -748,6 +761,11 @@ so I don't need to worry about it.
      -R documentation for parallel::mcparallel
 \end{quote}
 
+\section{Implementation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+At first I iterated over the blocks of code and gathered dependency info as
+I went along. But 
 
 
 \newpage

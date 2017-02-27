@@ -4,7 +4,35 @@ library(CodeDepends)
 library(igraph)
 
 
-igraph_options(plot.layout=layout_as_tree)
+#" Just like a deck of cards
+shuffle = function(x, y)
+{
+    as.vector(mapply(c, x, y))
+}
+
+#" Variable Use Edge Chain
+#" 
+#" A chain of edges corresponding to each time a variable is defined or used,
+#" suitable for use with \code{\link[igraph]{make_graph}}
+#" 
+#" @param varname variable name
+#" @param inout_vars list containing vectors of input and output variable
+#"      names
+usage_chain = function(varname, inout_vars)
+{
+    uses = sapply(inout_vars, function(used) varname %in% used)
+
+    n = length(uses)
+
+    # No edges
+    if(n <= 1){
+        return(integer())
+    }
+
+    use_index = which(uses)
+    s = seq(n - 1)
+    shuffle(use_index[s], use_index[s + 1])
+}
 
 
 #" Index Of Most Recently Defined Varname
@@ -45,16 +73,14 @@ depend_graph = function(script)
         return(make_graph(numeric(), n = 1))
     }
 
-    edges = numeric()
-    for(i in 2:n){
-        for(varname in info[[i]]@inputs){
-            # Only check the previous uses in info
-            usage = most_recent_update(varname, info[seq(i-1)])
-            if(length(usage) == 1){
-                edges = append(edges, c(usage, i))
-            }
-        }
-    }
+    in_vars = lapply(info, slot, "inputs")
+    out_vars = lapply(info, slot, "outputs")
+    inout_vars = mapply(c, in_vars, out_vars)
+    vars = unique(unlist(out_vars))
+
+    edges = lapply(vars, usage_chain, inout_vars)
+
+    edges = unlist(edges)
 
     # Checking if the node labels are correct
     # Problem seems to be that it switches to 0 based indexing when writing
