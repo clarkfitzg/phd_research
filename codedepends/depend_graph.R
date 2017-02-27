@@ -4,46 +4,46 @@ library(CodeDepends)
 library(igraph)
 
 
-#" Just like a deck of cards
-shuffle = function(x, y)
+#" Create a single edge from the most recent output less than i, to i
+one_edge = function(i, output)
 {
-    as.vector(mapply(c, x, y))
+    if(i == output[1]){
+        # Don't count the first one
+        return(integer())
+    }
+    src = tail(output[i > output], 1)
+    c(src, i)
 }
 
-#" Variable Use Edge Chain
+
+#" Variable Use Edge Graph
 #" 
-#" A chain of edges corresponding to each time a variable is defined or used,
-#" suitable for use with \code{\link[igraph]{make_graph}}
+#" A vector of edges specifying constraints on evaluation order.
+#" Output is suitable for use with \code{\link[igraph]{make_graph}}.
 #" 
 #" @param varname variable name
-#" @param inout_vars list containing vectors of input and output variable
-#"      names
-usage_chain = function(varname, inout_vars)
+#" @param used_vars list containing variable names used in each expression
+#" @param out_vars list containing variable names defined in each expression
+vargraph = function(varname, used_vars, out_vars)
 {
-    uses = sapply(inout_vars, function(used) varname %in% used)
+    used = which(sapply(used_vars, function(used) varname %in% used))
+    output = which(sapply(out_vars, function(out) varname %in% out))
 
-    n = sum(uses)
+    n = length(used)
+
+    edges = integer()
 
     # No edges
     if(n <= 1){
-        return(integer())
+        return(edges)
     }
 
-    use_index = which(uses)
-    s = seq(n - 1)
-    out = shuffle(use_index[s], use_index[s + 1])
-    out
-}
-
-
-#" Index Of Most Recently Defined Varname
-#"
-#" @param varname variable name
-#" @param info object of class \code{CodeDepends::ScriptInfo}
-most_recent_update = function(varname, info)
-{
-    outputs = sapply(info, function(x) varname %in% x@outputs)
-    tail(which(outputs), 1)
+    # Build edges up iteratively
+    # This could be more efficient. Fix when it becomes a problem.
+    for(i in used){
+        edges = c(edges, one_edge(i, output))
+    }
+    edges
 }
 
 
@@ -76,10 +76,10 @@ depend_graph = function(script)
 
     in_vars = lapply(info, slot, "inputs")
     out_vars = lapply(info, slot, "outputs")
-    inout_vars = mapply(c, in_vars, out_vars)
+    used_vars = mapply(c, in_vars, out_vars)
     vars = unique(unlist(out_vars))
 
-    edges = lapply(vars, usage_chain, inout_vars)
+    edges = lapply(vars, vargraph, used_vars, out_vars)
 
     edges = unlist(edges)
 
@@ -166,6 +166,22 @@ test_that("Assignment order respected", {
     ")
 
     desired = make_graph(c(1, 2, 2, 3))
+    actual = depend_graph(s)
+
+    expect_samegraph(desired, actual)
+
+})
+
+
+test_that("Chains not too long", {
+
+    s = readScript(txt = "
+    x = 1:10
+    plot(x)
+    y = 2 * x
+    ")
+
+    desired = make_graph(c(1, 2, 1, 3))
     actual = depend_graph(s)
 
     expect_samegraph(desired, actual)
