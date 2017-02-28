@@ -628,6 +628,21 @@ knitr's system... And while I'm at it, why not Jupyter Notebooks? If I can
 figure out how to build an equivalent dependency graph for Python that
 would be great.
 
+Henrik Bengston's \texttt{future} package provides a mechanism for
+asynchronous evaluation of R expressions. Once I have a partial ordering
+through the dependencies it
+would be appealing to evaluate every code expression with this. 
+futures mostly just provides the asynchronous
+assignment operator \texttt{\%<-\%}. Then I'd have to go in every
+expression and replace the regular assignment operators. This could lead to
+lots of weird stuff- what if a for loop goes through and assigns 1000
+times? That's a ton of overhead.
+
+I'm thinking more seriously now about the networkspaces or linda spaces
+evaluation model, like Mike Kane mentioned at DSC. This consists of a
+single master server that sends code to a worker to evaluate to produce a
+variable. It's like a key value store, except there can be multiple values.
+
 
 \section{Applications}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

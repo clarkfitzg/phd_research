@@ -46,6 +46,14 @@ vargraph = function(varname, used_vars, out_vars)
     edges
 }
 
+#" Find Nodes With No Parents
+noparents = function(g)
+{
+
+    adj = as_adj_list(g)
+
+}
+
 
 #" Expression Dependency Graph
 #"
@@ -54,7 +62,7 @@ vargraph = function(varname, used_vars, out_vars)
 #" it's not clear that this is necessary.
 #"
 #" @param script as returned from \code{\link[CodeDepends]{readScript}}
-depend_graph = function(script)
+depend_graph = function(script, add_source = FALSE)
 {
 
     # A list of ScriptNodeInfo objects. May be useful to do more with
@@ -198,6 +206,21 @@ test_that("updates count as dependencies", {
 
     desired = make_graph(c(1, 2, 2, 3))
     actual = depend_graph(s)
+
+    expect_samegraph(desired, actual)
+
+})
+
+
+test_that("Can add source node", {
+
+    s = readScript(txt = "
+    x = 1
+    plot(1:10)
+    ")
+
+    desired = make_graph(c(1, 2, 1, 3))
+    actual = depend_graph(s, add_source = TRUE)
 
     expect_samegraph(desired, actual)
 
