@@ -46,12 +46,23 @@ vargraph = function(varname, used_vars, out_vars)
     edges
 }
 
-#" Find Nodes With No Parents
-noparents = function(g)
+
+#" c(1, 2, 3) becomes c(1, 1, 1, 2, 1, 3)
+shuffle = function(x, y)
 {
+    as.vector(rbind(x, y))
+}
 
-    adj = as_adj_list(g)
 
+#" Add Source Node To Graph
+#"
+#" Add a source node with index 0 for each node without parents, return resulting graph.
+add_source_node = function(g)
+{
+    incoming = as_adj_list(g, "in")
+    noparents = which(sapply(incoming, function(x) length(x) == 0))
+    edges = shuffle(1, noparents)
+    add_edges(g, edges)
 }
 
 
@@ -94,7 +105,13 @@ depend_graph = function(script, add_source = FALSE)
 
     edges = unlist(edges)
 
-    g = make_graph(edges, n = n)
+    if(add_source){
+        g = make_graph(edges + 1, n = n + 1)
+        g = add_source_node(g)
+    } else {
+        g = make_graph(edges, n = n)
+    }
+
     # Removes multiple edges
     simplify(g)
 }

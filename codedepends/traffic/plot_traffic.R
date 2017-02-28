@@ -8,6 +8,6 @@ s = readScript("traffic_sim2.R")
 # inputs in s[[24]].
 info = lapply(s, getInputs)
 
-g = depend_graph(s)
+g = depend_graph(s, add_source = TRUE)
 
 write_graph(g, "traffic.dot", format = "dot")
