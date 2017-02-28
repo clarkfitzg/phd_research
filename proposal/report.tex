@@ -575,7 +575,9 @@ code. It is a practical example of computing on the language,
 programmatically modifying the code by recording calls as they are made.
 He pointed out a nice relevant idea distinguishing between AST's, parse
 trees, and "lossless syntax trees":
-\url{https://news.ycombinator.com/item?id=13628412}
+\url{https://news.ycombinator.com/item?id=13628412}. If I inject code then
+I need to careful preserve structure lost after parsing, ie.
+comments and formatting. This is a non-trivial task.
 
 So if I'm going to programmatically modify the source code then this should really
 respect things like comments and whitespace. This could be more difficult
@@ -642,6 +644,8 @@ I'm thinking more seriously now about the networkspaces or linda spaces
 evaluation model, like Mike Kane mentioned at DSC. This consists of a
 single master server that sends code to a worker to evaluate to produce a
 variable. It's like a key value store, except there can be multiple values.
+
+So how would I make this happen?
 
 
 \section{Applications}

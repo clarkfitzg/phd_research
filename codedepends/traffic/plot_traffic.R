@@ -10,4 +10,15 @@ info = lapply(s, getInputs)
 
 g = depend_graph(s, add_source = TRUE)
 
+g2 = depend_graph(s)
+
+# TODO: see if the code runs after a topological sort!!
+# It should :)
+# Wait, but 1:n should also be a valid topological sort... so is this
+# helping at all? Probably not.
+graph_order = topo_sort(g2)
+
+s[graph_order]
+
+
 write_graph(g, "traffic.dot", format = "dot")
