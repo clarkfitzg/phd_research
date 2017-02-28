@@ -280,6 +280,10 @@ I want a data structure that captures all of the constraints for the order
 in which the code statements must be run. Preferably the minimal
 set of constraints.
 
+The constraints are implicit based on the order of the statements in the
+code. This is a way of expanding and looking more carefully at this
+implicit logic.
+
 The code graph and related data structures are related to the parsed
 script, which we'll refer to as the \textbf{parse tree}. Since the parser
 doesn't care about spaces, tabs, and comments,  different scripts can produce the same parse
@@ -783,6 +787,7 @@ are expensive functions, because they could be run in parallel. An
 alternate way is to think of \texttt{x\$a} as a variable that depends on
 the original \texttt{x}. But adding details like these isn't worth it to me
 now, because it's not core to what I'm trying to accomplish.
+
 
 \newpage
 
