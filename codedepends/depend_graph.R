@@ -76,18 +76,16 @@ depend_graph = function(script)
 
     in_vars = lapply(info, slot, "inputs")
     out_vars = lapply(info, slot, "outputs")
-    used_vars = mapply(c, in_vars, out_vars)
+    update_vars = lapply(info, slot, "updates")
+
+    assign_vars = mapply(c, out_vars, update_vars)
+    used_vars = mapply(c, in_vars, out_vars, update_vars)
     vars = unique(unlist(out_vars))
 
-    edges = lapply(vars, vargraph, used_vars, out_vars)
+    edges = lapply(vars, vargraph, used_vars, assign_vars)
 
     edges = unlist(edges)
 
-    # Checking if the node labels are correct
-    # Problem seems to be that it switches to 0 based indexing when writing
-    # to dot
-    #edges = as.character(edges)
-    #edgemat = matrix(edges, ncol = 2)
     g = make_graph(edges, n = n)
     # Removes multiple edges
     simplify(g)
@@ -182,6 +180,23 @@ test_that("Chains not too long", {
     ")
 
     desired = make_graph(c(1, 2, 1, 3))
+    actual = depend_graph(s)
+
+    expect_samegraph(desired, actual)
+
+})
+
+
+
+test_that("updates count as dependencies", {
+
+    s = readScript(txt = "
+    x = list()
+    x$a = 1
+    x$b = 2
+    ")
+
+    desired = make_graph(c(1, 2, 2, 3))
     actual = depend_graph(s)
 
     expect_samegraph(desired, actual)

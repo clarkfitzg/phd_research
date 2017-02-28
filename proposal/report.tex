@@ -765,8 +765,24 @@ so I don't need to worry about it.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 At first I iterated over the blocks of code and gathered dependency info as
-I went along. But 
+I went along. But then I switched the implementation to focus on the variables
+themselves to make my code easier to reason about. It should be slightly
+more efficient, but that's not really a concern yet.
 
+I consider updates of a list to be changes to the global list variable.
+Thus something like the following redefines x every time. 
+
+\begin{verbatim}
+    x = list()
+    x$a = f(...)
+    x$b = g(...)
+\end{verbatim}
+ 
+This is easy and safe to do, but it might be inefficient if \texttt{f, g}
+are expensive functions, because they could be run in parallel. An
+alternate way is to think of \texttt{x\$a} as a variable that depends on
+the original \texttt{x}. But adding details like these isn't worth it to me
+now, because it's not core to what I'm trying to accomplish.
 
 \newpage
 
