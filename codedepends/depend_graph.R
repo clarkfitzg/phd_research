@@ -244,4 +244,27 @@ test_that("Can add source node", {
 })
 
 
+# Want edge from 37 -> 38
+#    [[37]]
+#    shock2 = linefactory(slope2, x2, firstcar(x2))
+#
+#    [[38]]
+#    x3 = optimize(function(x) abs(shock2(x) - nojam(x)), interval = c(0.03,
+test_that("Anonymous user functions ", {
+
+    s = readScript(txt = "
+    f = function(
+    plot(1:10)
+    ")
+
+    desired = make_graph(c(1, 2, 1, 3))
+    actual = depend_graph(s)
+
+    expect_samegraph(desired, actual)
+
+})
+
+
+
+
 } # end tests
