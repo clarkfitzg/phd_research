@@ -17,4 +17,4 @@ sg = s[graph_order]
 
 sorted_code = sapply(sg, print_to_char)
 
-writeLines(sorted_code, "traffic_sim2_sorted.R")
+writeLines(sorted_code, "generated/traffic_sim2_sorted.R")

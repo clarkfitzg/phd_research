@@ -12,8 +12,6 @@ linefactory = function(slope, x0, y0) {
     intercept = y0 - slope * x0
     function(x) slope * x + intercept
 }
-x3 = optimize(function(x) abs(shock2(x) - nojam(x)), interval = c(0.03, 
-    0.05))$minimum
 if (two6) {
     dt_seconds = 0.3
     dx_feet = 26.4
@@ -55,7 +53,6 @@ demand = function(density, lanes) {
 n = 4 * regions_per_quadrant
 density0 = rep(c(0.5, 0.5, 0.5, 0.5) * jam_density, each = regions_per_quadrant)
 lanes = rep(c(1, 2, 2, 2), each = regions_per_quadrant)
-s$nojam = list(x = c(0, x3))
 shock2 = linefactory(slope2, x2, firstcar(x2))
 iterate = function(density, lanes) {
     dm = demand(density, lanes)
@@ -66,7 +63,8 @@ iterate = function(density, lanes) {
     density + (dt/dx) * (d$inflow - d$outflow)
 }
 y = dx * seq(0, n)
-s$nojam$y = nojam(s$nojam$x)
+x3 = optimize(function(x) abs(shock2(x) - nojam(x)), interval = c(0.03, 
+    0.05))$minimum
 run = function(d0 = density0, ln = lanes) {
     out = matrix(NA, nrow = ntime, ncol = n)
     out[1, ] = d0
@@ -75,7 +73,7 @@ run = function(d0 = density0, ln = lanes) {
     }
     out
 }
-s$shock2 = list(x = c(x2, x3))
+s$nojam = list(x = c(0, x3))
 if (FALSE) {
     x = seq(0, jam_density, length.out = 20)
     plot(x, fd(x, lanes = 2))
@@ -94,12 +92,21 @@ if (FALSE) {
         dev.off()
     }
 }
-s$shock2$y = shock2(s$shock2$x)
+s$nojam$y = nojam(s$nojam$x)
 result = run()
-s$standing = list(x = c(x3, 0.1), y = rep(nojam(x3), 2))
+s$shock2 = list(x = c(x2, x3))
 maxt = nrow(result)
+s$shock2$y = shock2(s$shock2$x)
 x = dt * seq(0, maxt)
 density2 = t(t(result[1:maxt, ])/(jam_density * lanes))
+s$standing = list(x = c(x3, 0.1), y = rep(nojam(x3), 2))
+{
+    pdf("uniform_start.pdf")
+    image(x = x, y = y, z = density2, useRaster = TRUE, col = brewer.pal(9, 
+        "Blues"), xlab = "Time (hours)", ylab = "Position (miles)", 
+        xlim = range(x), main = "Starting with uniform density")
+    dev.off()
+}
 {
     pdf(plotname)
     image(x = x, y = y, z = density2, useRaster = TRUE, col = brewer.pal(9, 
@@ -115,12 +122,5 @@ density2 = t(t(result[1:maxt, ])/(jam_density * lanes))
     text(0.05, 0.62, "Standing Shock", pos = 2)
     text(0.016, 0.88, "Jam Dispersing", pos = 4)
     text(0.019, 0.69, "Secondary\nShock", pos = 1)
-    dev.off()
-}
-{
-    pdf("uniform_start.pdf")
-    image(x = x, y = y, z = density2, useRaster = TRUE, col = brewer.pal(9, 
-        "Blues"), xlab = "Time (hours)", ylab = "Position (miles)", 
-        xlim = range(x), main = "Starting with uniform density")
     dev.off()
 }

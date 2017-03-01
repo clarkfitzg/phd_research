@@ -212,7 +212,6 @@ test_that("Chains not too long", {
 })
 
 
-
 test_that("updates count as dependencies", {
 
     s = readScript(txt = "
@@ -244,26 +243,34 @@ test_that("Can add source node", {
 })
 
 
-# Want edge from 37 -> 38
-#    [[37]]
-#    shock2 = linefactory(slope2, x2, firstcar(x2))
-#
-#    [[38]]
-#    x3 = optimize(function(x) abs(shock2(x) - nojam(x)), interval = c(0.03,
-test_that("Anonymous user functions ", {
+test_that("$ evaluates LHS", {
 
     s = readScript(txt = "
-    f = function(
-    plot(1:10)
+    f = function(x) 100
+    optimize(f, c(0, 1))$minimum
     ")
 
-    desired = make_graph(c(1, 2, 1, 3))
+    desired = make_graph(c(1, 2))
     actual = depend_graph(s)
 
     expect_samegraph(desired, actual)
 
 })
 
+
+test_that("Precedence for user defined variables over base", {
+
+    s = readScript(txt = "
+    c = 100
+    print(c)
+    ")
+
+    desired = make_graph(c(1, 2))
+    actual = depend_graph(s)
+
+    expect_samegraph(desired, actual)
+
+})
 
 
 
