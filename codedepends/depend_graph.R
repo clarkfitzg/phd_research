@@ -23,11 +23,11 @@ one_edge = function(i, output)
 #" 
 #" @param varname variable name
 #" @param used_vars list containing variable names used in each expression
-#" @param out_vars list containing variable names defined in each expression
-vargraph = function(varname, used_vars, out_vars)
+#" @param outputs list containing variable names defined in each expression
+vargraph = function(varname, used_vars, outputs)
 {
     used = which(sapply(used_vars, function(used) varname %in% used))
-    output = which(sapply(out_vars, function(out) varname %in% out))
+    output = which(sapply(outputs, function(out) varname %in% out))
 
     n = length(used)
 
@@ -47,7 +47,7 @@ vargraph = function(varname, used_vars, out_vars)
 }
 
 
-#" c(1, 2, 3) becomes c(1, 1, 1, 2, 1, 3)
+#" Shuffle vectors x and y together, ie. (x[1], y[1], x[2], y[2], ...)
 shuffle = function(x, y)
 {
     as.vector(rbind(x, y))
@@ -78,9 +78,12 @@ depend_graph = function(script, add_source = FALSE)
 
     # A list of ScriptNodeInfo objects. May be useful to do more with
     # these later, so might want to save or return this object.
-    info = lapply(script, function(x){
-        getInputs(x, collector = inputCollector(checkLibrarySymbols = TRUE))
-    })
+    #info = lapply(script, function(x){
+        #getInputs(x, collector = inputCollector(checkLibrarySymbols = TRUE))
+        #getInputs(x, collector = inputCollector(checkLibrarySymbols = FALSE))
+    #})
+
+    info = lapply(script, getInputs)
 
     n = length(info)
 
@@ -93,13 +96,15 @@ depend_graph = function(script, add_source = FALSE)
         return(make_graph(numeric(), n = 1))
     }
 
-    in_vars = lapply(info, slot, "inputs")
-    out_vars = lapply(info, slot, "outputs")
-    update_vars = lapply(info, slot, "updates")
+    inputs = lapply(info, slot, "inputs")
+    outputs = lapply(info, slot, "outputs")
+    updates = lapply(info, slot, "updates")
+    # Why is @functions use a named vector? And why is value NA?
+    functions = lapply(info, function(x) names(x@functions))
 
-    assign_vars = mapply(c, out_vars, update_vars)
-    used_vars = mapply(c, in_vars, out_vars, update_vars)
-    vars = unique(unlist(out_vars))
+    assign_vars = mapply(c, outputs, updates, SIMPLIFY = FALSE)
+    used_vars = mapply(c, inputs, outputs, updates, functions, SIMPLIFY = FALSE)
+    vars = unique(unlist(outputs))
 
     edges = lapply(vars, vargraph, used_vars, assign_vars)
 
@@ -212,7 +217,7 @@ test_that("Chains not too long", {
 })
 
 
-test_that("updates count as dependencies", {
+test_that("Updates count as dependencies", {
 
     s = readScript(txt = "
     x = list()
