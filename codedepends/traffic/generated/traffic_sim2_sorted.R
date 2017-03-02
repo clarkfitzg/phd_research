@@ -17,7 +17,6 @@ if (two6) {
     dx_feet = 26.4
     plotname = "dx26.pdf"
 }
-ntime = round(totaltime/dt)
 x2 = 0.75 * miles/ffspeed
 critical_density = -shock_speed * jam_density/(ffspeed - shock_speed)
 firstcar = linefactory(ffspeed, 0, 0)
@@ -39,6 +38,7 @@ fd = function(density, lanes) {
     ifelse(congested, shock_speed * (density - lanes * jam_density), 
         ffspeed * density)
 }
+ntime = round(totaltime/dt)
 regions_per_quadrant = round(miles/(4 * dx))
 s$firstcar$y = firstcar(s$firstcar$x)
 slope2 = maxflow/(critical_density - 2 * jam_density)
