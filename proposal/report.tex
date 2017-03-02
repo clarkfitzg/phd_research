@@ -394,7 +394,10 @@ y <- x + 1
 Here the line \texttt{x <- f(...)} is unneeded, as are all lines just done
 in support of this operation. This suggests that as a first pass we would
 want to identify and remove unnecessary code. Then we can assume every
-line of code that remains needs to run.
+line of code that remains needs to run. I'm also assuming that the code is
+correct. Compared to other ways of accelerating code this requires
+basically nothing from the user. So it's comparable to byte code in that
+way- a small acceleration from minimal investment.
 
 But is the task graph a DAG? Yes, I think it has to be, unless you're doing
 something totally weird.  The reason is that R scripts execute
@@ -823,11 +826,13 @@ Think harder about when evaluation must happen.
 
 What does a language need to provide to make this easy?
 
-Looking at languages that are not compiled.
+Looking only at languages that are not compiled.
 
 Metaprogramming
 
 Pass by value semantics
+
+Assumption- the code is already correct before I do this.
 
 \section{Implementation}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -853,8 +858,57 @@ the original \texttt{x}. But adding details like these isn't worth it to me
 now, because it's not core to what I'm trying to accomplish.
 
 Detail- Calls to \texttt{library} need to make it to the top of the graph. Maybe in
-general I can adopt the \LaTeX idea of a preamble. But what else would go
+general I can adopt the \LaTeX idea of a preamble, or setup code. But what else would go
 there besides library?
+
+\subsection{Event Loop}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Thinking about how to run the whole thing in parallel now. I could use a
+model where the master sends out expressions to workers to
+evaluate. This would be through an event loop that pops expressions from a data
+structure.
+
+And forks every time. Then the master polls the workers to see
+when they're finished. Though it would be better if the workers could send a
+message saying when they're finished. Seems like I might be able to do this
+with \texttt{parallel::sendMaster}.
+
+The forking every time will be quite inefficient. The more intelligent
+thing to do is `pipeline' the operations, and send whole related blocks of
+expressions to various processes to evaluate.
+
+This is different than rewriting the script as I did before. It's appealing
+because it can do dynamic load balancing.
+
+But it's not clear which expressions to evaluate first. Maybe I should
+first do the ones that have the most dependencies? If an expression has no
+dependencies then one can do it at any time, even way later. But if there
+are many dependencies then none of them can run until the parent is
+evaluated. This will end up needing some data structure acting like a priority queue.
+
+Here's an algorithm: Start by marking all direct descendants of the special
+0 (start) node as ready. Let the workers begin evaluating these
+expressions.
+
+\begin{enumerate}
+    \item Expression $e_i$ is evaluated and the results are available again
+        on master.
+    \item For each expression $e_j$ which depends directly on $e_i$: check
+        if $e_j$ has no other existing parents then mark it as ready.
+    \item Remove $e_i$ from the graph.
+    \item Worker begins executing any of the nodes that are marked as ready.
+\end{enumerate}
+
+There's some nuance here by trying to keep each of $k$ workers as busy as
+possible. Ie. there may be bottlenecks where only one worker can be active, but
+after that all the others can go.
+
+This algorithm could also be refined into a priority queue by keeping the ready
+nodes in a heap, with the values determining the heap order as the number
+of expressions that depend on that expression, directly or indirectly. This
+is a little naive- it would be better to have timings of the code and do
+something more optimal in terms of reducing run time.
 
 \newpage
 
