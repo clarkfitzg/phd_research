@@ -396,8 +396,9 @@ in support of this operation. This suggests that as a first pass we would
 want to identify and remove unnecessary code. Then we can assume every
 line of code that remains needs to run. I'm also assuming that the code is
 correct. Compared to other ways of accelerating code this requires
-basically nothing from the user. So it's comparable to byte code in that
-way- a small acceleration from minimal investment.
+basically nothing from the user. So it's comparable to byte code
+compilation in that
+sense- just a small acceleration from minimal investment.
 
 But is the task graph a DAG? Yes, I think it has to be, unless you're doing
 something totally weird.  The reason is that R scripts execute
@@ -832,7 +833,27 @@ Metaprogramming
 
 Pass by value semantics
 
-Assumption- the code is already correct before I do this.
+\section{Scripts in the Wild}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+I could do some analysis on scripts that I scrape to determine theoretical
+bounds for the number of statements that must be run sequentially,
+and the max number of concurrent workers. My example script I've been
+working on has about 50 statements, and I think min number of sequential
+statements is around 10. Need to check. This could motivate reducing
+overhead though.
+
+Duncan suggests to find R code that's unacceptably slow, and see what these
+methods can do to improve it. So to get a better sense of theoretical
+improvements I could execute the code in normal R and attach timings for
+each expression. This would show me true lower bounds for the method. It
+would also be quite interesting to have some sense of the distribution of
+execution times for different types of code. I imagine it varies
+dramatically, but there may be rough patterns. One result I'm expecting is
+that just one or two lines dominate the total script run time. In which
+case anything I do can't really help. Unless that line calls one function
+and I can use this method on the one function.
+
 
 \section{Implementation}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -884,8 +905,11 @@ thread to mess up a the data structure while another is using using it. But
 perhaps using this expression dependency information will let us make
 guarantees about safety?
 
+Or what about using something even lighter than threads- like coroutines or
+callbacks? It might be possible to dig into the guts of R and make
+something like this.
 
-This is different than rewriting the script as I did before. It's appealing
+This approach is different than rewriting the script as I did before. It's appealing
 because it can do dynamic load balancing.
 
 But it's not clear which expressions to evaluate first. Maybe I should
@@ -908,8 +932,9 @@ expressions.
 \end{enumerate}
 
 There's some nuance here by trying to keep each of $k$ workers as busy as
-possible. Ie. there may be bottlenecks where only one worker can be active, but
-after that all the others can go.
+possible while still respecting the constraints. Ie. there may be
+bottlenecks where only one worker can be active, but after that all the
+others can go.
 
 This algorithm could also be refined into a priority queue by keeping the ready
 nodes in a heap, with the values determining the heap order as the number
