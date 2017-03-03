@@ -874,9 +874,16 @@ when they're finished. Though it would be better if the workers could send a
 message saying when they're finished. Seems like I might be able to do this
 with \texttt{parallel::sendMaster}.
 
-The forking every time will be quite inefficient. The more intelligent
+The process forking every time will be quite inefficient. The more intelligent
 thing to do is `pipeline' the operations, and send whole related blocks of
 expressions to various processes to evaluate.
+
+But this may open up a different opportunity for faster, lighter weight
+threads? A main consideration with threads is that one doesn't want one
+thread to mess up a the data structure while another is using using it. But
+perhaps using this expression dependency information will let us make
+guarantees about safety?
+
 
 This is different than rewriting the script as I did before. It's appealing
 because it can do dynamic load balancing.
