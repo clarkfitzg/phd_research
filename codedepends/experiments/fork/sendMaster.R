@@ -10,8 +10,8 @@ library(parallel)
 # So this could be the selector in the event loop
 # parallel:::selectChildren()
 
-mcparallel({Sys.sleep(5); 1})
-mcparallel({Sys.sleep(10); 2})
+job1 = mcparallel({Sys.sleep(5); 1})
+job2 = mcparallel({Sys.sleep(10); 2})
 
 # But better to stay with the higher level constructs
 mccollect(wait = FALSE)
