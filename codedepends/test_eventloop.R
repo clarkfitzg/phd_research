@@ -50,4 +50,14 @@ rnorm('bang!')
 
 expect_error(eventloop(failscript2))
 
+slowscript = readScript(txt = "
+{x = 10; Sys.sleep(1)}
+y = x + 1
+")
+
+eventloop(slowscript)
+expect_equal(x, 10)
+expect_equal(y, 11)
+
+
 })
