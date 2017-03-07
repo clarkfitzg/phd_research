@@ -890,7 +890,7 @@ there besides library?
 
 It would be nice if I could look at the R global environment, then
 look at an updated environment after running a line of code and take this
-as the update. Alternatively, I could try to make the assignments happen in 
+as the update. 
 
 \subsection{Event Loop}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -908,6 +908,11 @@ with \texttt{parallel::sendMaster}.
 The process forking every time will be quite inefficient. The more intelligent
 thing to do is `pipeline' the operations, and send whole related blocks of
 expressions to various processes to evaluate.
+
+The processes spawned with \texttt{parallel::mcparallel} communicate
+through an OS level pipe aka FIFO. This is why the function returns a vector of
+length 2 called `fd` for file descriptor, among other things. These are the
+file descriptors to the pipes
 
 But this may open up a different opportunity for faster, lighter weight
 threads? A main consideration with threads is that one doesn't want one
