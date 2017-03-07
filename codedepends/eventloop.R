@@ -24,6 +24,15 @@ update_env = function(updates, env = parent.frame()){
 }
 
 
+#" Propagate Error From Child Process
+propagate_error = function(x)
+{
+    if(inherits(x, "try-error")){
+        stop(x)
+    }
+}
+
+
 #" Run Event Loop Collecting Variables Into Global Environment
 eventloop = function(unevaluated, SLEEP = 0.01, MAX_TIME = 10)
 {
@@ -53,6 +62,8 @@ eventloop = function(unevaluated, SLEEP = 0.01, MAX_TIME = 10)
         if(is.null(collected)){
             next
         }
+
+        lapply(collected, propagate_error)
 
         # Update global variables in master
         lapply(collected, update_env, env = .GlobalEnv)

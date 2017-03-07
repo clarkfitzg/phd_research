@@ -4,7 +4,7 @@ library(testthat)
 
 source("eventloop.R")
 
-test_that("Event loop helpers",{
+test_that("Event loop helpers", {
 
 y <- 20
 actual = assign_catcher(quote(x <- 10))
@@ -23,12 +23,31 @@ expect_true(y)
 })
 
 
-# Expressions that have not yet been evaluated
+test_that("eventloop function", {
+
 unevaluated = readScript(txt = "
 x = 1
 y = x + 1
 z = x + 2
 ")
 
-
 eventloop(unevaluated)
+
+expect_equal(x, 1)
+expect_equal(y, 2)
+expect_equal(z, 3)
+
+
+failscript1 = readScript(txt = "
+print(variable_which_dont_exist)
+")
+
+expect_error(eventloop(failscript1))
+
+failscript2 = readScript(txt = "
+rnorm('bang!')
+")
+
+expect_error(eventloop(failscript2))
+
+})

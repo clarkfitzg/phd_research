@@ -3,7 +3,7 @@
 
 source("../../eventloop.R")
 
-# Has a problem finding x
+# Has a problem writing x
 script = CodeDepends::readScript("../traffic_sim2.R")
 eventloop(script)
 
