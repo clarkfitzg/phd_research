@@ -120,3 +120,17 @@ depend_graph = function(script, add_source = FALSE)
     # Removes multiple edges
     simplify(g)
 }
+
+
+#" Count Number Of Nodes In Longest Path For DAG
+longest_path = function(dag)
+{
+
+    longest = rep(NA, length(V(dag)))
+
+    # Assume that it's topologically sorted
+    visitor = function(graph, data, extra) NULL
+
+    bfs(dag, 0, neimode = "out", callback = visitor)
+
+}

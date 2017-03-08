@@ -151,3 +151,12 @@ test_that("Precedence for user defined variables over base", {
     expect_samegraph(desired, actual)
 
 })
+
+
+test_that("Longest path", {
+
+    g = make_graph(c(1, 2, 1, 3, 2, 3))
+
+    expect_equal(longest_path(g), 3)
+
+})

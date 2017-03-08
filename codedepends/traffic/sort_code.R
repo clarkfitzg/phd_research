@@ -7,6 +7,10 @@ s = readScript("traffic_sim2.R")
 
 g2 = depend_graph(s)
 
+# This is the length of the longest path. From the picture this should be
+# 13.
+#longest_path(g2)
+
 # TODO: see if the code runs after a topological sort!!
 # It should :)
 # Wait, but 1:n should also be a valid topological sort... so is this

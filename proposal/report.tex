@@ -860,6 +860,14 @@ case I'm targeting. They are nice because the data should be included with
 the package, thus I have some hope of actually being able to run them if
 needed.
 
+To get some idea of the potential for speedup, if I have an unlimited
+number of cores, no overhead, and each expression takes roughly the same
+amount of time to execute then the script can run no faster than the length
+of the longest path in the graph. Hence speedup will be the total number
+of statements divided by the length of the longest path in the graph.
+By the way, all of those assumptions are unreasonable.
+
+
 
 \section{Implementation}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
