@@ -966,6 +966,32 @@ is a little naive- it would be better to have timings of the code and do
 something more optimal in terms of reducing run time.
 
 \newpage
+\newpage
+
+\Section{Chunking}
+
+The task based parallelism isn't as relevant to how people use R (and other
+languages) for data processing. Instead
+lets think more about chunking and data parallelism. 
+
+Parallelism introduces additional overhead on top of what dynamic languages
+already incur. A general strategy to minimize this overhead is to ``chunk''
+the computations. For example, given 1000 parallel operations one might
+partition these into chunks of size 100 so that they become 10 parallel
+tasks \cite{matloff2015parallel}.
+
+I can take the code in \cite{matloff2015parallel} and see how changing the
+chunk sizes affects the run time. I could also do this with Python's dask.
+
+It would be nice to run just a couple in serial on the master process and
+make principled decisions about how to run based on these results. For
+example:
+\begin{itemize}
+    \item Is it worth it to run in parallel?
+    \item Should we chunk? What should the chunk sizes be?
+    \item Reverse the order for better load balancing?
+    \item Dynamic or static scheduling?
+\end{itemize}
 
 \bibliographystyle{plain}
 \bibliography{citations} 
