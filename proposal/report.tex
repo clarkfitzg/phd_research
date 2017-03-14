@@ -968,7 +968,7 @@ something more optimal in terms of reducing run time.
 \newpage
 \newpage
 
-\Section{Chunking}
+\section{Chunking}
 
 The task based parallelism isn't as relevant to how people use R (and other
 languages) for data processing. Instead
@@ -982,6 +982,8 @@ tasks \cite{matloff2015parallel}.
 
 I can take the code in \cite{matloff2015parallel} and see how changing the
 chunk sizes affects the run time. I could also do this with Python's dask.
+The goal is to draw general conclusions about which chunk sizes work best
+based on the amount of computation.
 
 It would be nice to run just a couple in serial on the master process and
 make principled decisions about how to run based on these results. For
@@ -1000,6 +1002,16 @@ one. I also expect that they vary across different machines.
 
 The book mentions using large chunks in the beginning followed by small
 chunks for superior load balancing.
+
+Programming in the RDSM package conceptually is very similar to OpenCL on
+the GPU. You allocate memory and send it to the workers, then update it in
+place based on thread IDs. This is quite different than normal functional
+R. I wonder if we could "translate" regular R into this style of
+programming?
+
+TODO: Come up with application where I need all this!! How about computing
+graphs from Euclidean space like with James' application? It would be nice
+for the QE to have something that he's familiar with and invested in.
 
 \bibliographystyle{plain}
 \bibliography{citations} 
