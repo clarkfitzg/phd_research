@@ -75,22 +75,54 @@
 
 \end{abstract}
 
+Outline:
+\begin{enumerate}
+    \item Intro
+    \item Options for programming languages
+    \item lit review
+\end{enumerate}
+
 \section{Introduction}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-The idea behind code analysis is to treat the code itself as a data
-structure. This is an old idea, the R language reference cites the Lisp
-language as the inspiration.
+The evaluation model for interpreted languages is simple. Each
+statement of code is evaluated in the order that it appears. This can be
+viewed as a set of constraints on the evaluation order of the statements:
+\begin{enumerate}
+    \item statement 1 executes before statement 2
+    \item statement 2 executes before statement 3
+    \item $\dots$
+\end{enumerate}
+What if these constraints are relaxed? Suppose statement 1 defines the variable
+\texttt{x}, which is not used until statement 17. Then one has the
+constraint:
+\begin{enumerate}
+    \item statement 1 executes before statement 17
+\end{enumerate}
+This can be generalized into a directed graph by considering statements as
+nodes and constraints as edges. Add an edge from $i \rightarrow k$ if
+statement $k$ depends on the execution of statement $i$.  It's safe to
+assume $i < k$, because statements appearing later in a program can't
+affect statements which have already run. Hence this directed graph is
+acyclic.
 
-The interpreter works in a simple way. The \texttt{Rscript} command will go
-through a file line by line and parses then
-evaluates each statement. R's \texttt{source()} function on the other hand
-first parses the whole thing, and then evaluates it all. We propose to
-first parse and then examine whole scripts at a time, from just a couple
-lines to a few hundred lines of code.  The whole script is parsed into a
-directed graph data structure. Nodes contain the expressions and the edges
-contain the dependence information.  TODO: but what about control flow?
-loops?
+This relaxation allows some statements to execute in parallel. For example,
+the following adjacent lines are independent, so they can be computed simultaneously:
+
+\begin{verbatim}
+sx = sum(x)
+sy = sum(y)
+\end{verbatim}
+
+Mathematically, the standard evaluation model is a total ordering on the
+set of statements in the code. The dependency graph is a partial ordering.
+
+
+
+The idea behind code analysis is to treat the code itself as a data
+structure. ``Programming on the language'' opens up rich possibilities.
+This is an old idea, the R language reference cites the Lisp
+language as the inspiration.
 
 Big point- Compilers have used all manners of static analysis and
 intermediate optimizations to create more efficient code. Interpreted
@@ -818,6 +850,8 @@ f = function() 10       # 3
 
 In this case the call to g() will incorrectly return 1 instead of 11.
 Hence there is a ``hidden'' dependency implicit here: \texttt{3 -> 4}.
+
+TODO: Cite Nick's SSA reference.
 
 A couple ideas to get around this: inline functions defined in the script.
 Think harder about when evaluation must happen.
