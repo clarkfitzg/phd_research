@@ -97,27 +97,27 @@ using an alternative evaluation model to improve performance while
 preserving language semantics.
 
 The evaluation model for interpreted languages is simple. Each
-statement of code is evaluated in the order that it appears. This can be
-viewed as a set of constraints on the evaluation order of the statements:
+expression of code is evaluated in the order that it appears. This can be
+viewed as a set of constraints on the evaluation order of the expressions:
 \begin{enumerate}
-    \item statement 1 executes before statement 2
-    \item statement 2 executes before statement 3
+    \item expression 1 executes before expression 2
+    \item expression 2 executes before expression 3
     \item $\dots$
 \end{enumerate}
-What if these constraints are relaxed? Suppose statement 1 defines the variable
-\texttt{x}, which is not used until statement 17. Then one has the
+What if these constraints are relaxed? Suppose expression 1 defines the variable
+\texttt{x}, which is not used until expression 17. Then one has the
 constraint:
 \begin{enumerate}
-    \item statement 1 executes before statement 17
+    \item expression 1 executes before expression 17
 \end{enumerate}
-This can be generalized into a directed graph by considering statements as
+This can be generalized into a directed graph by considering expressions as
 nodes and constraints as edges. Add an edge from $i \rightarrow k$ if
-statement $k$ depends on the execution of statement $i$.  It's safe to
-assume $i < k$, because statements appearing later in a program can't
-affect statements which have already run. Hence this directed graph is
+expression $k$ depends on the execution of expression $i$.  It's safe to
+assume $i < k$, because expressions appearing later in a program can't
+affect expressions which have already run. Hence this directed graph is
 acyclic.
 
-Scheduling execution based on the DAG allows some statements to execute in
+Scheduling execution based on the DAG allows some expressions to execute in
 parallel. For example, the following adjacent lines are independent, so
 they can be computed simultaneously:
 
@@ -127,7 +127,7 @@ sy = sum(y)
 \end{verbatim}
 
 Mathematically, the standard evaluation model is a total ordering on the
-set of statements in the code. The dependency graph is a partial ordering.
+set of expressions in the code. The dependency graph is a partial ordering.
 
 
 Why this matters. It's reasonable to try to improve code performance if
@@ -150,10 +150,64 @@ fly. I rarely know if something will be more efficient if
 run with a multicore lapply versus a regular lapply. Then it would be
 better if the system chose the right one for me.
 
+\section{Literature Review}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Most of the literature focuses on compiled languages along with careful analysis
+of control flow. Most examples and applications presented along with these
+papers are for well-defined algorithmic problems. These algorithmic
+problems are often quite different than a high level data analysis script
+which may call down into several different algorithms.
+
+The expression graph proposed above is similar to 
+use-definition and definition-use chains. A definition-use chain consists
+of all expressions using a variable following the definition of that
+variable. This amounts to a subset of the edges in the expression graph,
+since it's possible that expressions depend on each other without
+variables. An example of this is adding a title to a plot before saving to
+a pdf. The global state of the graphics device is updated, so there is
+indeed a dependency between the expression adding the title and the
+subsequent one saving the plot.
+
+The Use-definition chain has been around since at least 1978
+when it was used to remove dead (unused) code \cite{kennedy1978use}.
+Code usefulness is defined recursively; a computation is useful if the result is
+used later by another computation. This is combined with the ``base case''
+of usefulness, a set of operations considered
+intrinsically useful. This author considers calls to subroutines and branch
+test instructions as intrinsically useful. We might take this idea and
+tweak it a little- define expressions in a data analysis script as
+intrinsically useful if they have a side effect, for example
+saving data to disk.
+
+More general than the use-definition chain is the program dependence graph (PDG)\cite{ferrante1987}:
+\begin{quote}
+    A PDG node represents
+    an arbitrary sequential computation (e.g., a basic block, a
+    statement, or an operation). An edge in a PDG represents
+    a control dependence or a data dependence. PDGs do not
+    contain any artificial sequencing constraints from the
+    program text; they reveal the ideal parallelism in a
+    program. \cite{sarkar1991automatic} 
+\end{quote}
+\cite{sarkar1991automatic} goes on to make the practical distinction between ideal
+parallelism and useful parallisism. Overhead implies that the two often
+differ.
+
+The hierarchical task graph (HTG) was introduced in \cite{girkar1992automatic}
+to detect task parallelism in source code for use in compilers.
+As in the others, it incorporates the control flow for a fine grained
+parallelism. They allow `compound nodes' containing nested HTG's.
+\cite{cosnard1995automatic} describe constructing a task graph based on
+annotating the source code the program.
+\cite{adve2004parallel} presents a model for predicting the run time of
+programs based on a task graph. 
+
+
 \section{Languages Requirements}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-We can consider building the DAG's described above for languages that are
+We can consider building the expression graphs described above for languages that are
 \begin{itemize}
     \item open source
     \item used for data analysis
@@ -201,13 +255,17 @@ It may be possible to recursively examine all functions and methods which
 are used, but this is not ideal for a couple reasons. First, it would
 require analyzing orders of magnitude more code than what the user has
 written. Second, eventually we'll get to compiled code which requires
-totally different methods.
+totally different methods. For example, LLVM can be used to
+programmatically generate use-definition chains \cite{llvm}.
 
-Hence functional programming and pass by value semantics make this task
-much more feasible. The R language is ideal in this respect.
+Hence functional programming and pass by value semantics make constructing
+graphs much more feasible. The R language is ideal in this respect.
+As of 2009, most efforts to parallelize R have focused on the lower level
+programming mechanisms. These needed to be in place before any higher level
+automatic detection could be built and function.
+\cite{schmidberger2009state} 
 
-
-\section{Dependencies}
+\section{Definitions}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 We need to start out with some definitions and basic concepts to make all
@@ -222,18 +280,18 @@ statement may span multiple lines.
 
 \begin{verbatim}
 # Two statements on line
-a <- 1; b <- 2
+a = 1; b = 2
 
 # One statement on multiple lines
-plot(lm(y ~ x,
-        data = xydata))
+plot(x,
+     y)
 \end{verbatim}
 
 \textbf{symbol} is a variable name such as \textbf{a, b} above.  The words
 symbol, variable, and name are used interchangeably. For consistency I'll
 stick with symbol.
 
-Assignment is the binding of a symbol to an R object. Complex assignment
+Assignment is the binding of a symbol to an R object.
 
 ``An \textbf{expression} contains one or more statements.'' Expression objects
 in the langauge contain parsed but unevaluated statements. 
@@ -244,8 +302,8 @@ type of expression.
 
 \begin{verbatim}
 {
-a <- 1
-b <- 2
+a = 1
+b = 2
 }
 \end{verbatim}
 
@@ -266,6 +324,7 @@ So how do we detect dependencies in code?
 Idea talking with math students- count the incoming and outgoing edges. Use
 this info.
 
+
 \section{Graph Construction}
 
 The graphs can be built sequentially, as the script is parsed.
@@ -273,9 +332,9 @@ The graphs can be built sequentially, as the script is parsed.
 Consider the following simple script:
 
 \begin{verbatim}
-x <- 1:10   # expression 1
+x = 1:10   # expression 1
 plot(x)     # expression 2
-x <- 1:5    # expression 3
+x = 1:5    # expression 3
 plot(x)     # expression 4
 \end{verbatim}
 
@@ -319,8 +378,8 @@ On a two core machine that script might look something like:
 
 \begin{verbatim}
 # These could be run in parallel
-a <- long_running_func()
-b <- long_running_func()
+a = long_running_func()
+b = long_running_func()
 \end{verbatim}
 
 Side note- where exactly is the overhead of using multiple processes? Is
@@ -331,13 +390,24 @@ on the first, and everything else depends on the second. Then it must run
 in serial so multiprocessing can't help.
 
 \begin{verbatim}
-a <- long_running_func()
-b <- long_running_func2(a)  # depends on a
+a = long_running_func()
+b = long_running_func2(a)  # depends on a
 # Now perform many operations on b
 \end{verbatim}
 
 \section{Optimization Problem}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+To consider an alternative evaluation model the overhead required to
+parallelize an expression should require less time than running the
+expression itself. Rounding to orders of magnitude, here are some rough
+times
+for reference executing on a modest machine. Simple R expressions take
+$10^{-7}$ seconds to evaluate. Using a system level parallel fork
+requires $10^{-3}$ seconds of overhead. Evaluation on an existing local
+socket cluster takes $10^{-4}$ seconds. Then either of these well
+established methods for parallelism in R won't become efficient until the
+code under evaluation takes on the order of $10^{-3}$ seconds.
 
 Consider the problem of whether or not to run blocks of code in parallel.
 I'm thinking of this as an integer programming problem. 
@@ -374,13 +444,13 @@ considered the same, which gives a 1 to 1 relationship between scripts and
 parse trees. 
 
 Many parse trees can give rise to the same code graph. For
-example, the code graph shouldn't care if one uses \texttt{<-} or
+example, the code graph shouldn't care if one uses \texttt{=} or
 \texttt{=} for assignment. Nor will it care about the ordering of two
 adjacent lines binding a symbol to a literal constant:
 
 \begin{verbatim}
-a <- 1
-b <- 2
+a = 1
+b = 2
 \end{verbatim}
 
 Therefore we lose information by converting from a parse tree to this code
@@ -450,10 +520,10 @@ approach of just creating all the edges. An example:
 
 \begin{verbatim}
 # coinflip(p) randomly returns TRUE or FALSE with probability p
-x <- 10
-if(coinflip(p1)) x <- 20
-if(coinflip(p2)) x <- 30
-y <- x + 1
+x = 10
+if(coinflip(p1)) x = 20
+if(coinflip(p2)) x = 30
+y = x + 1
 \end{verbatim}
 
 Thinking harder about this, it is necessary that the assignments into the
@@ -465,12 +535,12 @@ semantics- a weaker one for evaluation and a stronger one for assignment.
 Here's a related case:
 
 \begin{verbatim}
-x <- f(...)
-x <- 10
-y <- x + 1
+x = f(...)
+x = 10
+y = x + 1
 \end{verbatim}
 
-Here the line \texttt{x <- f(...)} is unneeded, as are all lines just done
+Here the line \texttt{x = f(...)} is unneeded, as are all lines just done
 in support of this operation. This suggests that as a first pass we would
 want to identify and remove unnecessary code. Then we can assume every
 line of code that remains needs to run. I'm also assuming that the code is
@@ -499,109 +569,6 @@ beginning and end of the program, respectively.
 
 Variable updates don't need to be DAGS- but then again it doesn't make
 perfect sense to talk about control flow in terms of variables.
-
-\section{Task Graph Literature Review}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-Most of these highly cited papers seem to focus on making systems faster
-and more efficient. What about the value of looking at a task graph for
-educational / explanation purposes?
-
-Ferrante et. al. introduce the program dependence graph.
-\cite{ferrante1987}. The approach I'm looking at now should be higher level
-than this, because this explicitly handles control flow. I can get out of
-this by only looking at the top level statements in a script. The control
-flow there is super simple- all the statements execute in order!
-
-TODO: see which graph definitions we can borrow from this and other papers-
-ie. ``hammock''.
-
-\cite{cosnard1995automatic} describe constructing a task graph based on
-annotating the source code the program. They go into every iteration of the
-loop, which differes from what I'm proposing.
-
-\cite{adve2004parallel} presents a model for predicting the run time of
-programs based on a task graph. 
-Their definitions on page 98 are nice and clear, I should use them.
-Based on the graphs of their figures the
-programs seem very like very regular, well defined algorithmic programs. A
-general data analysis script in R is probably much more variable than this.
-
-This is one way to distinguish and justify my work here as different from
-CS- general forms of scripting and data analysis are usually quite
-different than a pure focus on algorithms.
-
-Nice explanation of program dependence graph (PDG):
-
-\begin{quote}
-    A PDG node represents
-    an arbitrary sequential computation (e.g., a basic block, a
-    statement, or an operation). An edge in a PDG represents
-    a control dependence or a data dependence. PDGs do not
-    contain any artificial sequencing constraints from the
-    program text; they reveal the ideal parallelism in a
-    program. \cite{sarkar1991automatic} 
-\end{quote}
-
-We can borrow their idea of distinguishing ideal parallelism from useful
-parallelism. Overhead makes these two different.
-
-The hierarchical task graph was introduced in \cite{girkar1992automatic}
-for the purpose of detecting task parallelism in source code for use in compilers.
-As in the others, it incorporates the control flow for a fine grained
-parallelism. They allow `compound nodes' containing nested htg's.
-
-As of 2009, most efforts to parallelize R have focused on the lower level
-programming mechanisms. These needed to be in place before any higher level
-automatic detection could be built and function.
-\cite{schmidberger2009state} 
-
-What I'm looking at is very close to the Use-define chain.
-\url{https://en.wikipedia.org/wiki/Use-define_chain}. But I'm staying just
-slightly higher level. The hope is that staying at a high level will make
-this more productive / easier to reason about and use than a low level
-thing that examines every bit of control flow.
-
-The Use-definition chain has been around since at least 1978
-when it was used to remove dead (unused) code\cite{kennedy1978use}. This
-reference has a nice consideration of what makes a computation useful or
-not. It defines it recursively- something is useful if it's used later by another
-computation. This is combined with the ``base case'' of usefulness- there's
-a set of operations that are considered intrinsically useful. This author
-considers calls to subroutines and branch test instructions as
-intrinsically useful. We might take this idea and tweak it a little- define
-R expressions as intrinsically useful if they have a side effect, ie. any
-plotting commands, saving data to disk, etc.
-
-So I wonder how much this has to be tied to R? CodeDepends is of course
-purely for R. But other tools exist to manipulate parse trees independently
-of any language, for example
-\url{https://github.com/tree-sitter/tree-sitter}. 
-
-LLVM has some functionality for working with these use / def chains
-\cite{Lattner2004}. For example:
-\url{http://llvm.org/docs/ProgrammersManual.html#iterating-over-def-use-use-def-chains}.
-Following their terminology, an object of class \texttt{Value} is used by
-potentially many objects of class \texttt{User}. The \emph{def-use} chain
-is the list of all \texttt{Users} for a particular \texttt{Value}. I think
-of this as all the places in the code where this variable propagates. In
-contrast, the \emph{use-def} chain is the list of all \texttt{Values} for a
-particular \texttt{User}. This is all the inputs to a newly
-created object. There's room for both of these chains to be expanded recursively.
-
-In this example the def-use chain for \texttt{x} is only \texttt{[y]}, but the
-recursive one is \texttt{[y, z, z2]}. The use-def chain for \texttt{y} is
-\texttt{[z, z2]}.
-
-\begin{verbatim}
-x = 10
-y = x + 5
-z = y + 2
-z2 = y + 100
-\end{verbatim}
-
-We might be able to use this along with R code to determine if an R
-function calling C code is pure.
 
 \section{How CodeDepends works}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -711,7 +678,7 @@ asynchronous evaluation of R expressions. Once I have a partial ordering
 through the dependencies it
 would be appealing to evaluate every code expression with this. 
 futures mostly just provides the asynchronous
-assignment operator \texttt{\%<-\%}. Then I'd have to go in every
+assignment operator \texttt{\%=\%}. Then I'd have to go in every
 expression and replace the regular assignment operators. This could lead to
 lots of weird stuff- what if a for loop goes through and assigns 1000
 times? That's a ton of overhead.
@@ -839,7 +806,7 @@ Following the control flow for `lm` we see the following calls:
 which certainly does something weird. But what?
 
 Haven't yet checked things like:
-`<<-, assign`
+`<<- assign`
 
 Recursion? Iterating updates?
 
@@ -1075,6 +1042,35 @@ programming?
 TODO: Come up with application where I need all this!! How about computing
 graphs from Euclidean space like with James' application? It would be nice
 for the QE to have something that he's familiar with and invested in.
+
+\appendix
+\section{LLVM}
+
+LLVM has some functionality for working with these use / def chains
+\cite{Lattner2004}. For example:
+\url{http://llvm.org/docs/ProgrammersManual.html#iterating-over-def-use-use-def-chains}.
+Following their terminology, an object of class \texttt{Value} is used by
+potentially many objects of class \texttt{User}. The \emph{def-use} chain
+is the list of all \texttt{Users} for a particular \texttt{Value}. I think
+of this as all the places in the code where this variable propagates. In
+contrast, the \emph{use-def} chain is the list of all \texttt{Values} for a
+particular \texttt{User}. This is all the inputs to a newly
+created object. There's room for both of these chains to be expanded recursively.
+
+In this example the def-use chain for \texttt{x} is only \texttt{[y]}, but the
+recursive one is \texttt{[y, z, z2]}. The use-def chain for \texttt{y} is
+\texttt{[z, z2]}.
+
+\begin{verbatim}
+x = 10
+y = x + 5
+z = y + 2
+z2 = y + 100
+\end{verbatim}
+
+We might be able to use this along with R code to determine if an R
+function calling C code is pure.
+
 
 \bibliographystyle{plain}
 \bibliography{citations} 
