@@ -75,29 +75,23 @@
 
 \end{abstract}
 
-Outline:
-\begin{enumerate}
-    \item Intro
-    \item Options for programming languages
-    \item lit review
-\end{enumerate}
-
 \section{Introduction}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 The idea behind code analysis is to treat the code itself as a data
-structure. ``Programming on the language'' opens up rich possibilities.
-This is an old idea, the R language reference cites the Lisp
-language as the inspiration \cite{Rlang}.
+structure as ``Programming on the language'' opens up rich possibilities.
+This is an old idea, both the R and Julia language references cite Lisp
+as the inspiration \cite{Rlang} \cite{bezanson2014julia}.
 
 Compilers have used all manners of static analysis and
 intermediate optimizations to create more efficient code. Interpreted
-languages are much more limited in this respect. This project is about
-using an alternative evaluation model to improve performance while
+languages are much more limited in this respect. This project explores
+the use of an alternative evaluation model to improve performance while
 preserving language semantics.
 
 The evaluation model for interpreted languages is simple. Each
-expression of code is evaluated in the order that it appears. This can be
+expression of code is evaluated in the order that it appears. Informally
+each expression is a line of code. This can be
 viewed as a set of constraints on the evaluation order of the expressions:
 \begin{enumerate}
     \item expression 1 executes before expression 2
@@ -114,10 +108,10 @@ This can be generalized into a directed graph by considering expressions as
 nodes and constraints as edges. Add an edge from $i \rightarrow k$ if
 expression $k$ depends on the execution of expression $i$.  It's safe to
 assume $i < k$, because expressions appearing later in a program can't
-affect expressions which have already run. Hence this directed graph is
-acyclic.
+affect expressions which have already run. Hence the expression graph is
+acyclic, ie. a DAG.
 
-Scheduling execution based on the DAG allows some expressions to execute in
+Scheduling execution based on the expression graph allows some expressions to execute in
 parallel. For example, the following adjacent lines are independent, so
 they can be computed simultaneously:
 
@@ -129,45 +123,32 @@ sy = sum(y)
 Mathematically, the standard evaluation model is a total ordering on the
 set of expressions in the code. The dependency graph is a partial ordering.
 
-
-Why this matters. It's reasonable to try to improve code performance if
-slow speed affects many users. For scripts, superficially it might appear
-that few people are affected. Indeed, if a researcher writes one script that
-takes a couple minutes to run, and they run it a couple times then it
-doesn't matter much, and there's no point in attempting to accelerate it.
-However, these same sorts of "scripts" can be used in more serious ways.
-For example, scripts can be used as Extract Transform Load (ETL) tools that
-run as batch jobs every day or every hour. Then the script runs
-many times, so it's important to realize more performance. For
-ease of use and maintainability it's nice to have automatic tools to
-accelerate the performance. One can write natural, beginner level scripts
-and have them run much faster.
-
-On a broader note, this is about embedding more intelligence into the code
-and the system. As an end user it's convenient if a system will just ``do
-the right thing'', or adjust to different work loads and data sizes on the
-fly. I rarely know if something will be more efficient if
-run with a multicore lapply versus a regular lapply. Then it would be
-better if the system chose the right one for me.
+On a broader note, this is about embedding more intelligence into the 
+system. Many languages have mechanisms or third party tools for explicitly
+requesting asynchronous evaluation. These typically require changing the
+code. This introduces complexity, makes maintenance more difficult, and
+makes the code less portable.  It's more convenient to have one version of
+the code which can be passed to a system which will just ``do the right
+thing'', adjusting to different platforms, work loads, and data sizes on
+the fly. 
 
 \section{Literature Review}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-Most of the literature focuses on compiled languages along with careful analysis
-of control flow. Most examples and applications presented along with these
-papers are for well-defined algorithmic problems. These algorithmic
-problems are often quite different than a high level data analysis script
-which may call down into several different algorithms.
 
 The expression graph proposed above is similar to 
 use-definition and definition-use chains. A definition-use chain consists
 of all expressions using a variable following the definition of that
 variable. This amounts to a subset of the edges in the expression graph,
 since it's possible that expressions depend on each other without
-variables. An example of this is adding a title to a plot before saving to
-a pdf. The global state of the graphics device is updated, so there is
-indeed a dependency between the expression adding the title and the
-subsequent one saving the plot.
+variables. For example, consider the following R code to save a plot to a
+pdf:
+\begin{verbatim}
+pdf("xy.pdf")
+plot(x, y)
+title("x and y")
+dev.off()
+\end{verbatim}
+These expressions depend on each other, but only \texttt{plot(x, y)} uses variables.
 
 The Use-definition chain has been around since at least 1978
 when it was used to remove dead (unused) code \cite{kennedy1978use}.
@@ -193,6 +174,8 @@ More general than the use-definition chain is the program dependence graph (PDG)
 \cite{sarkar1991automatic} goes on to make the practical distinction between ideal
 parallelism and useful parallisism. Overhead implies that the two often
 differ.
+The expression graph differs from the PDG since it allows the permutation of
+operations in a basic block.
 
 The hierarchical task graph (HTG) was introduced in \cite{girkar1992automatic}
 to detect task parallelism in source code for use in compilers.
@@ -203,6 +186,12 @@ annotating the source code the program.
 \cite{adve2004parallel} presents a model for predicting the run time of
 programs based on a task graph. 
 
+The literature cited in this section focuses primarily on compiled
+languages along with careful analysis of control flow. Most examples and
+applications presented along with these papers are for well-defined
+algorithmic problems. These algorithmic problems are often quite different
+than a high level data analysis script which may call down into several
+different algorithms.
 
 \section{Languages Requirements}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -222,6 +211,7 @@ things.  The current popular languages satisfying these requirements are
 Python, Julia, and R.
 
 The basic unit to analyze is a single code expression.
+Consider how an expression uses symbols, aka variables or names.
 An expression may do any combination of the following things:
 \begin{enumerate}
     \item Define new symbols \texttt{x = 10}
@@ -253,10 +243,10 @@ function and method calls this will excessively contrain the problem.
 
 It may be possible to recursively examine all functions and methods which
 are used, but this is not ideal for a couple reasons. First, it would
-require analyzing orders of magnitude more code than what the user has
-written. Second, eventually we'll get to compiled code which requires
-totally different methods. For example, LLVM can be used to
-programmatically generate use-definition chains \cite{llvm}.
+require analyzing the underlying library code, which is orders of magnitude
+more code than what the user has written. Second, eventually we'll get to
+compiled code which requires totally different methods. For example, LLVM
+can be used to programmatically generate use-definition chains \cite{llvm}.
 
 Hence functional programming and pass by value semantics make constructing
 graphs much more feasible. The R language is ideal in this respect.
@@ -1070,6 +1060,21 @@ z2 = y + 100
 
 We might be able to use this along with R code to determine if an R
 function calling C code is pure.
+
+\section{Motivation}
+
+Why this matters. It's reasonable to try to improve code performance if
+slow speed affects many users. For scripts, superficially it might appear
+that few people are affected. Indeed, if a researcher writes one script that
+takes a couple minutes to run, and they run it a couple times then it
+doesn't matter much, and there's no point in attempting to accelerate it.
+However, these same sorts of "scripts" can be used in more serious ways.
+For example, scripts can be used as Extract Transform Load (ETL) tools that
+run as batch jobs every day or every hour. Then the script runs
+many times, so it's important to realize more performance. For
+ease of use and maintainability it's nice to have automatic tools to
+accelerate the performance. One can write natural, beginner level scripts
+and have them run much faster.
 
 
 \bibliographystyle{plain}
