@@ -1,13 +1,14 @@
 digraph G {
 
-l1[label = "a <- 10"];
-l2[label = "b <- a + 5"];
-l3[label = "plot(a)"];
-l4[label = "fit <- lm(a ~ b)"];
+l1[label = "n <- 10"];
+l2[label = "x <- rnorm(n)"];
+l3[label = "n <- 100"];
+l4[label = "print(x + n)"];
 
-l1 -> l2
-l1 -> l3
-l1 -> l4
-l2 -> l4
+l1 -> l2 [label = " 1"];
+l1 -> l3 [style = "dashed", label = " 2"];
+l2 -> l4 [style = "dashed", label = " 3"];
+l2 -> l3 [label = " 4"];
+l3 -> l4 [label = " 5"];
 
 }

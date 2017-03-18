@@ -1,4 +1,4 @@
-a <- 10
-b <- a + 5
-plot(a)
-fit <- lm(a ~ b)
+n <- 10
+x <- rnorm(n)
+n <- 100
+print(x + n)

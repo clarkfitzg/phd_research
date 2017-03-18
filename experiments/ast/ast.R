@@ -1,6 +1,7 @@
 # Mon Feb 20 11:54:51 PST 2017
 # Very weird - this runs fine when I `source()` it from an R prompt, but
-# doesn't run with Rscript command line
+# doesn't run with Rscript command line.
+# Problem was the default for keep.source
 
 #
 # Goal: plot the AST
@@ -11,7 +12,7 @@ library(igraph)
 
 igraph_options(plot.layout=layout_as_tree)
 
-ex = parse("ab.R")
+ex = parse("ab.R", keep.source = TRUE)
 
 # What is the meaning of these ID numbers?
 # They don't seem to be numbered in the order that the parser encounters

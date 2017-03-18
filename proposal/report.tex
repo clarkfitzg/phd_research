@@ -105,7 +105,8 @@ constraint:
     \item expression 1 executes before expression 17
 \end{enumerate}
 This can be generalized into a directed graph by considering expressions as
-nodes and constraints as edges. Add an edge from $i \rightarrow k$ if
+nodes and constraints as edges. The edges are implicit based on the order
+of the statements in the code. Add an edge from $i \rightarrow k$ if
 expression $k$ depends on the execution of expression $i$.  It's safe to
 assume $i < k$, because expressions appearing later in a program can't
 affect expressions which have already run. Hence the expression graph is
@@ -246,205 +247,29 @@ are used, but this is not ideal for a couple reasons. First, it would
 require analyzing the underlying library code, which is orders of magnitude
 more code than what the user has written. Second, eventually we'll get to
 compiled code which requires totally different methods. For example, LLVM
-can be used to programmatically generate use-definition chains \cite{llvm}.
+can be used to programmatically generate use-definition chains
+\cite{lattner2004llvm}.
 
 Hence functional programming and pass by value semantics make constructing
 graphs much more feasible. The R language is ideal in this respect.
-As of 2009, most efforts to parallelize R have focused on the lower level
-programming mechanisms. These needed to be in place before any higher level
-automatic detection could be built and function.
-\cite{schmidberger2009state} 
-
-\section{Definitions}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-We need to start out with some definitions and basic concepts to make all
-of this precise. The following material is from the R
-Language Reference \cite{Rlang}.
-
-``A \textbf{statement} is a
-syntactically correct collection of tokens.'' Less formally one can think of
-a statement as a single line of code. The `line' rule doesn't always hold in practice,
-since a semicolon can put two statements on one line, and a single
-statement may span multiple lines.
-
-\begin{verbatim}
-# Two statements on line
-a = 1; b = 2
-
-# One statement on multiple lines
-plot(x,
-     y)
-\end{verbatim}
-
-\textbf{symbol} is a variable name such as \textbf{a, b} above.  The words
-symbol, variable, and name are used interchangeably. For consistency I'll
-stick with symbol.
-
-Assignment is the binding of a symbol to an R object.
-
-``An \textbf{expression} contains one or more statements.'' Expression objects
-in the langauge contain parsed but unevaluated statements. 
-
-Statements can be grouped together using braces to form a \textbf{block}.
-Since expressions can be nested, we can consider a block just a special
-type of expression.
-
-\begin{verbatim}
-{
-a = 1
-b = 2
-}
-\end{verbatim}
-
-TODO: Not sure how to handle blocks. One option is to go inside them and
-look at all the individual statements. The other option, which seems easier
-at first, is to do what CodeDepends does and group them into one
-single logical unit. Presumably if a programmer writes a block like this
-they intend the whole thing to execute together. One typically sees blocks
-along with \texttt{if} statements.
-
-But in the end I think I'll have to recurse inside the expressions at the
-script level, but not down into the supporting library R code. For example, to
-get a minimum set of code to perform a final operation one would need to go
-into a block.
-
-So how do we detect dependencies in code?
-
-Idea talking with math students- count the incoming and outgoing edges. Use
-this info.
-
 
 \section{Graph Construction}
-
-The graphs can be built sequentially, as the script is parsed.
-
-Consider the following simple script:
-
-\begin{verbatim}
-x = 1:10   # expression 1
-plot(x)     # expression 2
-x = 1:5    # expression 3
-plot(x)     # expression 4
-\end{verbatim}
-
-The first expression defines the new symbol \texttt{x}. The third
-expression redefines \texttt{x} without making use of the existing
-definition.
-
-The second expression uses \texttt{x}, so we define an edge from node 1 to 2.
-More generally we define an edge from the most recent expression that
-updated \texttt{x}. Therefore the fourth expression creates an edge from 3
-to 4.
-
-The complete graph is then:
-
-\begin{verbatim}
-1 -> 2
-3 -> 4
-\end{verbatim}
-
-But how will we know if the symbol exists? After parsing we could
-potentially see the timelines recording which symbols live, and if they are
-ever removed. This may depend on conditional statements, which we can't
-know. The safe thing then seems to just assume that they will be used.
-
-TODO: Is this just for the global namespace? How will it be different for
-others? I think it's ok to just focus on the globals first. Environments in
-general may require more thought.
-
-``R adheres to a set of rules that are called lexical scope. This means the
-variable bindings in effect at the time the expression was created are used
-to provide values for any unbound symbols in the expression.''
-\cite{Rlang} A primary goal is to respect R's lexical scoping rules.
-
-Let $k$ be the number of cores on a machine.
-To accelerate code by running in parallel the best possible case is if
-we can keep all $k$ cores busy at once. This will happen if there are $nk$
-expressions which can be independently scheduled for some positive integer
-$n$. Additionaly, each expression should take long enough that
-it's worth the overhead of using an additional R process to evaluate it.
-On a two core machine that script might look something like:
-
-\begin{verbatim}
-# These could be run in parallel
-a = long_running_func()
-b = long_running_func()
-\end{verbatim}
-
-Side note- where exactly is the overhead of using multiple processes? Is
-there latency? There's certainly a limit to how much data we move.
-
-The worst possible case is if the second long running computation depends
-on the first, and everything else depends on the second. Then it must run
-in serial so multiprocessing can't help.
-
-\begin{verbatim}
-a = long_running_func()
-b = long_running_func2(a)  # depends on a
-# Now perform many operations on b
-\end{verbatim}
-
-\section{Optimization Problem}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-To consider an alternative evaluation model the overhead required to
-parallelize an expression should require less time than running the
-expression itself. Rounding to orders of magnitude, here are some rough
-times
-for reference executing on a modest machine. Simple R expressions take
-$10^{-7}$ seconds to evaluate. Using a system level parallel fork
-requires $10^{-3}$ seconds of overhead. Evaluation on an existing local
-socket cluster takes $10^{-4}$ seconds. Then either of these well
-established methods for parallelism in R won't become efficient until the
-code under evaluation takes on the order of $10^{-3}$ seconds.
+Figure \ref{fig:codegraph} illustrates the idea of an expression dependency
+graph for the four lines of code in listing \ref{list:ab}.  Edges 1 and 3
+represent the respective uses of the variable \texttt{n} and \texttt{x}.
+Edge 2 comes from the redefinition of \texttt{n}.  Edge 5 propagates the
+most recent definition of \texttt{n}.  The least obvious is edge 4, which
+is necessary to respect R's lexical scoping semantics since \texttt{x <-
+rnorm(n)} uses the first definition of \texttt{n}. The general rule here is
+that all statements using one version of \texttt{n} must execute before
+\texttt{n} can be redefined.
 
-Consider the problem of whether or not to run blocks of code in parallel.
-I'm thinking of this as an integer programming problem. 
-The directed edges in the graph are the constraints, ie. an edge $A
-\rightarrow B$ implies that $A$ must happen before $B$.
-
-It resembles a
-variation of a scheduling problem. The main constraints are that any variables
-used in one computation must be available when it begins to run. Another
-constraint is that k cores can be active at one time.
-
-The other way general way to do this is running with several different data sizes. This
-gives us a sample that we can run statistics on.
-
-\section{Code graph and parse tree }
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-I want a data structure that captures all of the constraints for the order
-in which the code statements must be run. Preferably the minimal
-set of constraints.
-
-The constraints are implicit based on the order of the statements in the
-code. This is a way of expanding and looking more carefully at this
-implicit logic.
-
-The code graph and related data structures are related to the parsed
-script, which we'll refer to as the \textbf{parse tree}. Since the parser
-doesn't care about spaces, tabs, and comments,  different scripts can produce the same parse
-tree. R's \texttt{getParseData()} preserves all of the source
-information, and this can be very helpful for debugging or IDE's. Later
-this might be useful for injecting code.
-For our immediate purposes scripts differing only in comments and white space can be
-considered the same, which gives a 1 to 1 relationship between scripts and
-parse trees. 
-
-Many parse trees can give rise to the same code graph. For
-example, the code graph shouldn't care if one uses \texttt{=} or
-\texttt{=} for assignment. Nor will it care about the ordering of two
-adjacent lines binding a symbol to a literal constant:
-
-\begin{verbatim}
-a = 1
-b = 2
-\end{verbatim}
-
-Therefore we lose information by converting from a parse tree to this code
-graph.
+The dashed edges in \ref{fig:codegraph} are redundant for representing
+expression dependence given the other edges. Indeed, the code in
+listing \ref{list:ab} must run sequentially. One may wish to remove such
+redundant edges, especially for visual presentation of a larger program.
 
 \lstinputlisting[language=R, caption=Simple script, label=list:ab]{../experiments/ast/ab.R}
 
@@ -466,17 +291,116 @@ graph.
 %\label{fig:test}
 \end{figure}
 
-For visualizing the control flow and dependencies it's important to have the entire
-expression available in the node as in Figure \ref{fig:codegraph}. This
-lets users easily connect the graph with the source file. Another thought
-that would make this easier- put the source code line number along with the
-line of code.
+The existence of some edges may depend on conditional statements which can't
+be known until run time. In this case the conservative and correct way to
+handle the situation is to add the edges in question. For example, in the
+following code one assumes that the expression \texttt{x <- 10} will run.
 
-Duncan was pointing out how I don't need the edge connecting the first line
-to the last line in Figure \ref{fig:codegraph}, because it's implied by the
-path through the intermediate node. True. So I could go through and remove
-those edges. How to do that? Can a dominator tree help with this? It's nto
-a
+\begin{verbatim}
+# coinflip() randomly returns TRUE or FALSE
+if(coinflip()){
+    x <- 10
+}
+\end{verbatim}
+
+\section{Optimization Problem}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Consider the problem of whether or not to run blocks of code in parallel.
+I'm thinking of this as an integer programming problem. 
+The directed edges in the graph are the constraints, ie. an edge $A
+\rightarrow B$ implies that $A$ must happen before $B$.
+
+It resembles a
+variation of a scheduling problem. The main constraints are that any variables
+used in one computation must be available when it begins to run. Another
+constraint is that k cores can be active at one time.
+
+The other way general way to do this is running with several different data sizes. This
+gives us a sample that we can run statistics on.
+
+\section{Task Based Parallelism}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+It's reasonable to try to improve code performance if slow speed affects
+many users. For scripts, superficially it might appear that few people are
+affected. Indeed, if a researcher writes one script that takes a couple
+minutes to run, and they run it a couple times then it doesn't matter much,
+and there's no point in attempting to accelerate it.  However, these same
+sorts of "scripts" can be used in more serious ways.  For example, scripts
+can be used as Extract Transform Load (ETL) tools that run as batch jobs
+every day or every hour. Then the script runs many times, so it's important
+to realize more performance. For ease of use and maintainability it's nice
+to have automatic tools to accelerate the performance. One can write
+natural, beginner level scripts and have them run much faster.
+
+As of 2009, most efforts to parallelize R have focused on the lower level
+programming mechanisms \cite{schmidberger2009state}. These needed to be in
+place before any higher level automatic detection could be built and
+function.
+
+To consider an alternative evaluation model the overhead required to
+parallelize an expression should require less time than running the
+expression itself. Rounding to orders of magnitude, here are some rough
+times
+for reference executing on a modest machine. Simple R expressions take
+$10^{-7}$ seconds to evaluate. Using a system level parallel fork
+requires $10^{-3}$ seconds of overhead. Evaluation on an existing local
+socket cluster takes $10^{-4}$ seconds. Then either of these well
+established methods for parallelism in R won't become efficient until the
+code under evaluation takes on the order of $10^{-3}$ seconds.
+
+Let $k$ be the number of cores on a machine.
+To accelerate code by running in parallel the best possible case is if
+we can keep all $k$ cores busy at once. This will happen if there are $nk$
+expressions which can be independently scheduled for some positive integer
+$n$. 
+On a two core machine that script might look something like:
+
+\begin{verbatim}
+# These could be run in parallel
+a = long_running_func()
+b = long_running_func()
+\end{verbatim}
+
+The worst possible case is if the second long running computation depends
+on the first, and everything else depends on the second. Then it must run
+in serial so multiprocessing can't help.
+
+\begin{verbatim}
+a = long_running_func()
+b = long_running_func2(a)  # depends on a
+# Now perform many operations on b
+\end{verbatim}
+
+
+
+\section{Code graph and parse tree }
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The code graph and related data structures are related to the parsed
+script, which we'll refer to as the \textbf{parse tree}. Since the parser
+doesn't care about non significant white space and comments,  different scripts can produce the same parse
+tree. R's \texttt{getParseData()} preserves all of the source
+information, and this can be very helpful for debugging or IDE's. Later
+this might be useful for injecting code.
+
+For our immediate purposes scripts differing only in comments and white space can be
+considered the same, which gives a 1 to 1 relationship between scripts and
+parse trees. 
+
+Many parse trees can give rise to the same code graph. For
+example, the code graph shouldn't care if one uses \texttt{=} or
+\texttt{<-} for assignment. Nor will it care about the ordering of two
+adjacent lines binding a symbol to a literal constant:
+
+\begin{verbatim}
+a = 1
+b = 2
+\end{verbatim}
+
+Therefore we lose information by converting from a parse tree to this code
+graph.
 
 This would then help me see where the parallelism is, and put it in an
 appropriate data structure. Once I do that I can collapse simple threads
@@ -507,20 +431,6 @@ from node $A$ to $B$ if $B$ uses a variable that was most recently updated
 in $A$. There is some ambiguiity here, since variables may be created
 within conditional statements. In that case we can take the conservative
 approach of just creating all the edges. An example:
-
-\begin{verbatim}
-# coinflip(p) randomly returns TRUE or FALSE with probability p
-x = 10
-if(coinflip(p1)) x = 20
-if(coinflip(p2)) x = 30
-y = x + 1
-\end{verbatim}
-
-Thinking harder about this, it is necessary that the assignments into the
-global workspace happen in order. But it's not necessary that the code runs
-in order, because the \texttt{if(coinflip())} lines don't use \texttt{x} as
-an input. Then there are two types of constraints to have the correct
-semantics- a weaker one for evaluation and a stronger one for assignment. 
 
 Here's a related case:
 
@@ -1061,20 +971,49 @@ z2 = y + 100
 We might be able to use this along with R code to determine if an R
 function calling C code is pure.
 
-\section{Motivation}
+\appendix
+\section{Definitions}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Why this matters. It's reasonable to try to improve code performance if
-slow speed affects many users. For scripts, superficially it might appear
-that few people are affected. Indeed, if a researcher writes one script that
-takes a couple minutes to run, and they run it a couple times then it
-doesn't matter much, and there's no point in attempting to accelerate it.
-However, these same sorts of "scripts" can be used in more serious ways.
-For example, scripts can be used as Extract Transform Load (ETL) tools that
-run as batch jobs every day or every hour. Then the script runs
-many times, so it's important to realize more performance. For
-ease of use and maintainability it's nice to have automatic tools to
-accelerate the performance. One can write natural, beginner level scripts
-and have them run much faster.
+We need to start out with some definitions and basic concepts to make all
+of this precise. The following material is from the R
+Language Reference \cite{Rlang}.
+
+``A \textbf{statement} is a
+syntactically correct collection of tokens.'' Less formally one can think of
+a statement as a single line of code. The `line' rule doesn't always hold in practice,
+since a semicolon can put two statements on one line, and a single
+statement may span multiple lines.
+
+\begin{verbatim}
+# Two statements on line
+a = 1; b = 2
+
+# One statement on multiple lines
+plot(x,
+     y)
+\end{verbatim}
+
+\textbf{symbol} is a variable name such as \textbf{a, b} above.  The words
+symbol, variable, and name are used interchangeably. For consistency I'll
+stick with symbol.
+
+Assignment is the binding of a symbol to an R object.
+
+``An \textbf{expression} contains one or more statements.'' Expression objects
+in the langauge contain parsed but unevaluated statements. 
+
+Statements can be grouped together using braces to form a \textbf{block}.
+Since expressions can be nested, we can consider a block just a special
+type of expression.
+
+\begin{verbatim}
+{
+a = 1
+b = 2
+}
+\end{verbatim}
+
 
 
 \bibliographystyle{plain}
