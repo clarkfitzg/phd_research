@@ -66,7 +66,7 @@
 
 \begin{document}
 
-\title{Code Analysis Project Proposal}
+\title{R Code Dependency Graphs}
 \date{\today}
 \author{Clark Fitzgerald}
 \maketitle
@@ -256,6 +256,11 @@ graphs much more feasible. The R language is ideal in this respect.
 \section{Related Work}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+Bengston's \texttt{future} package provides a mechanism for
+asynchronous assignment and evaluation of R expressions \cite{R-future}. Once the
+expression graph is created it might be possible to use similar mechanisms
+for evaluation.
+
 Jim Hester's covr package \cite{R-covr} checks unit test coverage of R
 code. It is a practical example of computing on the language,
 programmatically modifying the code by recording calls as they are made.
@@ -311,11 +316,6 @@ parallel if possible? I wonder how difficult it would be to hook into
 knitr's system... And while I'm at it, why not Jupyter Notebooks? If I can
 figure out how to build an equivalent code dependency graph for Python that
 is.
-
-Henrik Bengston's \texttt{future} package provides a mechanism for
-asynchronous evaluation of R expressions \cite{R-future}. Once the
-expression graph is created it might be possible to use this for
-evaluation.
 
 \section{Graph Construction}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -437,7 +437,6 @@ b = long_running_func2(a)  # depends on a
 \end{verbatim}
 
 \subsection{Static Execution}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 If overhead and expression run time are approximately known then the
 question of optimal execution for the complete expression dependency graph
@@ -469,62 +468,32 @@ potential to reduce these sources of overhead.
 label=list:overhead]{overhead.R}
 
 Issues of latency and bandwidth generally become more complex for different
-architectures such as distributed systems and GPU's.
-
+architectures such as distributed systems and GPU's
+\cite{matloff2015parallel}.
 
 \subsection{Dynamic Execution}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Alternatively a dynamic execution model can be used that .
-Thinking about how to run the whole thing in parallel now. I could use a
-model where the master sends out expressions to workers to
-evaluate. This would be through an event loop that pops expressions from a data
-structure.
+Alternatively a dynamic execution model can be used. This relies on a
+master / worker architecture. The reference version could be a multicore
+system which forks to evaluate expressions.  At a high level, the master
+runs an event loop that pops expressions from the top of the expression
+dependency graph.
+This approach is appealing
+because it can do dynamic load balancing without needing to know.
 
-And forks every time. Then the master polls the workers to see
-when they're finished. Though it would be better if the workers could send a
-message saying when they're finished. Seems like I might be able to do this
-with \texttt{parallel::sendMaster}.
-
-The process forking every time will be quite inefficient. The more intelligent
-thing to do is `pipeline' the operations, and send whole related blocks of
-expressions to various processes to evaluate.
-
-The processes spawned with \texttt{parallel::mcparallel} communicate
-through an OS level pipe aka FIFO. This is why the function returns a vector of
-length 2 called `fd` for file descriptor, among other things. These are the
-file descriptors to the pipes
-
-But this may open up a different opportunity for faster, lighter weight
-threads? A main consideration with threads is that one doesn't want one
-thread to mess up a the data structure while another is using using it. But
-perhaps using this expression dependency information will let us make
-guarantees about safety?
-
-Or what about using something even lighter than threads- like coroutines or
-callbacks? It might be possible to dig into the guts of R and make
-something like this.
-
-This approach is different than rewriting the script as I did before. It's appealing
-because it can do dynamic load balancing.
-
-But it's not clear which expressions to evaluate first. Maybe I should
-first do the ones that have the most dependencies? If an expression has no
-dependencies then one can do it at any time, even way later. But if there
-are many dependencies then none of them can run until the parent is
-evaluated. This will end up needing some data structure acting like a priority queue.
-
-Here's an algorithm: Start by marking all direct descendants of the special
-0 (start) node as ready. Let the workers begin evaluating these
-expressions.
+Here's an algorithm: Insert the artifical node 0 representing the beginning
+of the script, so that nodes without parents now have node 0 as a parent. Mark
+these direct descendants of node 0 as ready. Let the workers begin evaluating
+these expressions.
 
 \begin{enumerate}
-    \item Expression $e_i$ is evaluated and the results are available again
+    \item Event loop checks to see if any are done.
+    \item Expression $e_i$ finishes and the results are available again
         on master.
     \item For each expression $e_j$ which depends directly on $e_i$: check
         if $e_j$ has no other existing parents then mark it as ready.
     \item Remove $e_i$ from the graph.
-    \item Worker begins executing any of the nodes that are marked as ready.
+    \item Free workers begin executing any of the nodes that are marked as ready.
 \end{enumerate}
 
 There's some nuance here by trying to keep each of $k$ workers as busy as
@@ -538,9 +507,15 @@ of expressions that depend on that expression, directly or indirectly. This
 is a little naive- it would be better to have timings of the code and do
 something more optimal in terms of reducing run time.
 
+The process forking every time will be quite inefficient. The more intelligent
+thing to do is `pipeline' the operations, and send whole related blocks of
+expressions to various processes to evaluate.
 
 \section{How CodeDepends works}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+CodeDepends is the underlying package which generates the expression
+dependency information \cite{R-CodeDepends}.
 
 The parsing uses an object oriented wrapper around R's builtin \texttt{parse()}
 which handles different file types ie. script or dynamic documents among other arguments.
@@ -550,7 +525,7 @@ more indirectly, through functions like \texttt{is.name()}.
 
 The workhorse functions are in \texttt{CodeDepends.R}. Overall, the
 approach resembles \texttt{codetools::walkCode} as discussed in
-\ref{chambers2016extending}. Essentially it walks the tree of code, calling
+\cite{chambers2016extending}. Essentially it walks the tree of code, calling
 a function to collect usage information.
 
 When analyzing a single expression, first a 
@@ -567,84 +542,10 @@ Many special cases of functions are handled in functionHandlers.R, such as
 \texttt{\$, rm, for} as well as non standard evaluation. Special attention seems
 to have been paid to dplyr operations.
 
-As a user I'd like a clean, well defined entry point and API for this
-stuff. The problem I had today was trying to pass arguments into
-\texttt{inputCollector}. I did this by hacking through the code of
-\texttt{makeTaskGraph}.
-
-TODO: Ask Duncan where the separation between CodeDepends and CodeAnalysis
-should be. How about makeTaskGraph? Probably first I should just look more
-in CodeAnalysis to see what's there.
-
-The \texttt{ScriptNodeInfo} objects contain all processed information about
-each expression. They tell which variables 
-
-
-\section{Applications}
+\section{Challenges}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-What are all the useful things to do when rewriting code?  Duncan's very
-helpful docs here http://www.omegahat.net/CodeDepends/design.pdf give a
-handful of reasons.
-
-Other things that I can think of:
-
-Identification and elimination of dead code.
-
-- Given a big ugly script, pull out the minimal set of code to produce a
-  final result. For example, everything needed to make `plot(finalresult)`.
-- Parse Rhistory to find the minimal set of code to reproduce a result.
-- Separate single scripts into multiple scripts if they actually have two
-  independent sequences of computation.
-
-These ideas stay much closer to the syntax and language of R compared to
-what Nick is doing.
-
-I've been considering this for the purpose of analyzing, accelerating and
-optimizing essentially single scripts. But how important is this generally?
-It only matters if someone's script runs slow. Probably this mostly happens
-due to one large computation. If they're doing two large and independent
-computations in one script shouldn't that be two scripts? But these tools
-should be able to split them up at that level if I ask them to.
-
-Remove all objects as soon as they're finished being used in the script. If
-creating many large intermediate objects this could help with not using
-excessive memory.
-
-\section{Detecting Parallelism}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-Not sure how to generally detect where the possibilities for
-parallel are. In a simple case of k obvious threads with one common
-ancestor and common child there is an obvious option:
-
-Remove the common ancestor and child and select the k disjoint subgraphs
-between them.
-
-Alternatively:
-
-1. Start at the top of the graph, and move down until one node has
-multiple children. Gather those child threads into 2 groups.
-2. Same thing starting at the bottom.
-
-The most straightforward thing to do right now is take a more complex
-graph, say something like this:
-
-\centerline{\includegraphics{../codedepends/larger_graph.png}}
-
-
-And attempt to collapse the structure into one where the parallel threads
-become obvious:
-
-\centerline{\includegraphics{../codedepends/simple_graph.png}}
-
-The essential part for the multiprocessing is to have many "adjacent"
-threads (is there a correct graph term for this?)
-Optionally the adjacent threads can share a common parent and or child
-nodes.
-
-\section{Hard things}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Non Standard Evaluation}
 
 `fit = lm(y ~ x)` doesn't detect the dependency of `fit` on `x, y`.
 
@@ -658,10 +559,13 @@ Haven't yet checked things like:
 
 Recursion? Iterating updates?
 
-Random number generation across processes. I'll need to make sure that it's
-possible to reproduce random things. In general it's not going to be the
-same if it's single threaded or multithreaded, but this is true in general,
-so I don't need to worry about it.
+
+\subsection{Reproducibility}
+
+Reproducing random streams allows one to perform the exact same random
+computation. This is useful for investigating ano The R documentation for
+\texttt{parallel::mcparallel} explains how this works in the case of
+parallel forking:
 
 \begin{quote}
      The behaviour with ‘mc.set.seed = TRUE’ is different only if
@@ -671,13 +575,14 @@ so I don't need to worry about it.
      before the first use of ‘mcparallel’ the results of simulations will
      be reproducible provided the same tasks are given to the first,
      second, ...  forked process.
-
-     -R documentation for parallel::mcparallel
 \end{quote}
 
-I'll need to think carefully about what happens with dynamic evaluation.
-And a related idea, functions can use variables that don't yet exist- but this
-is weird- I just need to preserve the correct order. Here's some examples:
+\subsection{Dynamic Evaluation}
+
+Correct, legitimate code can be written that depends on the results of
+dynamic evaluation. Indeed, some symbols may not currently exist. This is
+more common inside package code that defines and uses many functions, and
+less common in scripts.  Here's an example:
 
 \begin{verbatim}
 f = function() 0        # 1
@@ -686,15 +591,16 @@ f = function() 10       # 3
 g()                     # 4
 \end{verbatim}
 
-The last line returns 11, since it uses most recent version of f().
-The current dependency graph imposes this partial order:
+The last line returns 11, since it uses most recent version of \texttt{f()}.
+An expression dependency graph that does not correctly handle the dynamic
+evaluation here will impose this partial order:
 
 \begin{verbatim}
 1 -> 2, 1 -> 3, 2 -> 4
 \end{verbatim}
 
-So the statements could be written in the following order while still respecting the
-partial order:
+So the statements could be written in the following order, which respects
+the partial order:
 
 \begin{verbatim}
 f = function() 0        # 1
@@ -703,13 +609,19 @@ g()                     # 4
 f = function() 10       # 3
 \end{verbatim}
 
-In this case the call to g() will incorrectly return 1 instead of 11.
+In this case the call to \texttt{g()} will incorrectly return 1 instead of 11.
 Hence there is a ``hidden'' dependency implicit here: \texttt{3 -> 4}.
+This comes back to lexical scoping rules.
 
-TODO: Cite Nick's SSA reference.
+One possible way to get around this is to first inline all user defined
+functions, and then perform the expression dependency analysis. One
+substitutes the bodies of \texttt{g(), f()} so the code presented above
+becomes simply \texttt{10 + 1}. This also has the effect of removing user
+defined functions from the expression graph.
 
-A couple ideas to get around this: inline functions defined in the script.
-Think harder about when evaluation must happen.
+\subsection{Mutable Objects}
+
+Environments and reference class objects are mutable in R. 
 
 \section{Scripts in the Wild}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -745,117 +657,6 @@ of the longest path in the graph. Hence speedup will be the total number
 of statements divided by the length of the longest path in the graph.
 By the way, all of those assumptions are unreasonable.
 
-
-
-\section{Implementation}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-At first I iterated over the blocks of code and gathered dependency info as
-I went along. But then I switched the implementation to focus on the variables
-themselves to make my code easier to reason about. It should be slightly
-more efficient, but that's not really a concern yet.
-
-I consider updates of a list to be changes to the global list variable.
-Thus something like the following redefines x every time. 
-
-\begin{verbatim}
-    x = list()
-    x$a = f(...)
-    x$b = g(...)
-\end{verbatim}
- 
-This is easy and safe to do, but it might be inefficient if \texttt{f, g}
-are expensive functions, because they could be run in parallel. An
-alternate way is to think of \texttt{x\$a} as a variable that depends on
-the original \texttt{x}. But adding details like these isn't worth it to me
-now, because it's not core to what I'm trying to accomplish.
-
-Detail- Calls to \texttt{library} need to make it to the top of the graph. Maybe in
-general I can adopt the \LaTeX idea of a preamble, or setup code. But what else would go
-there besides library?
-
-It would be nice if I could look at the R global environment, then
-look at an updated environment after running a line of code and take this
-as the update. 
-
-\newpage
-\newpage
-
-\section{Chunking}
-
-IDEA: nested parallelism- how to do it? If you hard code it in you're
-stuck.
-
-The task based parallelism isn't as relevant to how people use R (and other
-languages) for data processing. Instead
-lets think more about chunking and data parallelism. 
-
-Parallelism introduces additional overhead on top of what dynamic languages
-already incur. A general strategy to minimize this overhead is to ``chunk''
-the computations. For example, given 1000 parallel operations one might
-partition these into chunks of size 100 so that they become 10 parallel
-tasks \cite{matloff2015parallel}.
-
-I can take the code in \cite{matloff2015parallel} and see how changing the
-chunk sizes affects the run time. I could also do this with Python's dask.
-The goal is to draw general conclusions about which chunk sizes work best
-based on the amount of computation.
-
-It would be nice to run just a couple in serial on the master process and
-make principled decisions about how to run based on these results. For
-example:
-\begin{itemize}
-    \item Is it worth it to run in parallel?
-    \item Should we chunk? What should the chunk sizes be?
-    \item Reverse the order for better load balancing?
-    \item Dynamic or static scheduling?
-\end{itemize}
-
-Usually none of these are known ahead of time.  They also depend on the
-particular problem.  The only way to know if a chunking scheme will work is
-to experiment with a similar problem, then check expectations for the next
-one. I also expect that they vary across different machines.
-
-The book mentions using large chunks in the beginning followed by small
-chunks for superior load balancing.
-
-Programming in the RDSM package conceptually is very similar to OpenCL on
-the GPU. You allocate memory and send it to the workers, then update it in
-place based on thread IDs. This is quite different than normal functional
-R. I wonder if we could "translate" regular R into this style of
-programming?
-
-TODO: Come up with application where I need all this!! How about computing
-graphs from Euclidean space like with James' application? It would be nice
-for the QE to have something that he's familiar with and invested in.
-
-\appendix
-\section{LLVM}
-
-LLVM has some functionality for working with these use / def chains
-\cite{Lattner2004}. For example:
-\url{http://llvm.org/docs/ProgrammersManual.html#iterating-over-def-use-use-def-chains}.
-Following their terminology, an object of class \texttt{Value} is used by
-potentially many objects of class \texttt{User}. The \emph{def-use} chain
-is the list of all \texttt{Users} for a particular \texttt{Value}. I think
-of this as all the places in the code where this variable propagates. In
-contrast, the \emph{use-def} chain is the list of all \texttt{Values} for a
-particular \texttt{User}. This is all the inputs to a newly
-created object. There's room for both of these chains to be expanded recursively.
-
-In this example the def-use chain for \texttt{x} is only \texttt{[y]}, but the
-recursive one is \texttt{[y, z, z2]}. The use-def chain for \texttt{y} is
-\texttt{[z, z2]}.
-
-\begin{verbatim}
-x = 10
-y = x + 5
-z = y + 2
-z2 = y + 100
-\end{verbatim}
-
-We might be able to use this along with R code to determine if an R
-function calling C code is pure.
 
 \appendix
 \section{Definitions}
@@ -900,6 +701,33 @@ b = 2
 }
 \end{verbatim}
 
+\section{LLVM}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+LLVM has some functionality for working with these use / def chains
+\cite{Lattner2004}. For example:
+\url{http://llvm.org/docs/ProgrammersManual.html#iterating-over-def-use-use-def-chains}.
+Following their terminology, an object of class \texttt{Value} is used by
+potentially many objects of class \texttt{User}. The \emph{def-use} chain
+is the list of all \texttt{Users} for a particular \texttt{Value}. I think
+of this as all the places in the code where this variable propagates. In
+contrast, the \emph{use-def} chain is the list of all \texttt{Values} for a
+particular \texttt{User}. This is all the inputs to a newly
+created object. There's room for both of these chains to be expanded recursively.
+
+In this example the def-use chain for \texttt{x} is only \texttt{[y]}, but the
+recursive one is \texttt{[y, z, z2]}. The use-def chain for \texttt{y} is
+\texttt{[z, z2]}.
+
+\begin{verbatim}
+x = 10
+y = x + 5
+z = y + 2
+z2 = y + 100
+\end{verbatim}
+
+We might be able to use this along with R code to determine if an R
+function calling C code is pure.
 
 
 \bibliographystyle{plain}
