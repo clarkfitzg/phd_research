@@ -215,9 +215,9 @@ The basic unit to analyze is a single code expression.
 Consider how an expression uses symbols, aka variables or names.
 An expression may do any combination of the following things:
 \begin{enumerate}
-    \item Define new symbols \texttt{x = 10}
-    \item Use existing symbols \texttt{sin(x)}
-    \item Redefine existing symbols \texttt{x = 20}
+    \item Define new symbols: \texttt{x = 10}
+    \item Use existing symbols: \texttt{sin(x)}
+    \item Redefine existing symbols: \texttt{x = 20}
 \end{enumerate}
 
 \begin{table}[]
@@ -253,10 +253,100 @@ can be used to programmatically generate use-definition chains
 Hence functional programming and pass by value semantics make constructing
 graphs much more feasible. The R language is ideal in this respect.
 
+\section{Related Work}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Jim Hester's covr package \cite{R-covr} checks unit test coverage of R
+code. It is a practical example of computing on the language,
+programmatically modifying the code by recording calls as they are made.
+He pointed out a nice relevant idea distinguishing between AST's, parse
+trees, and "lossless syntax trees":
+\url{https://news.ycombinator.com/item?id=13628412}. To inject code into a
+script one needs to be very
+careful to preserve structure lost after parsing, ie.
+comments and formatting. This is a non-trivial task.
+
+A similar strategy of recording calls should work to collect timings and
+resource usage for functions called with various data sizes. This could be
+implemented with something like \texttt{System.time()}. This would allow us
+to time each expression. Then we can potentially use this to change the
+execution: ie. if $n > 1000$ then run a multicore version. This resembles
+something like Profile Guided Optimization (PGO). 
+
+Maybe a simpler way to do this is to just use the built in profiler. Use
+the results to determine whether parallelization is worth it, and maybe set
+some bounds for expected performance changes if one uses various forms of
+parallelism. 
+
+There may be potential to use statistical methods for this.
+Run it many times, collecting profiling results for various values and use
+this as the training data. After all, we have easy access to all the
+machine learning type things that we need. We can use it to automatically
+tune. But this implies that there is some way to tune it. Right now the
+only "trick" I have up my sleeve is to try to parallelize it.
+
+The vignette in Tierney's \texttt{proftools} package has some nice examples
+of visualizing profiling data \cite{R-proftools}. The call graphs and related visualizations
+are conceptually similar to what might be done with the expression graph.
+\texttt{profvis} integrates with the IDE to indicate the actual
+line of source code along with the related timing info \cite{R-profvis}.
+
+Xie's \texttt{knitr} facilitates reproducible computations for
+chunks of code in Rmarkdown documents \cite{R-knitr}. One feature it enables is caching,
+ie. it doesn't need to run a chunk of code if nothing has changed. One can
+manually specify the chunk dependencies by relative or absolute indices,
+ie. -2 for the chunk 2 blocks in front of the current chunk, or 1 for the
+first chunk. This seems unreliable because it requires the user to
+accurately infer the dependency information, and it doesn't automatically
+adjust if one inserts new chunks in the document.
+
+Knitr also has an \texttt{autodep} option to infer this dependency
+information. This works by comparing the global variables existing before
+and after running the code in each chunk. It stores this information in
+special files. So it doesn't use any static analysis of the code.
+
+But the structure of knitr blocks here is actually very appealing- this is
+a great use case for the parallelism. Why not evaluate the chunks in
+parallel if possible? I wonder how difficult it would be to hook into
+knitr's system... And while I'm at it, why not Jupyter Notebooks? If I can
+figure out how to build an equivalent code dependency graph for Python that
+is.
+
+Henrik Bengston's \texttt{future} package provides a mechanism for
+asynchronous evaluation of R expressions \cite{R-future}. Once the
+expression graph is created it might be possible to use this for
+evaluation.
+
 \section{Graph Construction}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Figure \ref{fig:codegraph} illustrates the idea of an expression dependency
+To start off we make two assumptions on the program. First it's assumed to
+be correct, meaning that it will run sequentially without errors.
+Second every expression should be strictly necessary. This can be achieved
+through a preprocessing step removing dead code.
+
+The expression graph and related data structures are related to the parsed
+script, referred to as the \textbf{parse tree}. The expression
+graph is a function of the parse tree. Since the parser
+doesn't care about non significant white space and comments,  different
+scripts can produce the same parse tree.  Many parse trees can give rise to
+the same code graph. For example, the expression graph shouldn't care if one uses
+\texttt{=} or \texttt{<-} for assignment. Nor will it care about the
+ordering of two adjacent lines binding a symbol to a literal constant:
+
+\begin{verbatim}
+a = 1
+b = 2
+\end{verbatim}
+
+Therefore we lose information by converting from a parse tree to an
+expression graph.
+
+We can also introduce an artificial (graph style) source and sink representing the
+beginning and end of the program, respectively.
+
+Figures \ref{fig:ast} and \ref{fig:codegraph} illustrate the ideas of
+a parse tree an expression dependency
 graph for the four lines of code in listing \ref{list:ab}.  Edges 1 and 3
 represent the respective uses of the variable \texttt{n} and \texttt{x}.
 Edge 2 comes from the redefinition of \texttt{n}.  Edge 5 propagates the
@@ -303,22 +393,6 @@ if(coinflip()){
 }
 \end{verbatim}
 
-\section{Optimization Problem}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-Consider the problem of whether or not to run blocks of code in parallel.
-I'm thinking of this as an integer programming problem. 
-The directed edges in the graph are the constraints, ie. an edge $A
-\rightarrow B$ implies that $A$ must happen before $B$.
-
-It resembles a
-variation of a scheduling problem. The main constraints are that any variables
-used in one computation must be available when it begins to run. Another
-constraint is that k cores can be active at one time.
-
-The other way general way to do this is running with several different data sizes. This
-gives us a sample that we can run statistics on.
-
 \section{Task Based Parallelism}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -339,19 +413,8 @@ programming mechanisms \cite{schmidberger2009state}. These needed to be in
 place before any higher level automatic detection could be built and
 function.
 
-To consider an alternative evaluation model the overhead required to
-parallelize an expression should require less time than running the
-expression itself. Rounding to orders of magnitude, here are some rough
-times
-for reference executing on a modest machine. Simple R expressions take
-$10^{-7}$ seconds to evaluate. Using a system level parallel fork
-requires $10^{-3}$ seconds of overhead. Evaluation on an existing local
-socket cluster takes $10^{-4}$ seconds. Then either of these well
-established methods for parallelism in R won't become efficient until the
-code under evaluation takes on the order of $10^{-3}$ seconds.
-
 Let $k$ be the number of cores on a machine.
-To accelerate code by running in parallel the best possible case is if
+To accelerate code using this single machine the best possible case is if
 we can keep all $k$ cores busy at once. This will happen if there are $nk$
 expressions which can be independently scheduled for some positive integer
 $n$. 
@@ -365,7 +428,7 @@ b = long_running_func()
 
 The worst possible case is if the second long running computation depends
 on the first, and everything else depends on the second. Then it must run
-in serial so multiprocessing can't help.
+in serial so parallelism can't help.
 
 \begin{verbatim}
 a = long_running_func()
@@ -373,102 +436,108 @@ b = long_running_func2(a)  # depends on a
 # Now perform many operations on b
 \end{verbatim}
 
-
-
-\section{Code graph and parse tree }
+\subsection{Static Execution}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-The code graph and related data structures are related to the parsed
-script, which we'll refer to as the \textbf{parse tree}. Since the parser
-doesn't care about non significant white space and comments,  different scripts can produce the same parse
-tree. R's \texttt{getParseData()} preserves all of the source
-information, and this can be very helpful for debugging or IDE's. Later
-this might be useful for injecting code.
+If overhead and expression run time are approximately known then the
+question of optimal execution for the complete expression dependency graph
+can be framed as a scheduling optimization problem and solved statically.
+The objective function to minimize is the total wall clock time to complete
+execution. Constraints come from the depenedency graph and that at most $k$
+cores may be active at one time.
 
-For our immediate purposes scripts differing only in comments and white space can be
-considered the same, which gives a 1 to 1 relationship between scripts and
-parse trees. 
+To consider an alternative evaluation model the overhead required to
+parallelize an expression should require less time than running the
+expression itself. Rounding to orders of magnitude, here are some rough
+times for reference executing on a modest machine. Simple R expressions
+take $10^{-7}$ seconds to evaluate. Using a system level parallel fork
+requires $10^{-3}$ seconds of overhead. Evaluation on an existing local
+socket cluster takes $10^{-4}$ seconds. Then either of these well
+established methods for parallelism in R won't become efficient until the
+code under evaluation takes on the order of $10^{-3}$ seconds.
+These timings include latency for interprocess communication on a single
+machine. Bandwidth is also an issue, since serializing large amounts of
+data between processes, ie. millions of floating point numbers, will impact
+performance. For example, listing \ref{list:overhead} squares each element
+of a vector of one million floating point numbers. Memory transfer overhead causes
+a parallel evaluation to take more than an order of magnitude more time
+than the regular version. 
+Technical solutions such as threading and shared memory have the
+potential to reduce these sources of overhead.
 
-Many parse trees can give rise to the same code graph. For
-example, the code graph shouldn't care if one uses \texttt{=} or
-\texttt{<-} for assignment. Nor will it care about the ordering of two
-adjacent lines binding a symbol to a literal constant:
+\lstinputlisting[language=R, caption=Overhead caused by memory transfer,
+label=list:overhead]{overhead.R}
 
-\begin{verbatim}
-a = 1
-b = 2
-\end{verbatim}
+Issues of latency and bandwidth generally become more complex for different
+architectures such as distributed systems and GPU's.
 
-Therefore we lose information by converting from a parse tree to this code
-graph.
 
-This would then help me see where the parallelism is, and put it in an
-appropriate data structure. Once I do that I can collapse simple threads
-consisting of chains of nodes with single inputs and outputs
-down into something like this:
+\subsection{Dynamic Execution}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Looking at some of Nicks stuff- what I'm really thinking about is breaking
-up the basic blocks into expressions and looking at relationships between
-them, with parallelism as one potential end goal. He's looking
-more carefully at the control flow implied by how the user wrote the code.
+Alternatively a dynamic execution model can be used that .
+Thinking about how to run the whole thing in parallel now. I could use a
+model where the master sends out expressions to workers to
+evaluate. This would be through an event loop that pops expressions from a data
+structure.
 
-\begin{verbatim}
-A may have many incoming edges, C may have many outgoing edges.
+And forks every time. Then the master polls the workers to see
+when they're finished. Though it would be better if the workers could send a
+message saying when they're finished. Seems like I might be able to do this
+with \texttt{parallel::sendMaster}.
 
-Then:
-A -> B -> C   becomes a single node ABC
-\end{verbatim}
+The process forking every time will be quite inefficient. The more intelligent
+thing to do is `pipeline' the operations, and send whole related blocks of
+expressions to various processes to evaluate.
 
-This will preserve the semantics and the ideal parallelism. Proof?
-It also leaves a data structure that's as simple as it can be, which is
-what I'd want to use when actually modifying the source code.
+The processes spawned with \texttt{parallel::mcparallel} communicate
+through an OS level pipe aka FIFO. This is why the function returns a vector of
+length 2 called `fd` for file descriptor, among other things. These are the
+file descriptors to the pipes
 
-But the task graph is not the same as control flow. Control flow is things
-like for, while, return, etc. The task graph is a higher level construct. 
-Nodes are R expressions that appear at the top level of a script, which
-means all control flow is captured \emph{inside} a node. Create an edge
-from node $A$ to $B$ if $B$ uses a variable that was most recently updated
-in $A$. There is some ambiguiity here, since variables may be created
-within conditional statements. In that case we can take the conservative
-approach of just creating all the edges. An example:
+But this may open up a different opportunity for faster, lighter weight
+threads? A main consideration with threads is that one doesn't want one
+thread to mess up a the data structure while another is using using it. But
+perhaps using this expression dependency information will let us make
+guarantees about safety?
 
-Here's a related case:
+Or what about using something even lighter than threads- like coroutines or
+callbacks? It might be possible to dig into the guts of R and make
+something like this.
 
-\begin{verbatim}
-x = f(...)
-x = 10
-y = x + 1
-\end{verbatim}
+This approach is different than rewriting the script as I did before. It's appealing
+because it can do dynamic load balancing.
 
-Here the line \texttt{x = f(...)} is unneeded, as are all lines just done
-in support of this operation. This suggests that as a first pass we would
-want to identify and remove unnecessary code. Then we can assume every
-line of code that remains needs to run. I'm also assuming that the code is
-correct. Compared to other ways of accelerating code this requires
-basically nothing from the user. So it's comparable to byte code
-compilation in that
-sense- just a small acceleration from minimal investment.
+But it's not clear which expressions to evaluate first. Maybe I should
+first do the ones that have the most dependencies? If an expression has no
+dependencies then one can do it at any time, even way later. But if there
+are many dependencies then none of them can run until the parent is
+evaluated. This will end up needing some data structure acting like a priority queue.
 
-But is the task graph a DAG? Yes, I think it has to be, unless you're doing
-something totally weird.  The reason is that R scripts execute
-sequentially, they don't have a GOTO statement. It's true that loops can
-repeat the same lines of code many times, but \texttt{for()\{...\}} and 
-\texttt{while()\{...\}} are just single top level expressions- we're not
-expanding them out in the graph $n$ times. This is an argument in favor of
-not recursing into these expressions- if we do then it opens up many
-problems. 
+Here's an algorithm: Start by marking all direct descendants of the special
+0 (start) node as ready. Let the workers begin evaluating these
+expressions.
 
-One could make the argument that calling \texttt{source()} on some script
-a couple different times in a program can make for repeated code which
-causes trouble with the DAG. One way of handling this is to go read the
-contents of the file being sourced, then consider this statement just like
-any other- taking in variables and producing them.
+\begin{enumerate}
+    \item Expression $e_i$ is evaluated and the results are available again
+        on master.
+    \item For each expression $e_j$ which depends directly on $e_i$: check
+        if $e_j$ has no other existing parents then mark it as ready.
+    \item Remove $e_i$ from the graph.
+    \item Worker begins executing any of the nodes that are marked as ready.
+\end{enumerate}
 
-We can also introduce an artificial (graph style) source and sink representing the
-beginning and end of the program, respectively.
+There's some nuance here by trying to keep each of $k$ workers as busy as
+possible while still respecting the constraints. Ie. there may be
+bottlenecks where only one worker can be active, but after that all the
+others can go.
 
-Variable updates don't need to be DAGS- but then again it doesn't make
-perfect sense to talk about control flow in terms of variables.
+This algorithm could also be refined into a priority queue by keeping the ready
+nodes in a heap, with the values determining the heap order as the number
+of expressions that depend on that expression, directly or indirectly. This
+is a little naive- it would be better to have timings of the code and do
+something more optimal in terms of reducing run time.
+
 
 \section{How CodeDepends works}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -509,86 +578,6 @@ in CodeAnalysis to see what's there.
 
 The \texttt{ScriptNodeInfo} objects contain all processed information about
 each expression. They tell which variables 
-
-\section{Related Work}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-Jim Hester's covr package \cite{R-covr} checks unit test coverage of R
-code. It is a practical example of computing on the language,
-programmatically modifying the code by recording calls as they are made.
-He pointed out a nice relevant idea distinguishing between AST's, parse
-trees, and "lossless syntax trees":
-\url{https://news.ycombinator.com/item?id=13628412}. If I inject code then
-I need to careful preserve structure lost after parsing, ie.
-comments and formatting. This is a non-trivial task.
-
-So if I'm going to programmatically modify the source code then this should really
-respect things like comments and whitespace. This could be more difficult
-than it appears on the surface.
-
-TODO Gives me an idea... a similar strategy might work to collect timings and
-resource usage for functions called with various data sizes. This could be
-implemented with something like \texttt{System.time()}. We could
-attach timings to each expression. Then we can
-use this info to programmatically modify the code: ie. if $n > 1000$ then
-run a multicore version. This is something like Profile Guided Optimization
-(PGO). This technique is now being used for Python. Could R use it too?
-
-Maybe a simpler way to do this is to just use the built in profiler. Use
-the results to determine whether parallelization is worth it, and maybe set
-some bounds for expected performance changes if one uses various forms of
-parallelism. 
-
-There may be potential to use statistical methods for this.
-Run it many times, collecting profiling results for various values and use
-this as the training data. After all, we have easy access to all the
-machine learning type things that we need. We can use it to automatically
-tune. But this implies that there is some way to tune it. Right now the
-only "trick" I have up my sleeve is to try to parallelize it.
-
-The vignette in Tierney's \texttt{proftools} package has some nice examples
-of visualizing profiling data. The call graphs and related visualizations
-are conceptually similar to what I have in mind.
-Wickham's \texttt{profvis} integrates with the IDE to indicate the actual
-line of source code along with the related timing info.
-
-Knitr (TODO cite) facilitates reproducible computations for
-chunks of code in Rmarkdown documents. One feature it enables is caching,
-ie. it doesn't need to run a chunk of code if nothing has changed. One can
-manually specify the chunk dependencies by relative or absolute indices,
-ie. -2 for the chunk 2 blocks in front of the current chunk, or 1 for the
-first chunk. This seems unreliable because it requires the user to
-accurately infer the dependency information, and it doesn't automatically
-adjust if one inserts new chunks in the document.
-
-Knitr also has an \texttt{autodep} option to infer this dependency
-information. This works by comparing the global variables existing before
-and after running the code in each chunk. It stores this information in
-special files. So it doesn't use any static analysis of the code.
-
-But the structure of knitr blocks here is actually very appealing- this is
-a great use case for the parallelism. Why not evaluate the chunks in
-parallel if you can? I wonder how difficult it would be to hook into
-knitr's system... And while I'm at it, why not Jupyter Notebooks? If I can
-figure out how to build an equivalent dependency graph for Python that
-would be great.
-
-Henrik Bengston's \texttt{future} package provides a mechanism for
-asynchronous evaluation of R expressions. Once I have a partial ordering
-through the dependencies it
-would be appealing to evaluate every code expression with this. 
-futures mostly just provides the asynchronous
-assignment operator \texttt{\%=\%}. Then I'd have to go in every
-expression and replace the regular assignment operators. This could lead to
-lots of weird stuff- what if a for loop goes through and assigns 1000
-times? That's a ton of overhead.
-
-I'm thinking more seriously now about the networkspaces or linda spaces
-evaluation model, like Mike Kane mentioned at DSC. This consists of a
-single master server that sends code to a worker to evaluate to produce a
-variable. It's like a key value store, except there can be multiple values.
-
-So how would I make this happen?
 
 
 \section{Applications}
@@ -653,47 +642,6 @@ The essential part for the multiprocessing is to have many "adjacent"
 threads (is there a correct graph term for this?)
 Optionally the adjacent threads can share a common parent and or child
 nodes.
-
-\section{The right data structure}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-I want to work with a DAG constraining the order in which the statements
-must execute. This DAG can initially be built sequentially with the following
-algorithm:
-
-\begin{verbatim}
-for statement in allstatements
-    for input variable x in statement
-        create an edge from the most recently seen statement which outputs x
-\end{verbatim}
-
-It's not sufficient to just draw a single edge for the most recently used
-variable. This will make a tree, but then it won't necessarily contain all
-the dependency info.
-
-But why am I interested in this DAG? Maybe more interesting is the partial
-ordering that comes from it. And the threads. So maybe I need to think
-about how to go from the DAG to the partial ordering. Wikipedia article for
-partially ordered sets cites the set of vertices of a DAG ordered by
-reachability as an example.
-
-TODO:
-Can this be a tree? Yes. Is it always a tree? I don't think so... Maybe
-once extraneous stuff is trimmed off?
-
-If the intermediate variable `b` is not used anywhere we probably want to
-collapse the following into a single block of code, since it has to happen
-sequentially. Therefore adding `future` here can't help at all. Unless it
-should happen at the same time as another block... then two blocks can
-execute simulataneously.
-
-\begin{verbatim}
-# Begin block
-a = 100
-b = a + 5
-c = sum(b)
-# end block
-\end{verbatim}
 
 \section{Hard things}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -830,75 +778,13 @@ It would be nice if I could look at the R global environment, then
 look at an updated environment after running a line of code and take this
 as the update. 
 
-\subsection{Event Loop}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-Thinking about how to run the whole thing in parallel now. I could use a
-model where the master sends out expressions to workers to
-evaluate. This would be through an event loop that pops expressions from a data
-structure.
-
-And forks every time. Then the master polls the workers to see
-when they're finished. Though it would be better if the workers could send a
-message saying when they're finished. Seems like I might be able to do this
-with \texttt{parallel::sendMaster}.
-
-The process forking every time will be quite inefficient. The more intelligent
-thing to do is `pipeline' the operations, and send whole related blocks of
-expressions to various processes to evaluate.
-
-The processes spawned with \texttt{parallel::mcparallel} communicate
-through an OS level pipe aka FIFO. This is why the function returns a vector of
-length 2 called `fd` for file descriptor, among other things. These are the
-file descriptors to the pipes
-
-But this may open up a different opportunity for faster, lighter weight
-threads? A main consideration with threads is that one doesn't want one
-thread to mess up a the data structure while another is using using it. But
-perhaps using this expression dependency information will let us make
-guarantees about safety?
-
-Or what about using something even lighter than threads- like coroutines or
-callbacks? It might be possible to dig into the guts of R and make
-something like this.
-
-This approach is different than rewriting the script as I did before. It's appealing
-because it can do dynamic load balancing.
-
-But it's not clear which expressions to evaluate first. Maybe I should
-first do the ones that have the most dependencies? If an expression has no
-dependencies then one can do it at any time, even way later. But if there
-are many dependencies then none of them can run until the parent is
-evaluated. This will end up needing some data structure acting like a priority queue.
-
-Here's an algorithm: Start by marking all direct descendants of the special
-0 (start) node as ready. Let the workers begin evaluating these
-expressions.
-
-\begin{enumerate}
-    \item Expression $e_i$ is evaluated and the results are available again
-        on master.
-    \item For each expression $e_j$ which depends directly on $e_i$: check
-        if $e_j$ has no other existing parents then mark it as ready.
-    \item Remove $e_i$ from the graph.
-    \item Worker begins executing any of the nodes that are marked as ready.
-\end{enumerate}
-
-There's some nuance here by trying to keep each of $k$ workers as busy as
-possible while still respecting the constraints. Ie. there may be
-bottlenecks where only one worker can be active, but after that all the
-others can go.
-
-This algorithm could also be refined into a priority queue by keeping the ready
-nodes in a heap, with the values determining the heap order as the number
-of expressions that depend on that expression, directly or indirectly. This
-is a little naive- it would be better to have timings of the code and do
-something more optimal in terms of reducing run time.
-
 \newpage
 \newpage
 
 \section{Chunking}
+
+IDEA: nested parallelism- how to do it? If you hard code it in you're
+stuck.
 
 The task based parallelism isn't as relevant to how people use R (and other
 languages) for data processing. Instead
