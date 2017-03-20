@@ -62,6 +62,17 @@ Optionally the adjacent threads can share a common parent and or child
 nodes.
 
 
+Duncan suggests to find R code that's unacceptably slow, and see what these
+methods can do to improve it. So to get a better sense of theoretical
+improvements I could execute the code in normal R and attach timings for
+each expression. This would show me true lower bounds for the method. It
+would also be quite interesting to have some sense of the distribution of
+execution times for different types of code. I imagine it varies
+dramatically, but there may be rough patterns. One result I'm expecting is
+that just one or two lines dominate the total script run time. In which
+case anything I do can't really help. Unless that line calls one function
+and I can use this method on the one function.
+
 \section{Implementation}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

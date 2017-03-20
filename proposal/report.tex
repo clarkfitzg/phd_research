@@ -66,7 +66,7 @@
 
 \begin{document}
 
-\title{R Code Dependency Graphs}
+\title{R Expression Dependency Graphs}
 \date{\today}
 \author{Clark Fitzgerald}
 \maketitle
@@ -135,6 +135,7 @@ the fly.
 
 \section{Literature Review}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{sec:lit}
 
 The expression graph proposed above is similar to 
 use-definition and definition-use chains. A definition-use chain consists
@@ -246,7 +247,8 @@ It may be possible to recursively examine all functions and methods which
 are used, but this is not ideal for a couple reasons. First, it would
 require analyzing the underlying library code, which is orders of magnitude
 more code than what the user has written. Second, eventually we'll get to
-compiled code which requires totally different methods. For example, LLVM
+compiled code which requires totally different methods. For example, C code
+parsed with LLVM
 can be used to programmatically generate use-definition chains
 \cite{lattner2004llvm}.
 
@@ -261,7 +263,7 @@ asynchronous assignment and evaluation of R expressions \cite{R-future}. Once th
 expression graph is created it might be possible to use similar mechanisms
 for evaluation.
 
-Jim Hester's covr package \cite{R-covr} checks unit test coverage of R
+Hester's covr package \cite{R-covr} checks unit test coverage of R
 code. It is a practical example of computing on the language,
 programmatically modifying the code by recording calls as they are made.
 He pointed out a nice relevant idea distinguishing between AST's, parse
@@ -285,16 +287,15 @@ parallelism.
 
 There may be potential to use statistical methods for this.
 Run it many times, collecting profiling results for various values and use
-this as the training data. After all, we have easy access to all the
-machine learning type things that we need. We can use it to automatically
-tune. But this implies that there is some way to tune it. Right now the
-only "trick" I have up my sleeve is to try to parallelize it.
+this as the training data to produce a rule such as: if $n > 10^6$ then run
+it as multicore.
 
 The vignette in Tierney's \texttt{proftools} package has some nice examples
-of visualizing profiling data \cite{R-proftools}. The call graphs and related visualizations
-are conceptually similar to what might be done with the expression graph.
-\texttt{profvis} integrates with the IDE to indicate the actual
-line of source code along with the related timing info \cite{R-profvis}.
+of visualizing profiling data \cite{R-proftools}. The call graphs and
+related visualizations are conceptually similar to what might be done with
+the expression graph.  \texttt{profvis} integrates with the IDE to indicate
+the actual line of source code along with the related timing info
+\cite{R-profvis}.
 
 Xie's \texttt{knitr} facilitates reproducible computations for
 chunks of code in Rmarkdown documents \cite{R-knitr}. One feature it enables is caching,
@@ -312,10 +313,8 @@ special files. So it doesn't use any static analysis of the code.
 
 But the structure of knitr blocks here is actually very appealing- this is
 a great use case for the parallelism. Why not evaluate the chunks in
-parallel if possible? I wonder how difficult it would be to hook into
-knitr's system... And while I'm at it, why not Jupyter Notebooks? If I can
-figure out how to build an equivalent code dependency graph for Python that
-is.
+parallel if possible? The case for Jupyter notebooks is similar, but would
+require an equivalent code dependency graph for Python.
 
 \section{Graph Construction}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -472,6 +471,7 @@ architectures such as distributed systems and GPU's
 \cite{matloff2015parallel}.
 
 \subsection{Dynamic Execution}
+\label{sec:dynamic}
 
 Alternatively a dynamic execution model can be used. This relies on a
 master / worker architecture. The reference version could be a multicore
@@ -509,56 +509,12 @@ something more optimal in terms of reducing run time.
 
 The process forking every time will be quite inefficient. The more intelligent
 thing to do is `pipeline' the operations, and send whole related blocks of
-expressions to various processes to evaluate.
-
-\section{How CodeDepends works}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-CodeDepends is the underlying package which generates the expression
-dependency information \cite{R-CodeDepends}.
-
-The parsing uses an object oriented wrapper around R's builtin \texttt{parse()}
-which handles different file types ie. script or dynamic documents among other arguments.
-This doesn't directly expose code comments.
-At first glance it seems CodeDepends uses the tokens
-more indirectly, through functions like \texttt{is.name()}. 
-
-The workhorse functions are in \texttt{CodeDepends.R}. Overall, the
-approach resembles \texttt{codetools::walkCode} as discussed in
-\cite{chambers2016extending}. Essentially it walks the tree of code, calling
-a function to collect usage information.
-
-When analyzing a single expression, first a 
-collector object is created with \texttt{inputCollector()}. This is a
-closure that maintains a list of everything in the expression that has been seen
-so far: files, variables, function calls, etc. It returns a list of
-functions to update the data in the closure.
-
-\texttt{getInputs.language()} takes a collector object and
-recurses through expressions until it finds the leaf nodes which can be functions, calls, assignments,
-names, literals, or pairlists. Upon finding one of these leaf nodes it
-calls the collector object. 
-Many special cases of functions are handled in functionHandlers.R, such as
-\texttt{\$, rm, for} as well as non standard evaluation. Special attention seems
-to have been paid to dplyr operations.
+expressions to individual processes to evaluate.
 
 \section{Challenges}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Non Standard Evaluation}
-
-`fit = lm(y ~ x)` doesn't detect the dependency of `fit` on `x, y`.
-
-Following the control flow for `lm` we see the following calls:
-`model.matrix.lm`, `model.frame.default`, `as.formula`. But eventually this
-`y ~ x` itself must be evaluated in which case `.Primitive("~")` is called,
-which certainly does something weird. But what?
-
-Haven't yet checked things like:
-`<<- assign`
-
-Recursion? Iterating updates?
-
+R's flexibility makes code analysis challenging in some cases.
 
 \subsection{Reproducibility}
 
@@ -577,6 +533,19 @@ parallel forking:
      second, ...  forked process.
 \end{quote}
 
+If a dynamic model is used as described in section \ref{sec:dynamic}, then
+reproducing the exact computation may not be possible, since the code may not execute in the
+same order. However, if this level of reproducibility is important then one
+can force it through manually seeding the functions that matter. For
+example:
+\begin{verbatim}
+critical_random_func()
+\end{verbatim}
+becomes
+\begin{verbatim}
+{set.seed(123); critical_random_func()}
+\end{verbatim}
+
 \subsection{Dynamic Evaluation}
 
 Correct, legitimate code can be written that depends on the results of
@@ -592,8 +561,8 @@ g()                     # 4
 \end{verbatim}
 
 The last line returns 11, since it uses most recent version of \texttt{f()}.
-An expression dependency graph that does not correctly handle the dynamic
-evaluation here will impose this partial order:
+An expression dependency graph that does not correctly handle dynamic
+evaluation here will consist of these edges:
 
 \begin{verbatim}
 1 -> 2, 1 -> 3, 2 -> 4
@@ -611,7 +580,8 @@ f = function() 10       # 3
 
 In this case the call to \texttt{g()} will incorrectly return 1 instead of 11.
 Hence there is a ``hidden'' dependency implicit here: \texttt{3 -> 4}.
-This comes back to lexical scoping rules.
+This comes back to lexical scoping rules, since we need to look up the
+correct \texttt{f()}.
 
 One possible way to get around this is to first inline all user defined
 functions, and then perform the expression dependency analysis. One
@@ -621,34 +591,57 @@ defined functions from the expression graph.
 
 \subsection{Mutable Objects}
 
-Environments and reference class objects are mutable in R. 
+Environments and reference class objects in R are mutable. They are a
+special case and must be handled carefully. One way to handle them is to
+treat any access of one of these objects as a redefinition. This resembles
+the conservative approach one would have to take for Python or Julia
+methods, and could result in a similar outcome of having too many
+constraints.
 
-\section{Scripts in the Wild}
+With environments one could refer to all variables specifically through
+(environment, symbol) pairs. Through these pairs all variables in
+environments essentially act like regular variables, and variables in the
+global environment are just a special case.
+
+\subsection{Non Standard Evaluation}
+
+The R code \texttt{lm(y ~ x, data = d)} is ambiguous because \texttt{x, y}
+may be global variables or they may be columns in the data frame
+\texttt{d}. CodeDepends doesn't detect the dependency on variables
+\texttt{y, x} because of non standard evaluation (NSE). For interactive use
+NSE can be convenient, but it comes at the cost of referential
+transparency \cite{wickham2015advanced}. The programming model in this case
+is no longer functional, which makes code dependency analysis much more
+difficult.
+
+As before, the conservative approach is to add edges and dependencies when in
+doubt. So in the code above one assumes that all of the variables
+\texttt{x, y, d} will be used.
+
+\subsection{Side Effects}
+
+As mentioned in section \ref{sec:lit}, it's difficult to recognize the
+dependence structure with plotting commands. One way to handle this is to
+use a preprocessing step to collapse all steps modifying the graphics
+device into one block of code. This can be implemented by scanning the
+script and adding braces around the lines of code that open and close
+graphics devices, for example:
+
+\begin{verbatim}
+{   # Added by preprocessor
+pdf("plot.pdf")
+... # plot(), title(), text(), etc.
+dev.off()
+}   # Added by preprocessor
+\end{verbatim}
+
+This block will then be executed together as one top level expression.
+
+\section{Conclusion}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-I could do some analysis on scripts that I scrape to determine theoretical
-bounds for the number of statements that must be run sequentially,
-and the max number of concurrent workers. My example script I've been
-working on has about 50 statements, and I think min number of sequential
-statements is around 10. Need to check. This could motivate reducing
-overhead though.
-
-Duncan suggests to find R code that's unacceptably slow, and see what these
-methods can do to improve it. So to get a better sense of theoretical
-improvements I could execute the code in normal R and attach timings for
-each expression. This would show me true lower bounds for the method. It
-would also be quite interesting to have some sense of the distribution of
-execution times for different types of code. I imagine it varies
-dramatically, but there may be rough patterns. One result I'm expecting is
-that just one or two lines dominate the total script run time. In which
-case anything I do can't really help. Unless that line calls one function
-and I can use this method on the one function.
-
-Vignettes, including those found on bioconductor, are for instructional
-purposes, so they're mostly simple and self contained. This isn't the use
-case I'm targeting. They are nice because the data should be included with
-the package, thus I have some hope of actually being able to run them if
-needed.
+This work presented an alternative execution model for R code based on
+dependency analysis.
 
 To get some idea of the potential for speedup, if I have an unlimited
 number of cores, no overhead, and each expression takes roughly the same
@@ -657,14 +650,11 @@ of the longest path in the graph. Hence speedup will be the total number
 of statements divided by the length of the longest path in the graph.
 By the way, all of those assumptions are unreasonable.
 
-
 \appendix
 \section{Definitions}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-We need to start out with some definitions and basic concepts to make all
-of this precise. The following material is from the R
-Language Reference \cite{Rlang}.
+The following material is from the R Language Reference \cite{Rlang}.
 
 ``A \textbf{statement} is a
 syntactically correct collection of tokens.'' Less formally one can think of
@@ -701,6 +691,38 @@ b = 2
 }
 \end{verbatim}
 
+\section{CodeDepends}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+CodeDepends is the underlying package which generates the expression
+dependency information \cite{R-CodeDepends}.
+
+The parsing uses an object oriented wrapper around R's builtin \texttt{parse()}
+which handles different file types ie. script or dynamic documents among other arguments.
+This doesn't directly expose code comments.
+At first glance it seems CodeDepends uses the tokens
+more indirectly, through functions like \texttt{is.name()}. 
+
+The workhorse functions are in \texttt{CodeDepends.R}. Overall, the
+approach resembles \texttt{codetools::walkCode} as discussed in
+\cite{chambers2016extending}. Essentially it walks the parse tree, calling
+a function to collect usage information.
+
+When analyzing a single expression, first a 
+collector object is created with \texttt{inputCollector()}. This is a
+closure that maintains a list of everything in the expression that has been seen
+so far: files, variables, function calls, etc. It returns a list of
+functions to update the data in the closure.
+
+\texttt{getInputs.language()} takes a collector object and
+recurses through expressions until it finds the leaf nodes which can be functions, calls, assignments,
+names, literals, or pairlists. Upon finding one of these leaf nodes it
+calls the collector object. 
+Many special cases of functions are handled in functionHandlers.R, such as
+\texttt{\$, rm, for} as well as non standard evaluation. Special attention seems
+to have been paid to dplyr operations.
+
+
 \section{LLVM}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -709,7 +731,7 @@ LLVM has some functionality for working with these use / def chains
 \url{http://llvm.org/docs/ProgrammersManual.html#iterating-over-def-use-use-def-chains}.
 Following their terminology, an object of class \texttt{Value} is used by
 potentially many objects of class \texttt{User}. The \emph{def-use} chain
-is the list of all \texttt{Users} for a particular \texttt{Value}. I think
+is the list of all \texttt{Users} for a particular \texttt{Value}. Think
 of this as all the places in the code where this variable propagates. In
 contrast, the \emph{use-def} chain is the list of all \texttt{Values} for a
 particular \texttt{User}. This is all the inputs to a newly
@@ -728,7 +750,6 @@ z2 = y + 100
 
 We might be able to use this along with R code to determine if an R
 function calling C code is pure.
-
 
 \bibliographystyle{plain}
 \bibliography{citations} 
