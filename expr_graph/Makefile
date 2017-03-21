@@ -1,6 +1,6 @@
 # Name of the report
 # Required
-TEXFILE = report
+TEXFILE = expression_graph
 
 all: $(TEXFILE).pdf
 
