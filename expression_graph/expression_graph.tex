@@ -75,8 +75,8 @@
 
     This report introduces the \textbf{expression dependency graph}, a
     directed acyclic graph capturing expression execution order implicit in
-    data analysis scripts for the R language. An alternative fork based
-    method of execution based on this graph is explored.
+    data analysis scripts for the R language. Alternative execution models
+    based on this graph are explored.
 
 \end{abstract}
 
@@ -334,21 +334,25 @@ b = 2
 Therefore we lose information by converting from a parse tree to an
 expression graph.
 
-We can also introduce an artificial (graph style) source and sink representing the
-beginning and end of the program, respectively.
+``Expression'' here refers more specifically to top level expressions, the children of
+the root node in the parse tree. For example, \texttt{for} and
+\texttt{while} loops are function calls in R, and the expression graph
+treats them the same as any other function calls. This means that we do not
+currently examine control flow at all. It is possible to examine
+expression graphs recursively; conceptually the ideas will be similar.
 
-Figures \ref{fig:ast} and \ref{fig:codegraph} illustrate the ideas of a
-parse tree and an expression dependency graph for the four lines of code in
-listing \ref{list:ab}.  Edges 1 and 3 in figure \ref{fig:ast} represent the
+Figures \ref{fig:ast} and \ref{fig:codegraph} illustrate the 
+parse tree and expression dependency graph for the four lines of code in
+listing \ref{list:ab}.  Edges 1 and 3 in figure \ref{fig:codegraph} represent the
 respective uses of the variable \texttt{n} and \texttt{x}.  Edge 2 comes
 from the redefinition of \texttt{n}.  Edge 5 propagates the most recent
 definition of \texttt{n}.  The least obvious is edge 4, which is necessary
 to respect R's lexical scoping semantics since \texttt{x <- rnorm(n)} uses
 the first definition of \texttt{n}. The general rule here is that all
-statements using one version of \texttt{n} must execute before \texttt{n}
+statements using one version of the variable \texttt{n} must execute before \texttt{n}
 can be redefined.
 
-The dashed edges in \ref{fig:codegraph} are redundant for representing
+The dashed edges in figure \ref{fig:codegraph} are redundant for representing
 expression dependence given the other edges. Indeed, the code in
 listing \ref{list:ab} must run sequentially. One may wish to remove such
 redundant edges, especially for visual presentation of a larger program.
@@ -375,8 +379,10 @@ redundant edges, especially for visual presentation of a larger program.
 
 The existence of some edges may depend on conditional statements which can't
 be known until run time. In this case the conservative and correct way to
-handle the situation is to add the edges in question. For example, in the
-following code one assumes that the expression \texttt{x <- 10} will run.
+handle the situation is to add the edges in question, because adding edges
+cannot constrain the problem beyond the constraints imposed by sequential
+execution. For example, in the following code one assumes that the
+expression \texttt{x <- 10} will run.
 
 \begin{verbatim}
 # coinflip() randomly returns TRUE or FALSE
@@ -455,7 +461,7 @@ data between processes, i.e. millions of floating point numbers, will impact
 performance. For example, listing \ref{list:overhead} squares each element
 of a vector of one million floating point numbers. Memory transfer overhead causes
 a parallel evaluation to take more than an order of magnitude more time
-than the regular version. 
+than the single threaded serial version. 
 
 Technical solutions such as threading and shared
 memory have the potential to reduce these sources of overhead.
@@ -597,14 +603,13 @@ global environment are just a special case.
 
 \subsection{Non Standard Evaluation}
 
-The R code \texttt{lm(y \~ x, data = d)} is ambiguous because \texttt{x, y}
-may be global variables or they may be columns in the data frame
-\texttt{d}. CodeDepends doesn't detect the dependency on variables
+The R code \texttt{lm(y \textasciitilde x, data = d)} is ambiguous because
+\texttt{x, y} may be global variables or they may be columns in the data
+frame \texttt{d}. CodeDepends doesn't detect the dependency on variables
 \texttt{y, x} because of non standard evaluation (NSE). For interactive use
-NSE can be convenient, but it comes at the cost of referential
-transparency \cite{wickham2015advanced}. The programming model in this case
-is no longer functional, which makes code dependency analysis much more
-difficult.
+NSE can be convenient, but it comes at the cost of referential transparency
+\cite{wickham2015advanced}. The programming model in this case is no longer
+functional, which makes code dependency analysis much more difficult.
 
 A related case to NSE is user code that operates directly on the language
 through expression manipulation. At this point we're metaprogramming on
