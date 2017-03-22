@@ -1,0 +1,10 @@
+RCIndex
+RCodeGen
+Rcpp
+ddR
+partools
+covr
+knitr
+profvis
+future
+CodeDepends

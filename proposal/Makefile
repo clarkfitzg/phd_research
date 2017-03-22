@@ -1,6 +1,6 @@
 # Name of the report
 # Required
-TEXFILE = expression_graph
+TEXFILE = fitzgerald_QE
 
 all: $(TEXFILE).pdf
 
@@ -10,9 +10,6 @@ $(TEXFILE).pdf: $(TEXFILE).tex ../citations.bib
 	bibtex $(TEXFILE).aux
 	pdflatex $<
 	pdflatex $<
-
-rcite: cite.R
-	Rscript $< >> citations.bib
 
 view:
 	open $(TEXFILE).pdf
