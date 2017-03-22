@@ -36,19 +36,6 @@ with(d2[s, ], plot(occupancy2, speed2))
 # are also appealing to get high performance read / write. Let's see if I
 # can do this split with iotools pipeline parallelism
 
-library(iotools)
+#library(iotools)
 
-
-
-
-chunk.apply(dfile, function(chunk)
-)
-
-     chunk.apply("input.file.txt",
-                 function(o) {
-                   m = mstrsplit(o)
-                   quantile(as.numeric(m[,1]), c(0.25, 0.5, 0.75))
-                 }, CH.MAX.SIZE=1e5)
-     ## End(Not run)
-
-
+split_wrte(d, d$ID

@@ -209,6 +209,22 @@ appealing, but unmaintained for a little while. iotools and data.table
 are also appealing to get high performance read / write. Let's see if I
 can do this split with iotools pipeline parallelism
 
+I could perform a file based split in several ways- with Spark, dask, and
+rolling my own in R. I suspect that dask or R will be the easiest.
+
+R- Advantage is that one can stay in the same system as where the analysis
+will be done. 
+
+Dask- Probably performs well
+
+Spark- Putting the data into the SQL database would be pretty nice for
+future work.
+
+First I should do it one way. Let's go with R since I've already started.
+
+TODO: Ask Duncan- can we do this operation in parallel because it involves
+file appends? 
+
 
 \bibliographystyle{plain}
 \bibliography{../citations,../Rpackages} 
