@@ -280,6 +280,24 @@ Consider making a prediction vector for some $n \times p$ matrix $X$. This
 is embarrassingly parallel since each row is independent. Suppose $X$ is on
 disk, and super large- say $n = 1e10$ and $p = 3$. Then we want to 
 
+\section{Disk based storage}
+
+I'm noticing many different exciting options when it comes to serializing /
+deserializing and binary storage of matrices and data frames.
+
+\begin{itemize}
+    \item CSV - The ol' standby
+    \item RDS - R's default binary serialization
+    \item feather - Apache sponsored project, interopable between R /
+        Python
+    \item netCDF - binary storage of arrays with various levels of
+        compression
+    \item iotools - high 
+\end{itemize}
+
+Many of these can use threads, which means they can potentially effectively
+utilize all the CPU resources so that multiprocessing would be a hindrance.
+
 \bibliographystyle{plain}
 \bibliography{../citations,../Rpackages} 
 
