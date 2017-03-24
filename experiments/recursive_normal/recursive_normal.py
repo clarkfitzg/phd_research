@@ -85,4 +85,9 @@ smpl2
 
 
 # The actual one- takes 5min 44s!!
-#%time smpl["z"] = smpl.groupby("id").apply(myfun).values
+if __name__ == "__main__":
+    from time import time
+    t0 = time()
+    smpl["z"] = smpl.groupby("id").apply(myfun).values
+    diff = time() - t0
+    print("Took {} seconds.".format(diff))
