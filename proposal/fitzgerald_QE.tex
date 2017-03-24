@@ -231,9 +231,54 @@ future work.
 First I should do it one way. Let's go with R since I've already started.
 I did the file based split with base R, no parallelism and it took 1402 minutes = 23.4 hours.
 
-TODO: Ask Duncan- can we do this operation in parallel because it involves
-file appends? 
+Big Data:
 
+Norm was talking about the buzz around Hadoop mostly being a lot of hype.
+Simon Urbanek processes crazy amounts of data using just plain old R.
+
+\emph{While “Big Data” tools can be exciting, they are almost always worse than
+normal data tools while those remain appropriate.} - Dask documentation
+
+One problem is that moving to an entirely different system can require
+completely rethinking your approach. dplyr and sparklyr are appealing in this
+aspect because they basically use the same user API and do the right
+thing at the backend. As with SQL, they're also more high level / descriptive of the
+desired operation. Then we have this tension between simple code and
+complex code. The simple code is easier to maintain and understand, while
+the complex code is adapted to the system / problem at hand. A high level
+idea is to take the simple code and make it perform as well or better than
+the complex code necessary to run it in a more sophisticated way- ie. on a
+parallel machine or a GPU.
+
+In general one doesn't want to think about the chunks. At all.
+
+A personal frustration I've experienced with the database type R interfaces
+is that it's not possible to directly write user defined R that will work.
+Most R / database interfaces that I've seen essentially allow one to do the
+same thing in R as one could do in SQL. This is not helpful for me, because
+I could just write the SQL myself. I use R not because I love the syntax,
+rather I want the convenient and correct statistical functionality.
+
+\section{Streams}
+
+Thinking about the streaming example. Can we look at a
+piece of code and determine if it can be converted to a streaming function?
+This can be done for functions that are vectorized, ie. they compute things
+elementwise. It can be done for functions that use a for loop over the
+indices. 
+
+It can't be done for more complex operations like sorting.
+
+How about for compositions of streaming functions? Sure, this amounts to
+loop fusion.
+
+Reducing
+
+\section{Examples}
+
+Consider making a prediction vector for some $n \times p$ matrix $X$. This
+is embarrassingly parallel since each row is independent. Suppose $X$ is on
+disk, and super large- say $n = 1e10$ and $p = 3$. Then we want to 
 
 \bibliographystyle{plain}
 \bibliography{../citations,../Rpackages} 
