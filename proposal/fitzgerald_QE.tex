@@ -190,12 +190,20 @@ TODO: Come up with application where I need all this!! How about computing
 graphs from Euclidean space like with James' application? It would be nice
 for the QE to have something that he's familiar with and invested in.
 
+\section{Software Alchemy}
+
+Looking at Norm's book now. He mentions tuning Software Alchemy for
+statistical purposes through chunk size. But I've been thinking about just
+tuning them for computational efficiency. Perhaps these two different
+lenses could be combined?
+
 \section{Applications}
 
 Goal: Fit a piecwise linear fundamental diagram for each station ID using 30 second
 data. Fit using robust regression to limit the effect of outliers.
 Each file is around 1 GB when loaded in R, and there are several hundred
-files (we could actually take as many as we like).
+files (we could actually take as many as we like). So this is beyond
+the limits of what we can do in memory even on a server.
 
 This can't be easily done in a database because robust regression is
 a relatively specialized method, yet available in MASS::rlm.
@@ -221,6 +229,7 @@ Spark- Putting the data into the SQL database would be pretty nice for
 future work.
 
 First I should do it one way. Let's go with R since I've already started.
+I did the file based split with base R, no parallelism and it took 1402 minutes = 23.4 hours.
 
 TODO: Ask Duncan- can we do this operation in parallel because it involves
 file appends? 
