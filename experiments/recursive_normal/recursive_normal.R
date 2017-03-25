@@ -30,3 +30,37 @@ myfun = function (xb, a, b) {
 
 # 25.54 seconds
 set.seed(1); system.time(smpl[, z := myfun(xb, a, b), by = id][])
+
+
+
+require(Rcpp)   # v0.12.8
+
+cppFunction(
+'NumericVector myfun4(IntegerVector id, IntegerVector xb, NumericVector a, NumericVector b) {
+
+  // ** id must be pre-grouped, such as via setkey(DT,id) **
+
+  NumericVector z = NumericVector(id.length());
+  int previd = id[0]-1;  // initialize to anything different than id[0]
+  for (int i=0; i<id.length(); i++) {
+    double prevb;
+    if (id[i]!=previd) {
+      // first row of new group
+      z[i] = R::rnorm(a[i], 1);
+      prevb = a[i]+z[i];
+      previd = id[i];
+    } else {
+      // 2nd row of group onwards
+      double at = prevb + xb[i];
+      z[i] = R::rnorm(at, 1);
+      prevb = at + z[i];
+    }
+  }
+  return z;
+}')
+
+system.time(setkey(smpl,id))  # ensure grouped by id
+
+# Wow, this is 0.28 seconds for me
+set.seed(1); system.time(smpl[, z4 := myfun4(id, xb, a, b)][])
+
