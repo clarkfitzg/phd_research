@@ -79,6 +79,23 @@
 \end{abstract}
 
 
+\section{Introduction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+What new things am I bringing to the table? My QE is in two months, time to
+focus.
+
+General idea- code analysis to detect and use parallelism. Determining and
+using a chunking scheme based on (code, platform, data).
+
+Broad idea- more separation between the high level language
+and the implementation.
+
+Some functions can be applied in a streaming manner, where they visit the
+data. Can we detect these functions programmatically? If we can then this
+gives free parallelism.
+
+
 \section{Chunking Approaches to Large Data}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -138,8 +155,6 @@ arrays (tensors), mostly for machine learning.
 
 Apache Spark does chunking transparently to the user, and it's possible to
 tune it for performance reasons.
-
-
 
 
 \section{Chunking}
@@ -285,6 +300,12 @@ disk, and super large- say $n = 1e10$ and $p = 3$. Then we want to
 I'm noticing many different exciting options when it comes to serializing /
 deserializing and binary storage of matrices and data frames.
 
+I wonder if there's some way to combine and or unify these different
+packages. It's very similar to what ddR tried to do. One could have an
+abstract disk based dataframe with high performance. But the partools package already does
+something quite similar. 
+
+
 \begin{itemize}
     \item CSV - The ol' standby
     \item RDS - R's default binary serialization
@@ -293,10 +314,21 @@ deserializing and binary storage of matrices and data frames.
     \item netCDF - binary storage of arrays with various levels of
         compression
     \item iotools - high 
+    \item data.table - Arun Srinivasan's Sep 16 talk in Budapest helpful
+        for understanding.
+
 \end{itemize}
 
+
+
 Many of these can use threads, which means they can potentially effectively
-utilize all the CPU resources so that multiprocessing would be a hindrance.
+utilize all the CPU resources so that any multiprocessing becomes a hindrance.
+Others, notably many of the base R functions, focus more on robustness than
+performance. Then parallel processing is one way to improve things.
+
+TODO: ask Norm- how does partools rely on data.table? data.table uses
+threads to great effect, while partools uses SNOW clusters. It seems like
+this would have the problem mentioned above if ran on the same machine.
 
 \bibliographystyle{plain}
 \bibliography{../citations,../Rpackages} 
