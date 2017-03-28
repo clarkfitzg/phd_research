@@ -41,6 +41,16 @@
 # "is_url"                    447.46      7.66      0.06     0.00
 #
 # Most of the time is spent reading data in.
+#
+# For comparison:
+#
+# $ time wc Y.csv
+#  999983999   999983999 17807568061 Y.csv
+#
+#  real    3m47.170s
+#  user    3m12.840s
+#  sys     0m3.668s
+
 
 library(data.table)
 
