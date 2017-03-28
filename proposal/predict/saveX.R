@@ -30,13 +30,14 @@
 # "as.vector"                      68.44      9.82     68.44     9.82
 
 # So it seems time is approximately balanced between generating data and
-# writing it to disk.
+# writing it to disk. What about pipelining this using multiple processes?
+
 
 # Fast IO is important here
+library(data.table)
 Rprof()
 
-library(data.table)
-
+set.seed(312)
 n = 1e9
 p = 3L
 BYTES_PER_NUM = 8L
@@ -55,6 +56,8 @@ n_i = as.integer(bytes_per_chunk / (p * BYTES_PER_NUM))
 nchunks = totalbytes %/% bytes_per_chunk
 
 for(i in seq(nchunks)){
-    X_i = data.table(matrix(rnorm(n_i * p), ncol = p))
+    X = rnorm(n_i * p)
+    X = matrix(random_data, ncol = p)
+    X_i = data.table()
     fwrite(X_i, "X.csv", append = TRUE)
 }
