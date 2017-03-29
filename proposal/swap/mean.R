@@ -4,7 +4,7 @@
 MEMORY_GB = 8
 SIZE_DOUBLE = 8
 
-frac_memory = seq(from = 0.1, to = 1.5, by = 0.1)
+frac_memory = seq(from = 0.1, to = 2, by = 0.1)
 frac_memory = rep(frac_memory, each = 3)
 n = frac_memory * MEMORY_GB * 1e9 / SIZE_DOUBLE
 
@@ -15,4 +15,5 @@ for (i in seq_along(frac_memory)){
     output = data.frame(n = n[i], frac_memory = frac_memory[i], time = time["elapsed"])
     write.table(output, "timings.csv", append = TRUE, row.names = FALSE, col.names = FALSE)
     message("Finished ", frac_memory[i])
+    rm(x)
 }

@@ -102,9 +102,18 @@ gives free parallelism.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Side note- why do we need chunking? What's wrong with exceeding limits of
-memory and just swapping? Problems: Swap space is typically a similar size as main
-memory, and once you run out of swap it will crash. Other problem:
-performance hits the wall.
+memory and just swapping to disk? Swap space is typically around the same
+size as memory. For example, my Ubuntu 16.04 desktop has 8GB of RAM and 8GB
+of swap space on a spinning disk (not an SSD).
+
+\begin{figure}
+\centering
+\includegraphics[width=.8\linewidth]{swap/spinning_disk_swap}
+\caption{Performance is reasonable while data fits in memory.}
+\label{fig:test}
+\end{figure}
+
+
 
 \textbf{Speculative evaluation of different chunked computation schemes}
 
