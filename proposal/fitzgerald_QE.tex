@@ -88,6 +88,8 @@ focus.
 General idea- code analysis to detect and use parallelism. Determining and
 using a chunking scheme based on (code, platform, data).
 
+Looking at the different 
+
 Broad idea- more separation between the high level language
 and the implementation.
 
@@ -100,7 +102,9 @@ gives free parallelism.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Side note- why do we need chunking? What's wrong with exceeding limits of
-memory and just swapping? Performance 
+memory and just swapping? Problems: Swap space is typically a similar size as main
+memory, and once you run out of swap it will crash. Other problem:
+performance hits the wall.
 
 \textbf{Speculative evaluation of different chunked computation schemes}
 
