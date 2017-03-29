@@ -97,21 +97,59 @@ Some functions can be applied in a streaming manner, where they visit the
 data. Can we detect these functions programmatically? If we can then this
 gives free parallelism.
 
-
-\section{Chunking Approaches to Large Data}
+\section{Small Data and Overhead}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Side note- why do we need chunking? What's wrong with exceeding limits of
-memory and just swapping to disk? Swap space is typically around the same
-size as memory. For example, my Ubuntu 16.04 desktop has 8GB of RAM and 8GB
-of swap space on a spinning disk (not an SSD).
+
+
+
+\section{Big Data and Swapping}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+What happens when data is too big? One runs into algorithmic limitations as
+well, ie. $O(n^2)$ operations become very expensive for large $n$.
+
+R can do some computations out of memory through the use of the system
+swap. Swap space aka ``virtual memory'' is a portion of the hard drive that
+the host operating system allocates for memory to spill over into so that
+the computer doesn't run out of memory.  Exceeding the physical memory on
+the system causes several problems.
+
+First, data that's too big will still fail. Swap space is typically
+around the same size as memory. For example, my Ubuntu Linux desktop has
+8GB of RAM and 8GB of swap space on a spinning disk (not an SSD). Objects
+in R can't take up more space than the size of memory plus the size of
+swap. Here's a typical error:
+
+\begin{verbatim}
+> trillion = 1e12
+> x = rnorm(trillion)
+Error: cannot allocate vector of size 7450.6 Gb
+\end{verbatim}
+
+Second, computation is much faster if the data fits in memory.
+Figure \ref{fig:spinning_disk_swap} shows what happens to run time when
+simply computing the mean of $n$ random numbers, for $n$ chosen to create a
+vector pushing the limits of memory.\footnote{Note that this computation
+could just as easily be done in a streaming fashion, producing random
+numbers, updating the mean, and then discarding them.} For vectors using between $(0.1, 0.85)$
+of the available memory the timings are linear as expected.
+Once the computation spills into swap space the timings immediately become
+worse by an order of magnitude, and they are less predictable.
 
 \begin{figure}
 \centering
 \includegraphics[width=.8\linewidth]{swap/spinning_disk_swap}
 \caption{Performance is reasonable while data fits in memory.}
-\label{fig:test}
+\label{fig:spinning_disk_swap}
 \end{figure}
+
+Compilation can alleviate this issue, but it can't resolve it, since it
+can't give the system more memory. It may be able to help reduce the
+creation of large intermediate data objects.
+
+\section{Chunking Approaches to Large Data}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
