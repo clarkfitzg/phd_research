@@ -26,11 +26,9 @@ with(smalltime, plot(n, median
                    , ylab = expression(paste("time (", mu, "s)"))
                    ))
 
-lines(smalltime$n, smalltime$q25, lty = 2)
-
 fit = lm(time ~ n, data = times)
 
-# Throw out the obvious outliers
+# Throw out the obvious outliers. Maybe garbage collection inside?
 fit2 = lm(time ~ n, data = times[times$time < 20, ])
 
 summary(fit2)
@@ -42,3 +40,6 @@ confint(fit2)
 #
 # For this simple task there's a fixed overhead of ~4.2 microseconds and an
 # additional 64 nanoseconds for each additional n.
+
+# TODO: So when is overhead "small enough"? A lot of this parallel stuff is
+# just understanding and controlling overhead.
