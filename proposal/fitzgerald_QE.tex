@@ -88,14 +88,16 @@ focus.
 General idea- code analysis to detect and use parallelism. Determining and
 using a chunking scheme based on (code, platform, data).
 
-Looking at the different 
-
 Broad idea- more separation between the high level language
 and the implementation.
 
 Some functions can be applied in a streaming manner, where they visit the
 data. Can we detect these functions programmatically? If we can then this
 gives free parallelism.
+
+I'd like to examine the code and determine where parallelism will give the
+most benefit. Ie. nesting parallelism will likely hurt. But how much? And
+can we detect it?
 
 \section{Small Data and Overhead}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
