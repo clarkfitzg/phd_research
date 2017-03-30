@@ -99,6 +99,17 @@ I'd like to examine the code and determine where parallelism will give the
 most benefit. Ie. nesting parallelism will likely hurt. But how much? And
 can we detect it?
 
+\subsection{Code, Data, Platform}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+This is Duncan's philosophy, which I'll explain here.
+\textbf{Code} is the R (or whatever program) script to be executed.
+\textbf{Data} could be single or multiple files, a database, a parallel
+file system, etc.  \textbf{Platform} is the physical hardware, such as a
+CPU with 8 cores or 2 linked GPUs. The combination of (Code, Data,
+Platform) dictates what strategies should be used for evaluation.
+
+
 \section{Small Data and Overhead}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -138,6 +149,10 @@ numbers, updating the mean, and then discarding them.} For vectors using between
 of the available memory the timings are linear as expected.
 Once the computation spills into swap space the timings immediately become
 worse by an order of magnitude, and they are less predictable.
+
+Lastly, loading data from disk into memory and then swapping back into disk
+is fundamentally inefficient. The data was already read from disk once, why force it
+to be read again in this way if we can avoid it?
 
 \begin{figure}
 \centering

@@ -5,13 +5,23 @@ library(microbenchmark)
 n = 1:200
 
 times = lapply(n, function(n_i){
-    # garbage collection affects benchmarks
-    gc()
-    times = microbenchmark(mean(rnorm(n_i)))
+    # The original code garbage collected after every microbenchmark.
+    # This version had the two clear lines and showed fixed overhead around
+    # 4.2 microseconds:
+
+    # gc()
+    # times = microbenchmark(mean(rnorm(n_i)))
+
+    # Then I garbage collected before every single call.
+    times = microbenchmark(gc(), mean(rnorm(n_i)), control = list(order = "inorder"))
     data.frame(n = n_i, time = times$time)
 })
 
 times = do.call(rbind, times)
+
+# Filter out gc() calls based on histogram- this will be different for different
+# systems.
+times = times[times$time < 2e7, ]
 
 # Units are microseconds
 times$time = times$time / 1000
@@ -22,7 +32,7 @@ smalltime = cbind(as.integer(row.names(smalltime)), smalltime)
 colnames(smalltime) = c("n", "min", "q25", "median", "q75", "max")
 
 with(smalltime, plot(n, median
-                   , main = "median time to compute mean(rnorm(n))"
+                   , main = "time to compute mean(rnorm(n))"
                    , ylab = expression(paste("time (", mu, "s)"))
                    ))
 
