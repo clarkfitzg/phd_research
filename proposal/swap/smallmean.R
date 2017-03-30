@@ -1,5 +1,6 @@
 # Wed Mar 29 14:45:18 PDT 2017
 
+library(scales)
 library(microbenchmark)
 
 n = 1:200
@@ -9,11 +10,11 @@ times = lapply(n, function(n_i){
     # This version had the two clear lines and showed fixed overhead around
     # 4.2 microseconds:
 
-    # gc()
-    # times = microbenchmark(mean(rnorm(n_i)))
+     gc()
+     times = microbenchmark(mean(rnorm(n_i)))
 
     # Then I garbage collected before every single call.
-    times = microbenchmark(gc(), mean(rnorm(n_i)), control = list(order = "inorder"))
+    #times = microbenchmark(gc(), mean(rnorm(n_i)), control = list(order = "inorder"))
     data.frame(n = n_i, time = times$time)
 })
 
@@ -37,6 +38,17 @@ with(smalltime, plot(n, median
                    ))
 
 fit = lm(time ~ n, data = times)
+
+
+with(times[times$time < 20, ], plot(n, time, col = alpha("black", 0.06)))
+
+rtimes = times[sample.int(nrow(times), 1000), ]
+with(rtimes, plot(n, time, col = alpha("black", 0.5)))
+
+sum(times$time > 21)
+# How many were over 21? 200. This is exactly the number of times that gc()
+# was called within the lapply. So it seems that the first evalution of
+# anything following gc() takes an additional ~15 microseconds.
 
 # Throw out the obvious outliers. Maybe garbage collection inside?
 fit2 = lm(time ~ n, data = times[times$time < 20, ])

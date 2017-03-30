@@ -103,12 +103,41 @@ can we detect it?
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 This is Duncan's philosophy, which I'll explain here.
-\textbf{Code} is the R (or whatever program) script to be executed.
+\textbf{Code} is the R (or whatever language) script to be executed.
 \textbf{Data} could be single or multiple files, a database, a parallel
 file system, etc.  \textbf{Platform} is the physical hardware, such as a
-CPU with 8 cores or 2 linked GPUs. The combination of (Code, Data,
-Platform) dictates what strategies should be used for evaluation.
+CPU with 8 cores or 2 GPUs with a high end connection. The combination of
+(Code, Data, Platform) dictates what strategies should be used for
+efficient evaluation.
 
+If the data is ``small enough'' then performance will be acceptable no
+matter regardless of how well the platform is utilized and how efficient
+the code is. Conversely, if the data is ``large enough'' then
+\emph{everything} matters, since small inefficiencies will be magnified
+when they occur millions of times.
+
+Initially assume that the code is correct. Consider an example of code that
+reads a file, performs a computation, and saves the result in a file.
+Most approaches to improving performance or scaling to large datasets
+come from \emph{manually rewriting} the code, tailoring it to this
+particular application. It's better to avoid this if possible.  Code that's
+rewritten for performance results in an increase in complexity
+\cite{matloff2015parallel}.  Compilation is one way to keep the original
+code and get more speed. Translation and metaprogramming are another way.
+Translation here refers to taking the code and modifying it, for example by
+adding statements.
+
+
+Here's my philosophy for software design:
+
+\begin{itemize}
+    \item Code should be as simple and straightforward. I hate code, and want as
+        little of it in my codebase as possible.
+    \item Fewer dependencies are better. I don't want to foist any
+        particular package or way of doing things on users.
+    \item Avoid choosing. If there's some way to pass things through to the
+        user, ie. R's $\dots$, then use that rather than choosing for them.
+\end{itemize}
 
 \section{Small Data and Overhead}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -165,8 +194,16 @@ Compilation can alleviate this issue, but it can't resolve it, since it
 can't give the system more memory. It may be able to help reduce the
 creation of large intermediate data objects.
 
+
 \section{Chunking Approaches to Large Data}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+To stay in memory we use chunked computations. If the chunks are too small
+they'll be inefficient. Then how do we choose the chunk size?  There may be
+a ``sweet spot'' or range of values for computation as well as for
+statistical accuracy. For example, for software alchemy to work it's
+necessary that the chunk sizes increase towards infinity
+\cite{matloff2014software}.
 
 
 
@@ -396,6 +433,8 @@ Many of these can use threads, which means they can potentially effectively
 utilize all the CPU resources so that any multiprocessing becomes a hindrance.
 Others, notably many of the base R functions, focus more on robustness than
 performance. Then parallel processing is one way to improve things.
+Maybe we can turn off the threading and just use multiprocessing? Is there
+some global flag for this or does it depend on how everything was compiled?
 
 TODO: ask Norm- how does partools rely on data.table? data.table uses
 threads to great effect, while partools uses SNOW clusters. It seems like
