@@ -1,7 +1,7 @@
 timings = read.table("timings.csv"
                      , col.names = c("n", "frac_memory", "seconds"))
 
-pdf("spinning_disk_swap.pdf")
+png("spinning_disk_swap.png")
 with(timings, plot(frac_memory, seconds
                    , xlab = "fraction of RAM"
                    , main = "Time to compute mean(rnorm(n)) for large n"
@@ -13,7 +13,7 @@ dev.off()
 timings_ssd = read.table("timings_ssd.csv"
                      , col.names = c("n", "frac_memory", "seconds"))
 
-pdf("ssd_swap.pdf")
+png("ssd_swap.png")
 with(timings_ssd, plot(frac_memory, seconds
                    , xlab = "fraction of RAM"
                    , main = "Time to compute mean(rnorm(n)) for large n"
