@@ -2,6 +2,8 @@
 #
 # Trying the same experiment with memory mapping
 
+# TODO: Verify this doesn't eat up my whole disk by never cleaning up.
+
 library(bigmemory)
 
 MEMORY_GB = 8
@@ -21,7 +23,7 @@ for (i in seq_along(frac_memory)){
     time = system.time({
         # Probably could do this in parallel.
         ncol = n[i] / n_chunk
-        x = filebacked.big.matrix(nrow = n_chunk, ncol = ncol, backingfile = "")
+        x = filebacked.big.matrix(nrow = n_chunk, ncol = ncol, backingfile = "bigmemory_backfile")
         for (j in seq(ncol)){
             x[, j] = rnorm(n_chunk)
         }

@@ -89,7 +89,20 @@ General idea- code analysis to detect and use parallelism. Determining and
 using a chunking scheme based on (code, platform, data).
 
 Broad idea- more separation between the high level language
-and the implementation.
+and the implementation. This is consistent with the idea of R as a `wrapper'
+language, providing a convenient interface for numerical routines written
+in a faster language \cite{chambers2016extending}.
+
+Right now seems like a very good time to be pursuing this, since many of the
+building blocks are in place:
+\begin{itemize}
+    \item Fast IO packages
+    \item parallel
+\end{itemize}
+
+partools in particular is a nice base to build on.
+
+Code analysis seems like the most esoteric thing compared to the others.
 
 Some functions can be applied in a streaming manner, where they visit the
 data. Can we detect these functions programmatically? If we can then this
@@ -411,7 +424,8 @@ deserializing and binary storage of matrices and data frames.
 I wonder if there's some way to combine and or unify these different
 packages. It's very similar to what ddR tried to do. One could have an
 abstract disk based dataframe with high performance. But the partools package already does
-something quite similar. 
+something quite similar. How about making partools support sequential
+operations?
 
 
 \begin{itemize}
@@ -421,12 +435,11 @@ something quite similar.
         Python
     \item netCDF - binary storage of arrays with various levels of
         compression
-    \item iotools - high 
+    \item iotools - high performance \cite{arnold2015iotools} 
     \item data.table - Arun Srinivasan's Sep 16 talk in Budapest helpful
         for understanding.
 
 \end{itemize}
-
 
 
 Many of these can use threads, which means they can potentially effectively
@@ -436,9 +449,25 @@ performance. Then parallel processing is one way to improve things.
 Maybe we can turn off the threading and just use multiprocessing? Is there
 some global flag for this or does it depend on how everything was compiled?
 
-TODO: ask Norm- how does partools rely on data.table? data.table uses
+Partools relies on data.table for fast IO. data.table uses
 threads to great effect, while partools uses SNOW clusters. It seems like
 this would have the problem mentioned above if ran on the same machine.
+
+The iotools package provides high performance
+
+
+One thing to do is detect the load on the system and adjust computation
+strategy according to
+this. For example:
+
+\begin{verbatim}
+$ cat /proc/meminfo
+MemTotal:        7964272 kB
+MemFree:          196820 kB
+MemAvailable:    4094616 kB
+Buffers:          232348 kB
+\end{verbatim}
+
 
 \bibliographystyle{plain}
 \bibliography{../citations,../Rpackages} 
