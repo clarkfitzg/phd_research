@@ -492,7 +492,7 @@ yhat = predict(fitted_model, X)
 write.table(yhat, "Yhat.csv", row.names = FALSE, col.names = FALSE)
 \end{verbatim}
 
-Consider a larger $X$ with $n = 10^{10}$ and $p = 3$. With randomly generated double
+Consider a larger $X$ with $n = 10^{9}$ and $p = 3$. With randomly generated double
 precision numbers this takes up 51 GB on disk, so it cannot be loaded into
 R on a machine with 8 GB of memory. Instead one can accomplish the same
 thing using the following steps:
