@@ -84,7 +84,7 @@
 
 The California Department of Transportation collects traffic
 data through sensors embedded in highways. These detectors count passing
-vehicles, measure activation time, and estimate their average velocity \cite{jia2001pems}. As of
+vehicles, measure activation time, and estimate their average velocity \cite{jia2001pems}.
 Every thirty seconds they produce a new data point. $43,680$ sensors in
 California $\times 3$ parameters $\times (2 \times 60 \times 24)$
 measurements per day results in 377 million new data points per day.
@@ -96,9 +96,71 @@ robust regression for each sensor. From the R language this can be done
 easily and efficiently, for example with the \texttt{rlm} (robust linear
 model) function in the MASS package \cite{venables2013modern}.
 
-However, the size and organization of the data makes the task much more difficult.
-A subset of the data, accounting for the San Francisco Bay Area for part of
-2016 takes up hundreds of gigabytes.
+However, the size and organization of the data makes the task much more
+difficult.  I've downloaded a subset of the data consisting of measurements
+in the San Francisco Bay Area for part of 2016. This takes up hundreds of
+gigabytes, so it will not fit in memory.
+
+It would be easier to perform the regression if the data were
+organized in files for each sensor rather than in files for each day.  One
+approach then is to reorganize the data on disk into this file structure. I
+did this using a simple single threaded R program, and it took 23 hours to
+run on 134 GB of data.
+
+This is a poor level of performance.  Another drawback is that it
+requires specific custom code. Parallelizing and tuning it makes it even
+more specific to the data and platform.
+
+What if I didn't have to write this custom code? What if we had a system
+that could inspect the idiomatic R code that one would write to perform an
+operation as if the data were small, and then automatically take steps to
+scale and to parallelize the operations? It could also tune them for the
+specifics of the system and the data. This is what I'm working towards.
+
+\subsection{Code, Data, Platform}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Duncan Temple Lang deserves credit for the following idea:
+\textbf{Code} is the R (or whatever language) script to be executed.
+\textbf{Data} could be single or multiple files, a database, a parallel
+file system, etc.  \textbf{Platform} is the physical hardware, such as a
+CPU with 8 cores or 2 GPUs with a high end connection. The combination of
+(Code, Data, Platform) dictates what strategies should be used for
+efficient evaluation.
+
+If the data is ``small enough'' then performance will be acceptable no
+matter regardless of how well the platform is utilized and how efficient
+the code is. Conversely, if the data is ``large enough'' then
+\emph{everything} matters, since small inefficiencies will be magnified
+when they occur millions of times.
+
+Initially assume that the code is correct. Consider an example of code that
+reads a file, performs a computation, and saves the result in a file.
+Most approaches to improving performance or scaling to large datasets
+come from \emph{manually rewriting} the code, tailoring it to this
+particular application. It's better to avoid this if possible.  Code that's
+rewritten for performance results in an increase in complexity
+\cite{matloff2015parallel}.  Compilation is one way to keep the original
+code and get more speed. Translation and metaprogramming are another way.
+Translation here refers to taking the code and modifying it, for example by
+adding statements.
+
+
+Here's my philosophy for software design:
+
+\begin{itemize}
+    \item Code should be as simple and straightforward. I hate code, and want as
+        little of it in my codebase as possible.
+    \item Fewer dependencies are better. I don't want to foist any
+        particular package or way of doing things on users.
+    \item Avoid choosing. If there's some way to pass things through to the
+        user, ie. R's $\dots$, then use that rather than choosing for them.
+\end{itemize}
+
+
+\section{Approximating data size}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 \section{Introduction}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -135,46 +197,6 @@ gives free parallelism.
 I'd like to examine the code and determine where parallelism will give the
 most benefit. Ie. nesting parallelism will likely hurt. But how much? And
 can we detect it?
-
-\subsection{Code, Data, Platform}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-This is Duncan's philosophy, which I'll explain here.
-\textbf{Code} is the R (or whatever language) script to be executed.
-\textbf{Data} could be single or multiple files, a database, a parallel
-file system, etc.  \textbf{Platform} is the physical hardware, such as a
-CPU with 8 cores or 2 GPUs with a high end connection. The combination of
-(Code, Data, Platform) dictates what strategies should be used for
-efficient evaluation.
-
-If the data is ``small enough'' then performance will be acceptable no
-matter regardless of how well the platform is utilized and how efficient
-the code is. Conversely, if the data is ``large enough'' then
-\emph{everything} matters, since small inefficiencies will be magnified
-when they occur millions of times.
-
-Initially assume that the code is correct. Consider an example of code that
-reads a file, performs a computation, and saves the result in a file.
-Most approaches to improving performance or scaling to large datasets
-come from \emph{manually rewriting} the code, tailoring it to this
-particular application. It's better to avoid this if possible.  Code that's
-rewritten for performance results in an increase in complexity
-\cite{matloff2015parallel}.  Compilation is one way to keep the original
-code and get more speed. Translation and metaprogramming are another way.
-Translation here refers to taking the code and modifying it, for example by
-adding statements.
-
-
-Here's my philosophy for software design:
-
-\begin{itemize}
-    \item Code should be as simple and straightforward. I hate code, and want as
-        little of it in my codebase as possible.
-    \item Fewer dependencies are better. I don't want to foist any
-        particular package or way of doing things on users.
-    \item Avoid choosing. If there's some way to pass things through to the
-        user, ie. R's $\dots$, then use that rather than choosing for them.
-\end{itemize}
 
 \section{Small Data and Overhead}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -455,9 +477,23 @@ Reducing
 
 \section{Examples}
 
-Consider making a prediction vector for some $n \times p$ matrix $X$. This
-is embarrassingly parallel since each row is independent. Suppose $X$ is on
-disk, and super large- say $n = 1e10$ and $p = 3$. Then we want to 
+Consider making a prediction vector for some $n \times p$ matrix $X$. In
+the conventional case the prediction for each row is independent so this is
+embarrassingly parallel.\footnote{More generally, with something like an
+autoregressive time series model it's still easy to parallelize if one
+considers overlapping chunks of rows.} Suppose $X$ is on disk, and $n$ and
+$p$ are such that the data will easily fit into memory.  Given an existing
+\texttt{fitted_model} a vector of corresponding predictions can be created
+and written to disk as follows:
+
+\begin{verbatim}
+X = read.csv("X.csv")
+yhat = predict(fitted_model, X)
+write.table(yhat, "Yhat.csv", row.names = FALSE, col.names = FALSE)
+\end{verbatim}
+
+If $n$ is very
+large- say $n = 10^{10}$ and $p = 3$. 
 
 \section{Disk based storage}
 
@@ -491,6 +527,7 @@ Others, notably many of the base R functions, focus more on robustness than
 performance. Then parallel processing is one way to improve things.
 Maybe we can turn off the threading and just use multiprocessing? Is there
 some global flag for this or does it depend on how everything was compiled?
+Is it possible to detect how much CPU is being used?
 
 Partools relies on data.table for fast IO. data.table uses
 threads to great effect, while partools uses SNOW clusters. It seems like
@@ -501,7 +538,7 @@ The iotools package provides high performance
 
 One thing to do is detect the load on the system and adjust computation
 strategy according to
-this. For example:
+this. For example we can check the current memory usage:
 
 \begin{verbatim}
 $ cat /proc/meminfo
