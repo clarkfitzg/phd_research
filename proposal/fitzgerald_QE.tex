@@ -484,7 +484,7 @@ autoregressive time series model it's still easy to parallelize if one
 considers overlapping chunks of rows.} Suppose $X$ is on disk, and $n$ and
 $p$ are such that the data will easily fit into memory.  Given an existing
 \texttt{fitted_model} a vector of corresponding predictions can be created
-and written to disk as follows:
+and written to disk with the following clear and idiomatic R code:
 
 \begin{verbatim}
 X = read.csv("X.csv")
@@ -492,8 +492,27 @@ yhat = predict(fitted_model, X)
 write.table(yhat, "Yhat.csv", row.names = FALSE, col.names = FALSE)
 \end{verbatim}
 
-If $n$ is very
-large- say $n = 10^{10}$ and $p = 3$. 
+Consider a larger $X$ with $n = 10^{10}$ and $p = 3$. With randomly generated double
+precision numbers this takes up 51 GB on disk, so it cannot be loaded into
+R on a machine with 8 GB of memory. Instead one can accomplish the same
+thing using the following steps:
+\begin{enumerate}
+    \item Open the \texttt{X.csv} file
+    \item Read in $k$ lines
+    \item Check if the end of the file was reached
+    \item Parse this chunk of $X$ into an appropriate data frame
+    \item Make the corresponding prediction chunk for $y$
+    \item Append the predictions into the \texttt{y.csv} file
+\end{enumerate}
+
+Dealing with the bookkeeping of chunks complicates the code.  It also
+distracts from the actual purpose and semantics which R captured well.
+
+It's not a great leap to imagine a system which handles the translation
+of the regular R code into the chunked version below. Reading and writing
+to newline delimited text files is quite common, and can be
+programmatically detected using the CodeDepends package, for example
+\cite{R-CodeDepends}.
 
 \section{Disk based storage}
 
