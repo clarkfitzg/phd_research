@@ -79,6 +79,27 @@
 \end{abstract}
 
 
+\section{A Problem}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The California Department of Transportation collects traffic
+data through sensors embedded in highways. These detectors count passing
+vehicles, measure activation time, and estimate their average velocity \cite{jia2001pems}. As of
+Every thirty seconds they produce a new data point. $43,680$ sensors in
+California $\times 3$ parameters $\times (2 \times 60 \times 24)$
+measurements per day results in 377 million new data points per day.
+This raw data is organized into files by management district and day and is
+publicly available to download.
+
+As an analyst I would like to perform a statistical computation involving a
+robust regression for each sensor. From the R language this can be done
+easily and efficiently, for example with the \texttt{rlm} (robust linear
+model) function in the MASS package \cite{venables2013modern}.
+
+However, the size and organization of the data makes the task much more difficult.
+A subset of the data, accounting for the San Francisco Bay Area for part of
+2016 takes up hundreds of gigabytes.
+
 \section{Introduction}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -87,6 +108,9 @@ focus.
 
 General idea- code analysis to detect and use parallelism. Determining and
 using a chunking scheme based on (code, platform, data).
+
+Running without chunks is the same as regular vectorized R- one can think
+of this as a degenerate case of chunked operations with just one chunk.
 
 Broad idea- more separation between the high level language
 and the implementation. This is consistent with the idea of R as a `wrapper'
@@ -97,7 +121,7 @@ Right now seems like a very good time to be pursuing this, since many of the
 building blocks are in place:
 \begin{itemize}
     \item Fast IO packages
-    \item parallel
+    \item SNOW and parallel
 \end{itemize}
 
 partools in particular is a nice base to build on.
