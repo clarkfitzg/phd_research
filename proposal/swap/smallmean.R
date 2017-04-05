@@ -3,7 +3,7 @@
 library(scales)
 library(microbenchmark)
 
-n = seq(from = 5000, by = 3, length.out = 50)
+n = seq(from = 10, by = 3, length.out = 50)
 
 times = lapply(n, function(n_i){
     # The original code garbage collected after every microbenchmark.

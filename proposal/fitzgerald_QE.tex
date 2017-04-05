@@ -335,11 +335,30 @@ lenses could be combined?
 
 \section{Applications}
 
-Goal: Fit a piecwise linear fundamental diagram for each station ID using 30 second
-data. Fit using robust regression to limit the effect of outliers.
+Goal: Fit a piecwise linear fundamental diagram for each station ID using
+30 second data, following \cite{li2011fundamental}. Preprocess the
+observations to remove obviously bad data points.  Fit using robust
+regression to limit the effect of outliers.  
+
 Each file is around 1 GB when loaded in R, and there are several hundred
-files (we could actually take as many as we like). So this is beyond
-the limits of what we can do in memory even on a server.
+files (we could actually take as many as we like). So this is beyond the
+limits of what we can do in memory even on a server.
+
+This is all done to reduce the data for one station into several summary
+statistics. The main summary statistic of interest is the piecewise linear
+fundamental diagram. This may be different for different weather patterns. 
+Goodness of fit statistics for each station / fundamental diagram are
+important because they indicate places where a piecewise linear fit may
+have been inadequate, or the data had excessive noise.
+
+These fundamental diagrams and related statistics can then be used to
+classify and distinguish between the stations. For example, the right hand
+lane has more trucks and therefore one can expect a different kind of
+fundamental diagram. It's expected that the shape and parameters of the
+fundamental diagram relate to the locations of on ramps and off ramps
+relative to the stations. To precisely quantify these things we need to
+compute the statistics. On a broader note, these inferences can be used for
+better transportation planning.
 
 This can't be easily done in a database because robust regression is
 a relatively specialized method, yet available in MASS::rlm.
