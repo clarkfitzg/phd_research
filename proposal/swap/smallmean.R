@@ -3,7 +3,7 @@
 library(scales)
 library(microbenchmark)
 
-n = seq(from = 10, by = 3, length.out = 50)
+n = 1:200
 
 times = lapply(n, function(n_i){
     # The original code garbage collected after every microbenchmark.
@@ -32,10 +32,14 @@ smalltime = as.data.frame(do.call(rbind, smalltime))
 smalltime = cbind(as.integer(row.names(smalltime)), smalltime)
 colnames(smalltime) = c("n", "min", "q25", "median", "q75", "max")
 
+pdf(paste0("smalltime_", Sys.info()["nodename"], ".pdf"))
+
 with(smalltime, plot(n, median
                    , main = "time to compute mean(rnorm(n))"
                    , ylab = expression(paste("time (", mu, "s)"))
                    ))
+
+dev.off()
 
 fit = lm(time ~ n, data = times)
 
