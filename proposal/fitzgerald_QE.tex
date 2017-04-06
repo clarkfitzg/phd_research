@@ -78,6 +78,11 @@
 
 \end{abstract}
 
+For principled, optimal approaches to chunked computations we first have to
+understand something about the performance of chunked computations.
+
+One could think about this system architecturally in layers- building on
+partools, say, which builds on SNOW. Users are free to enter at any layer.
 
 \section{A Problem}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -515,6 +520,7 @@ programmatically detected using the CodeDepends package, for example
 \cite{R-CodeDepends}.
 
 \section{Disk based storage}
+
 
 I'm noticing many different exciting options when it comes to serializing /
 deserializing and binary storage of matrices and data frames.
