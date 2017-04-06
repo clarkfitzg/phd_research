@@ -19,16 +19,18 @@ integrating R with Apache Spark through the use of distributed data
 structures. This was in the context of an internship with the R Consortium
 working on the ddR (distributed data in R) package. These projects are
 efforts towards the broader goal of building statistical software that
-scales up to larger and larger amounts of data. All development was done in
-an open source environment, so anyone is free to use the code.
+scales up to larger amounts of data. All development was done in
+an open source environment, so the code is freely available for public use.
+I've also continued contributing to more established open source projects
+through patches and code review.
 
-Throughout the year I presented several talks on parallel R programming techniques and
-concepts.  This motivates and relates to my continued efforts researching
-code analysis and parallel programming.  The first talk in October 2016 was
-through the NSF funded Research Training Group, which drew in a broad
-audience of mostly graduate students from different departments. Another
-talk was for the undergraduate organized iidata data science convention in
-February 2017. I went deeper into an example of GPU programming to show how
-to improve code run time by orders of magnitude. Professionals as well as
-undergraduate and graduate students from all across campus attended the
-talk.
+Throughout the year I presented several talks on parallel R programming
+techniques and concepts. This motivates and relates to my continued
+efforts researching code analysis and parallel programming. The first talk
+in October 2016 was through the NSF funded Research Training Group, which
+drew in a broad audience of mostly graduate students from different
+departments. Another talk was for the undergraduate organized iidata data
+science convention in February 2017. I went deeper into an example of GPU
+programming to show how to improve code run time by orders of magnitude.
+Professionals as well as undergraduate and graduate students from all
+across campus attended the talk.
