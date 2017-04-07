@@ -5,7 +5,10 @@ n = as.integer(c(100, 200, 500, 1000, 3000, 10000, 100000))
 # Do the faster ones first :)
 n = rev(n)
 
-nprocs = 2
+# This parallel version is using a new process every time. I wonder if
+# they're fighting over file resources? Probably will need to try this with
+# various values
+nprocs = 8L
 
 # Write as we go in case of crashing
 lapply(n, function(n_i){

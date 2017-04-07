@@ -61,9 +61,9 @@ predictY = function(n_i, nprocs = 1, xfile = "/ssd/clarkf/X.csv", yfile = "/ssd/
     bytes_per_row = 51
     chunksize = n_i * bytes_per_row
 
-    # There are three floating point numbers, each no more than 25
-    # characters. Docs say that this determines size of read buffer, not
-    # sure how changing this will affect performance
+    # There are three floating point numbers. Conservatively, each is no
+    # more than 25 characters. Docs say that this determines size of read
+    # buffer, not sure how changing this will affect performance
     max.line = 256L
 
     cols = rep("numeric", 3)
