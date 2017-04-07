@@ -86,8 +86,7 @@ This is a prospectus for distribution to the committee for PhD
 Qualifying Exam in June 2017.
 
 For principled, optimal approaches to parallel chunked computations we
-first have to understand the performance characteristics of chunked
-computations.
+first have to understand their performance characteristics.
 
 One could think about this as a system architecturally organized in layers- building on
 partools, say, which builds on SNOW. Users are free to enter at any layer.
@@ -552,12 +551,29 @@ operations?
         Python
     \item netCDF - binary storage of arrays with various levels of
         compression
-    \item iotools - high performance \cite{arnold2015iotools} 
     \item data.table - Arun Srinivasan's Sep 16 talk in Budapest helpful
         for understanding.
 
 \end{itemize}
 
+
+iotools - high performance. Sequential speed comes from
+using C's \texttt{memchr} and \texttt{strchr} rather than \texttt{fwrite}.
+These use hardware specfic single instruction, multiple data (SIMD)
+instructions together with buffering chunks of data
+\cite{arnold2015iotools}. In their own words:
+
+\begin{quote}
+    \texttt{chunk.apply} provides pipeline parallelism
+    where the master process sequentially loads data and then calls
+    mcparallel to initiate the parallel computation. When the maximum
+    number of worker processes has been reached the master process
+    pre-fetches the next chunk and then blocks on the result of the running
+    worker processes. When the result is returned a newly created worker
+    begins processing the pre-fetched data. In this way the master does not
+    wait idly for worker processing and there is no resource contention
+    since only the master is retrieving data. \cite{arnold2015iotools}
+\end{quote}
 
 Many of these can use threads, which means they can potentially effectively
 utilize all the CPU resources so that any multiprocessing becomes a hindrance.
