@@ -26,6 +26,8 @@
 # ".External2"                    252.92     20.53    252.92    20.53
 # "writeBin"                       20.94      1.70     20.94     1.70
 
+library(iotools)
+
 # Spends about one third of this time predicting from the model. Not much that the IO
 # libraries can do about this.
 # dstrsplit instantiates the data.frame and reads the data, so the rest of
@@ -40,33 +42,39 @@ fit = lm(y ~ ., train)
 
 # For in memory data we can do this, which is exactly what we want:
 ############################################################
-X = read.csv("X.csv", nrows = 10)
-colnames(X) = c("X1", "X2", "X3")
-y = data.frame(predict(fit, X))
-write.table(y, "Y.csv", row.names = FALSE, col.names = FALSE)
+#X = read.csv("X.csv", nrows = 10)
+#colnames(X) = c("X1", "X2", "X3")
+#y = data.frame(predict(fit, X))
+#write.table(y, "Y.csv", row.names = FALSE, col.names = FALSE)
 
 
 # Instead we have to do this, and it's hard to know what the "right" chunk
 # size is.
 ############################################################
 
-# Start fresh
-unlink("Y.csv")
-Rprof("Y_iotools.out")
+predictY = function(n_i, nprocs = 1, xfile = "/ssd/clarkf/X.csv", yfile = "/ssd/clarkf/Y.csv")
+{
+    # Start fresh
+    unlink(yfile)
 
-library(iotools)
+    # In bytes
+    bytes_per_row = 51
+    chunksize = n_i * bytes_per_row
 
-reader = chunk.reader("X.csv")
-Xraw = read.chunk(reader)
-cols = rep("numeric", 3)
-names(cols) = c("X1", "X2", "X3")
-X = dstrsplit(Xraw, col_types = cols, sep = ",", skip = 1L)
-y = predict(fit, X)
-# Can't seem to get the row names out of here... Oh well.
-write.csv.raw(y, "Y.csv", append = FALSE, sep = ",", nsep = ",", col.names = FALSE)
+    # There are three floating point numbers, each no more than 25
+    # characters. Docs say that this determines size of read buffer, not
+    # sure how changing this will affect performance
+    max.line = 256L
 
-chunk.apply(reader, function(Xraw){
-    X = dstrsplit(Xraw, col_types = cols, sep = ",")
-    y = predict(fit, X)
-    write.csv.raw(y, "Y.csv", append = TRUE, sep = ",", nsep = ",", col.names = FALSE)
-})
+    cols = rep("numeric", 3)
+    names(cols) = c("X1", "X2", "X3")
+
+    reader = chunk.reader(xfile, max.line = max.line)
+
+    chunk.apply(reader, function(Xraw){
+        X = dstrsplit(Xraw, col_types = cols, sep = ",")
+        y = predict(fit, X)
+        # Can't seem to get the row names out of here... Oh well.
+        write.csv.raw(y, yfile, append = TRUE, sep = ",", nsep = ",", col.names = FALSE)
+    }, CH.MAX.SIZE = chunksize, parallel = nprocs)
+}

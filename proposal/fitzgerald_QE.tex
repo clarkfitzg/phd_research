@@ -73,18 +73,26 @@
 
 \begin{abstract}
 
-    This is a prospectus for distribution to the committee for PhD
-    Qualifying Exam in June 2017.
+    The idea is for users to write higher level descriptive R code.
+    We then analyze their code, and transform it into a version which is tailored
+    to the data and the capabilities of the platform. This could mean
+    splitting data into appropriately sized chunks and using
+    multiprocessing. More ambitiously, it could mean transferring data and
+    compiling code for a GPU (graphical processing unit).
 
 \end{abstract}
 
-For principled, optimal approaches to chunked computations we first have to
-understand something about the performance of chunked computations.
+This is a prospectus for distribution to the committee for PhD
+Qualifying Exam in June 2017.
 
-One could think about this system architecturally in layers- building on
+For principled, optimal approaches to parallel chunked computations we
+first have to understand the performance characteristics of chunked
+computations.
+
+One could think about this as a system architecturally organized in layers- building on
 partools, say, which builds on SNOW. Users are free to enter at any layer.
 
-\section{A Problem}
+\section{An Example}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 The California Department of Transportation collects traffic
@@ -139,6 +147,14 @@ the code is. Conversely, if the data is ``large enough'' then
 \emph{everything} matters, since small inefficiencies will be magnified
 when they occur millions of times.
 
+\subsection{Data Movement}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Moving data is slow and therefore should be minimized. It can be slow in
+terms of latency and also because of bandwidth. Examples of this include
+transferring data over a network, where latency can be measured in
+milliseconds and bandwidth in MB per second.
+
 Initially assume that the code is correct. Consider an example of code that
 reads a file, performs a computation, and saves the result in a file.
 Most approaches to improving performance or scaling to large datasets
@@ -151,21 +167,13 @@ Translation here refers to taking the code and modifying it, for example by
 adding statements.
 
 
-Here's my philosophy for software design:
-
-\begin{itemize}
-    \item Code should be as simple and straightforward. I hate code, and want as
-        little of it in my codebase as possible.
-    \item Fewer dependencies are better. I don't want to foist any
-        particular package or way of doing things on users.
-    \item Avoid choosing. If there's some way to pass things through to the
-        user, ie. R's $\dots$, then use that rather than choosing for them.
-\end{itemize}
-
-
 \section{Approximating data size}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+For data in files one could read the first several records along with the
+data size and make an inference as to how many rows there are, and come up
+with an appropriate evaluation scheme. This is similar to how column
+inferences work.
 
 \section{Introduction}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -488,7 +496,7 @@ embarrassingly parallel.\footnote{More generally, with something like an
 autoregressive time series model it's still easy to parallelize if one
 considers overlapping chunks of rows.} Suppose $X$ is on disk, and $n$ and
 $p$ are such that the data will easily fit into memory.  Given an existing
-\texttt{fitted_model} a vector of corresponding predictions can be created
+\texttt{fitted\_model} a vector of corresponding predictions can be created
 and written to disk with the following clear and idiomatic R code:
 
 \begin{verbatim}
@@ -513,8 +521,13 @@ thing using the following steps:
 Dealing with the bookkeeping of chunks complicates the code.  It also
 distracts from the actual purpose and semantics which R captured well.
 
+Writing code without a keen eye for performance often proves disastrous. For
+example, it's natural to use chunk based processing in R for this. An
+implementation of this that uses R's builtin \texttt{textConnection} takes
+more than 6 days to run.
+
 It's not a great leap to imagine a system which handles the translation
-of the regular R code into the chunked version below. Reading and writing
+of the regular R code into the chunked version. Reading and writing
 to newline delimited text files is quite common, and can be
 programmatically detected using the CodeDepends package, for example
 \cite{R-CodeDepends}.
@@ -560,7 +573,6 @@ this would have the problem mentioned above if ran on the same machine.
 
 The iotools package provides high performance
 
-
 One thing to do is detect the load on the system and adjust computation
 strategy according to
 this. For example we can check the current memory usage:
@@ -572,6 +584,20 @@ MemFree:          196820 kB
 MemAvailable:    4094616 kB
 Buffers:          232348 kB
 \end{verbatim}
+
+\Appendix
+
+Here's my philosophy for software design:
+
+\begin{itemize}
+    \item Code should be as simple and straightforward. I hate code, and want as
+        little of it in my codebase as possible.
+    \item Fewer dependencies are better. I don't want to foist any
+        particular package or way of doing things on users.
+    \item Avoid choosing. If there's some way to pass things through to the
+        user, ie. R's $\dots$, then use that rather than choosing for them.
+\end{itemize}
+
 
 
 \bibliographystyle{plain}
