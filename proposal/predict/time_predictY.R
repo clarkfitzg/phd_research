@@ -2,6 +2,9 @@ source("predictY.R")
 
 n = as.integer(c(100, 200, 500, 1000, 3000, 10000, 100000))
 
+# Do the faster ones first :)
+n = rev(n)
+
 # Write as we go in case of crashing
 lapply(n, function(n_i){
     time = system.time({predictY(n_i)})

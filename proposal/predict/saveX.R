@@ -2,6 +2,11 @@
 #
 # 1e6 will make chunks ~ 24 MB in size
 #
+#
+# real    11m45.618s
+# user    36m33.100s
+# sys     3m8.508s
+#
 # Fast IO is important here
 library(data.table)
 Rprof("saveX.out")
