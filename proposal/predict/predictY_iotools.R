@@ -52,7 +52,7 @@ fit = lm(y ~ ., train)
 # size is.
 ############################################################
 
-predictY = function(n_i, nprocs = 1L, xfile = "/ssd/clarkf/X.csv", yfile = "/ssd/clarkf/Y.csv")
+predictY = function(n_i, xfile = "/ssd/clarkf/X.csv", yfile = "/ssd/clarkf/Y.csv")
 {
     # Start fresh
     unlink(yfile)
@@ -76,5 +76,5 @@ predictY = function(n_i, nprocs = 1L, xfile = "/ssd/clarkf/X.csv", yfile = "/ssd
         y = predict(fit, X)
         # Can't seem to get the row names out of here... Oh well.
         write.csv.raw(y, yfile, append = TRUE, sep = ",", nsep = ",", col.names = FALSE)
-    }, CH.MAX.SIZE = chunksize, parallel = nprocs)
+    }, CH.MAX.SIZE = chunksize)
 }

@@ -38,6 +38,14 @@ $ grep -n '^$' Y.csv
 474245405:
 522286060:
 
+$ grep -n '^$' Y2.csv 
+344905680:
+383707753:
+686732089:
+922623709:
+
+And these are different
+
 Compare this to just looping through in C and counting lines:
 
 clarkf@fingers /ssd/clarkf

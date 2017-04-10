@@ -1,0 +1,11 @@
+# These didn't respect the file order when appending, so the order was
+# destroyed. Not sure why I thought this would even work.
+100000 8 1490.27
+10000 8 1542.187
+3000 8 1510.491
+1000 8 1485.21
+500 8 1467.504
+200 8 1477.986
+100 8 1491.211
+10000 2 2639.802
+10000 4 1829.56
