@@ -52,7 +52,7 @@ fit = lm(y ~ ., train)
 # size is.
 ############################################################
 
-predictY = function(n_i, nprocs = 1, xfile = "/ssd/clarkf/X.csv", yfile = "/ssd/clarkf/Y.csv")
+predictY = function(n_i, nprocs = 1L, xfile = "/ssd/clarkf/X.csv", yfile = "/ssd/clarkf/Y.csv")
 {
     # Start fresh
     unlink(yfile)
