@@ -73,12 +73,12 @@
 
 \begin{abstract}
 
-    The idea is for users to write higher level descriptive R code.
-    We then analyze their code, and transform it into a version which is tailored
-    to the data and the capabilities of the platform. This could mean
-    splitting data into appropriately sized chunks and using
-    multiprocessing. More ambitiously, it could mean transferring data and
-    compiling code for a GPU (graphical processing unit).
+    Users begin by writing correct R code.  We then analyze their code, and
+    transform it into a version which is tailored to the data and the
+    capabilities of the platform. This could mean splitting data into
+    appropriately sized chunks and using multiprocessing. More ambitiously,
+    it could mean transferring data and compiling code for a GPU (graphical
+    processing unit).
 
 \end{abstract}
 
@@ -90,6 +90,10 @@ first have to understand their performance characteristics.
 
 One could think about this as a system architecturally organized in layers- building on
 partools, say, which builds on SNOW. Users are free to enter at any layer.
+
+Idea for metadata- see notes in partools. Could use a data structure
+describing characteristics for how each chunk of the data is accessed,
+ideally along with something about the sizes.
 
 \section{An Example}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -520,10 +524,11 @@ thing using the following steps:
 Dealing with the bookkeeping of chunks complicates the code.  It also
 distracts from the actual purpose and semantics which R captured well.
 
-Writing code without a keen eye for performance often proves disastrous. For
-example, it's natural to use chunk based processing in R for this. An
-implementation of this that uses R's builtin \texttt{textConnection} takes
-more than 6 days to run.
+Writing code without a keen eye for performance often proves disastrous.
+For example, it's natural to use chunk based processing in R for this. An
+implementation of this that uses R's builtin \texttt{textConnection}
+internally takes more than 6 days to run. Equivalent code written with
+\texttt{iotools} takes well under hour to process the same data set.
 
 It's not a great leap to imagine a system which handles the translation
 of the regular R code into the chunked version. Reading and writing
@@ -533,26 +538,43 @@ programmatically detected using the CodeDepends package, for example
 
 \section{Parallel technologies}
 
-Those relevant to R:
+Parallel programming in R can be roughly divided into two categories: those
+that run R code, and those that offer a programming interface into some
+other language or system. 
+
+The established systems for running R code in parallel are Tierney's Simple
+Network of Workstations (SNOW), and Urbanek's multicore. Both packages have
+been combined into the parallel package which has been included in base R since
+version 2.14.0 was released in 2011. SNOW creates
+an R cluster by using multiple slave R processes distributed across one or
+several machines communicating over network sockets. The processes are independent,
+ie. they do not share memory, and R objects are serialized
+between master and slave through functions such as \texttt{clusterExport}.
+
+Multicore is similar to SNOW, but it only works on operating systems that can
+do a system fork, which is all systems except Windows. This allows
+processes to share physical memory in a read only way. Because of the
+forking and shared memory this only works on one physical system with
+multiple processors.
+
+The interface systems for parallelism in R include databases, system level
+threads, Hadoop clusters or GPU's. These don't usually have a direct way to
+run R code. They tend to be more specialized and require understanding
+different languages and computational models.
 
 A view of the architecture:
 
 \begin{verbatim}
 User layer: foreach, future, partools, ddR
-R Foundational layer: SNOW, multicore, parallel
+R Foundational layer: SNOW, multicore, (parallel)
 System Foundational layers: *NIX fork(), processes, network sockets
 \end{verbatim}
 
-There are certainly other options for parallelism, ie. databases, threads
-in C, Hadoop clusters or GPU's. These tend to be more specialized and
-require understanding different computational models.
-
 I propose a translation from straight nonparallel R code using code
 analysis. This offers a level of portability that the others don't really
-have, and it's also compatible with compilation efforts.
+have, and it's also relatively more compatible with compilation efforts.
 
 \section{Disk based storage}
-
 
 I'm noticing many different exciting options when it comes to serializing /
 deserializing and binary storage of matrices and data frames.
@@ -624,7 +646,7 @@ MemAvailable:    4094616 kB
 Buffers:          232348 kB
 \end{verbatim}
 
-\Appendix
+\appendix
 
 Here's my philosophy for software design:
 
