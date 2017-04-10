@@ -32,6 +32,11 @@ $ time grep -n '^$' Y.csv
 
 real    1m22.331s
 
+After I generate Y a new time there are two in different places.
+
+$ grep -n '^$' Y.csv
+474245405:
+522286060:
 
 Compare this to just looping through in C and counting lines:
 
