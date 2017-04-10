@@ -8,3 +8,4 @@ knitr
 profvis
 future
 CodeDepends
+foreach

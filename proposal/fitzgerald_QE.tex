@@ -531,6 +531,26 @@ to newline delimited text files is quite common, and can be
 programmatically detected using the CodeDepends package, for example
 \cite{R-CodeDepends}.
 
+\section{Parallel technologies}
+
+Those relevant to R:
+
+A view of the architecture:
+
+\begin{verbatim}
+User layer: foreach, future, partools, ddR
+R Foundational layer: SNOW, multicore, parallel
+System Foundational layers: *NIX fork(), processes, network sockets
+\end{verbatim}
+
+There are certainly other options for parallelism, ie. databases, threads
+in C, Hadoop clusters or GPU's. These tend to be more specialized and
+require understanding different computational models.
+
+I propose a translation from straight nonparallel R code using code
+analysis. This offers a level of portability that the others don't really
+have, and it's also compatible with compilation efforts.
+
 \section{Disk based storage}
 
 
@@ -574,6 +594,9 @@ instructions together with buffering chunks of data
     wait idly for worker processing and there is no resource contention
     since only the master is retrieving data. \cite{arnold2015iotools}
 \end{quote}
+
+The \texttt{foreach} package has provided R with a higher level parallel
+split / apply / combine functionality built on SNOW and multicore.
 
 Many of these can use threads, which means they can potentially effectively
 utilize all the CPU resources so that any multiprocessing becomes a hindrance.
