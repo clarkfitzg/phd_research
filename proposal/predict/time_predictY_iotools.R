@@ -18,3 +18,33 @@ lapply(n, function(n_i){
     write.table(output, "timings_iotools.csv", append = TRUE, row.names = FALSE, col.names = FALSE)
     message("Finished ", n_i)
 })
+
+# Not working:
+#
+# clarkf@fingers ~/phd_research/proposal/predict (master)
+# $ Rscript time_predictY_iotools.R 
+# Finished 100000
+# Finished 10000
+# Finished 3000
+# 
+#  *** caught segfault ***
+# address 0x150, cause 'memory not mapped'
+# 
+# Traceback:
+#  1: length(x)
+#  2: dstrsplit(Xraw, col_types = cols, sep = ",")
+#  3: (function (Xraw) {    X = dstrsplit(Xraw, col_types = cols, sep = ",")    y = predict(fit, X)    write.csv.raw(
+# y, yfile, append = TRUE, sep = ",", nsep = ",",         col.names = FALSE)})(NULL)
+#  4: .Call(chunk_apply, reader, CH.MAX.SIZE, CH.MERGE, FUN, parent.frame(),     .External(pass, ...))
+#  5: chunk.apply(reader, function(Xraw) {    X = dstrsplit(Xraw, col_types = cols, sep = ",")    y = predict(fit, X)
+#     write.csv.raw(y, yfile, append = TRUE, sep = ",", nsep = ",",         col.names = FALSE)}, CH.MAX.SIZE = chunks
+# ize)
+#  6: predictY(n_i, yfile = "/ssd/clarkf/Y2.csv")
+#  7: system.time({    predictY(n_i, yfile = "/ssd/clarkf/Y2.csv")})
+#  8: FUN(X[[i]], ...)
+#  9: lapply(n, function(n_i) {    time = system.time({        predictY(n_i, yfile = "/ssd/clarkf/Y2.csv")    })    o
+# utput = data.frame(n = n_i, time = time["elapsed"])    write.table(output, "timings_iotools.csv", append = TRUE,   
+#       row.names = FALSE, col.names = FALSE)    message("Finished ", n_i)})
+# aborting ...
+# Segmentation fault
+
