@@ -66,7 +66,7 @@
 
 \begin{document}
 
-\title{Selecting Sizes For Parallel Chunks}
+\title{Parallel Computing Through Code Analysis}
 \date{\today}
 \author{Clark Fitzgerald}
 \maketitle
@@ -496,7 +496,7 @@ Reducing
 Consider making a prediction vector for some $n \times p$ matrix $X$. In
 the conventional case the prediction for each row is independent so this is
 embarrassingly parallel.\footnote{More generally, with something like an
-autoregressive time series model it's still easy to parallelize if one
+autoregressive time series model it still may be easy to parallelize if one
 considers overlapping chunks of rows.} Suppose $X$ is on disk, and $n$ and
 $p$ are such that the data will easily fit into memory.  Given an existing
 \texttt{fitted\_model} a vector of corresponding predictions can be created
@@ -557,10 +557,10 @@ processes to share physical memory in a read only way. Because of the
 forking and shared memory this only works on one physical system with
 multiple processors.
 
-The interface systems for parallelism in R include databases, system level
-threads, Hadoop clusters or GPU's. These don't usually have a direct way to
-run R code. They tend to be more specialized and require understanding
-different languages and computational models.
+The interface systems for parallelism in R include databases, C level
+threads such as OpenMP, Hadoop clusters or GPU's. These don't usually have
+a direct way to run R code. They tend to be more specialized and require
+understanding different languages and computational models.
 
 A view of the architecture:
 
@@ -573,6 +573,68 @@ System Foundational layers: *NIX fork(), processes, network sockets
 I propose a translation from straight nonparallel R code using code
 analysis. This offers a level of portability that the others don't really
 have, and it's also relatively more compatible with compilation efforts.
+
+\section{Interfaces}
+
+Interfaces between abstraction layers should be a key component of this.
+Perhaps we can view data in some generalized way, for example as a Unix
+style file descriptor. This encompasses regular files, standard input,
+pipes, and network sockets. This is the abstraction used by R and Python,
+so it should be our first choice.
+
+\begin{quote}
+
+Function cat underlies the functions for exporting data. It takes a file
+    argument, and the append argument allows a text file to be written via
+    successive calls to cat. Better, especially if this is to be done many
+    times, is to open a file connection for writing or appending, and cat
+    to that connection, then close it.
+
+Beware that read.table is an inefficient way to read in very large
+numerical matrices: see scan below.
+
+Efficiency can be important when reading large data grids. It will help to
+    specify comment.char = "", colClasses as one of the atomic vector types
+    (logical, integer, numeric, complex, character or perhaps raw) for each
+    column, and to give nrows, the number of rows to be read (and a mild
+    over-estimate is better than not specifying this at all). See the
+    examples in later sections.
+
+- R data import / export manual
+\end{quote}
+
+This suggests that a translation into \texttt{scan} could be useful.
+
+Another note- scanning numerics is fast. So maybe we can scan everything as
+numeric and do conversion later, preserving things like factors along with
+the metadata.
+
+The \texttt{write.matrix} function in the MASS package is an example of
+writing to disk in blocks.
+
+Much of the work in scheduling writes can rely on the operating system,
+since writing to a file doesn't mean the file will be written to in that
+moment- the hard drive is free to schedule it as it wishes. In the same
+vein, if the disk becomes a bottleneck then it makes more sense to use
+something like RAID, a redundant array of independent disks, rather than
+try to code to accomadate the file system.
+
+IDEA: Building off pipeline parallelism- how feasible is it to pass off
+data between running processes, ie. a vectorized operation like
+\texttt{f(g(h(x)))} does, for example:
+
+\begin{verbatim}
+f(g(h(x))) becomes:
+
+Process 1: Compute h(x) pipe to process 2
+Process 2: Compute g(...) pipe to process 3
+Process 3: Compute f(...)
+\end{verbatim}
+
+What are the limits of efficiency to something like this? It will be
+efficient if each function \texttt{h, g, f} takes approximately the same
+amount of time $T_f$ and $T_f >> T_p$, where $T_p$ is the time it takes to
+pipe the data between the running processes. 
 
 \section{Disk based storage}
 
