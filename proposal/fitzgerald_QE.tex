@@ -619,6 +619,8 @@ vein, if the disk becomes a bottleneck then it makes more sense to use
 something like RAID, a redundant array of independent disks, rather than
 try to code to accomadate the file system.
 
+\section{Pipelines}
+
 IDEA: Building off pipeline parallelism- how feasible is it to pass off
 data between running processes, ie. a vectorized operation like
 \texttt{f(g(h(x)))} does, for example:
@@ -649,8 +651,49 @@ $ cat /proc/sys/fs/pipe-max-size
 1048576
 \end{verbatim}
 
+If I do something like this how do I check if the pipe is finished?
+For performance it's probably best to do it at the C level with something
+like \texttt{select}. In that case the communication between the processes
+needs to be two way, which complicates things.
+
 Network sockets are more general and probably robust. They can scale to
 different machines also.
+
+Trying it with network sockets, the blocking behavior is very nice. And it
+handles larger objects more easily. It takes 0.4 seconds to serialize /
+deserialize a vector of 10 million random numbers which takes up 76.3 MB.
+There's nothing tying this to the sockets- I could write and read from
+files incrementally as well.  For comparison it takes 26.5 seconds to write
+to disk using \texttt{write()} and 5.6 seconds to read using \texttt{scan}.
+This means that serializing over sockets is about 50 times faster than
+hitting disk.
+
+I wonder if this would slow down if say 20 different processes were
+involved in the pipeline, and they're all using the networking.
+The pipeline could be shut down using a sentinel value.
+
+We could potentially add workers to the pipeline to make things more
+efficient.
+\begin{verbatim}
+
+Basic Setup:
+A   ->      B   ->      C
+
+Then if B, C are bottlenecks we can add workers there, so it becomes
+
+A   ->  B1, B2  ->  C1, C2, ..., Ck
+
+\end{verbatim}
+
+Wait, but this might not work exactly like this since the sockets only
+operate in pairs.
+
+It would be really slick if this could be done dynamically. 
+
+Norm is going to ask about debugging. My original assumption was the user
+code is bug free. But unexpected errors could show up when it's strung
+together like this. This isn't meant to be used interactively as much, but
+it could be- after all that's how people use R.
 
 \section{Disk based storage}
 
