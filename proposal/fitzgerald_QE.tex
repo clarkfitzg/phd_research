@@ -631,10 +631,26 @@ Process 2: Compute g(...) pipe to process 3
 Process 3: Compute f(...)
 \end{verbatim}
 
-What are the limits of efficiency to something like this? It will be
+What are the limits of efficiency to something like this? It can
+potentially be
 efficient if each function \texttt{h, g, f} takes approximately the same
 amount of time $T_f$ and $T_f >> T_p$, where $T_p$ is the time it takes to
 pipe the data between the running processes. 
+
+I can implement this using fifo() and serialization. When using R's
+serialize() and unserialize() the behavior is pretty convenient because
+each call to unserialize() pops one R object out of the FIFO.
+When I remove the FIFO from the working directory it's not actually gone-
+the processes still hang on to it. But I probably wouldn't want to do this.
+
+Pipes have a limit on how large they can be, for example:
+\begin{verbatim}
+$ cat /proc/sys/fs/pipe-max-size
+1048576
+\end{verbatim}
+
+Network sockets are more general and probably robust. They can scale to
+different machines also.
 
 \section{Disk based storage}
 
