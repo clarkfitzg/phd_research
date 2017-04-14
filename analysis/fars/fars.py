@@ -1,12 +1,21 @@
 """
 Tools for working with fars data
+
+Lessons
+-------
+- Look before you leap?
+- Self documenting
 """
 
 # Standard library
 import re
 import os
+import math
 import ftplib
 from zipfile import ZipFile
+
+# Third party library. Get it with `pip install dbfread`
+from dbfread import DBF
 
 
 # This will be user specific, probably want to change it.
@@ -32,9 +41,8 @@ def download(datadir = DATADIR, start = 2010):
     """
     Download FARS data from the FTP server.
 
-    When running from command line you should see output like this.
+    Expect to see output like this-
 
-    $ python download_fars.py
     downloaded FARS1975.zip
     downloaded FARS1976.zip
     ...
@@ -88,3 +96,39 @@ def unzip_all(datadir = DATADIR):
         if isfars(f):
             unzip(f, datadir)
             print("unzipped " + f)
+
+
+def response_minutes(row):
+    """
+    Minutes between the occurrence
+    of the accident and the arrival of emergency medical services.
+    """
+    HOUR, MINUTE = row["HOUR"], row["MINUTE"]
+    ARR_HOUR, ARR_MIN= row["ARR_HOUR"], row["ARR_MIN"]
+
+    unknown = any((MINUTE >= 60,
+        HOUR >= 24,
+        ARR_MIN >= 60,
+        ARR_HOUR >= 24,
+        ARR_MIN == 0 and ARR_HOUR == 0,
+        ))
+
+    # Just to help for later
+    if unknown:
+        return -math.inf
+
+    # Arrival was the following day, ie. midnight between accident and
+    # response, so one day off.
+    if ARR_HOUR < HOUR:
+        ARR_HOUR += 24
+
+    diff = (60 * ARR_HOUR + ARR_MIN) - (60 * HOUR + MINUTE)
+    return diff
+
+
+def all_responses(fname):
+    """
+    Generator over the rows of responses
+    """
+    for row in iter(DBF(fname)):
+        yield response_minutes(row)
