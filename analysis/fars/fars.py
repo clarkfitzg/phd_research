@@ -5,6 +5,8 @@ Lessons
 -------
 - Look before you leap?
 - Self documenting
+- Self testing
+
 """
 
 # Standard library
@@ -37,6 +39,14 @@ def before2012(x, start):
         return False
 
 
+def isfars(fname):
+    """
+    Return True if the filename looks like a FARS file
+    """
+    x = fname.lower()
+    return x.startswith("fars") and x.endswith(".zip")
+
+
 def download(datadir = DATADIR, start = 2010):
     """
     Download FARS data from the FTP server.
@@ -59,20 +69,14 @@ def download(datadir = DATADIR, start = 2010):
     for year in allyears:
         ftp.cwd(year + "/DBF")
         # Grab the first zip file
-        fname = [x for x in ftp.nlst() if x.lower().endswith("zip")][0]
+        #fname = [x for x in ftp.nlst() if isfars(x)][0]
+        fname = next(filter(isfars, ftp.nlst()))
         # Retrieve binary files and write them to the local machine
         with open(DATADIR + fname, "wb") as f:
+            # TODO: Explain following line-
             ftp.retrbinary("RETR " + fname, f.write)
             print("downloaded " + fname)
         ftp.cwd("../..")
-
-
-def isfars(fname):
-    """
-    Return True if the filename looks like a FARS file
-    """
-    x = fname.lower()
-    return x.startswith("fars") and x.endswith(".zip")
 
 
 def unzip(fname, datadir = DATADIR):
