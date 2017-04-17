@@ -28,10 +28,12 @@ predictY = function(n_i, Xfile = "/ssd/clarkf/X.csv", yfile = "/ssd/clarkf/Y.csv
     Xfile = file(Xfile)
     open(Xfile)
 
-    lines = readLines(Xfile, n = n_i)
+    #lines = readLines(Xfile, n = n_i)
 
     while(length(lines) > 0){
-        X_i = read.table(text = lines, sep = ",", colClasses = rep("numeric", 3))
+        #X_i = read.table(text = lines, sep = ",", colClasses = rep("numeric", 3))
+        # TODO: FIX ME!
+        X_i = scan(Xfile, nlines = n_i)
         colnames(X_i) = c("X1", "X2", "X3")
         y_i = predict(fit, X_i)
         y_i = data.frame(y_i)
