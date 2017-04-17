@@ -73,14 +73,26 @@
 
 \begin{abstract}
 
-    Users begin by writing correct R code.  We then analyze their code, and
-    transform it into a version which is tailored to the data and the
-    capabilities of the platform. This could mean splitting data into
-    appropriately sized chunks and using multiprocessing. More ambitiously,
-    it could mean transferring data and compiling code for a GPU (graphical
-    processing unit).
+    Conventional systems for parallel programming require users to modify
+    their existing code to take advantage of a system's computational
+    capabilities, which may include multiprocessing or Graphical Processing
+    Units (GPU)s.  In this presentation we introduce detection and usage of
+    parallel code through code analysis. This can then be used to rewrite
+    and execute the code more efficiently, leaving the original R code .
+    We consider a motivating case study analyzing the operating
+    characteristics California's highway traffic sensor stations on
+    hundreds of GB of traffic sensor data.
+
 
 \end{abstract}
+
+Users begin by writing correct R code.  We then analyze their code, and
+transform it into a version which is tailored to the data and the
+capabilities of the platform. This could mean splitting data into
+appropriately sized chunks and using multiprocessing. More ambitiously,
+it could mean transferring data and compiling code for a GPU (graphical
+processing unit).
+
 
 This is a prospectus for distribution to the committee for PhD
 Qualifying Exam in June 2017.
