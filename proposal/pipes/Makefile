@@ -6,5 +6,5 @@ Y.txt: X.txt predict.R readargs.R
 	time Rscript predict.R $(CHUNKSIZE) $(N) $(NCOL) $< $@
 
 Y2.txt: X.txt step1.R step2.R
-	Rscript step1.R $(CHUNKSIZE) $(N) $(NCOL) $< $@
+	Rscript step1.R $(CHUNKSIZE) $(N) $(NCOL) $< $@ &
 	Rscript step2.R $(CHUNKSIZE) $(N) $(NCOL) $< $@
