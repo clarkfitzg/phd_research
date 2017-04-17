@@ -1,10 +1,9 @@
 source("readargs.R")
 
-s = socketConnection(port = 33000, server = TRUE, timeout = 100)
-
 fX = file(INFILE)
 open(fX)
 
+s = socketConnection(port = 33000, server = TRUE, timeout = 100)
 
 while(N > 0){
 

@@ -1,9 +1,9 @@
 source("readargs.R")
 
-s = socketConnection(port = 33000, timeout = 100)
-
 fY = file(OUTFILE)
 open(fY, "w")
+
+s = socketConnection(port = 33000, timeout = 100)
 
 while(N > 0){
 
