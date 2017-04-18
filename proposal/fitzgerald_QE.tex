@@ -231,20 +231,29 @@ can we detect it?
 \begin{figure}
 \centering
 \includegraphics[width=.8\linewidth]{compute_times/overhead}
-\caption{Note this is log scale.}
+\caption{Simple function calls take less than a microsecond. Launching a
+    new R interpreter takes hundreds of milliseconds, which is relatively expensive.}
 \label{fig:overhead}
 \end{figure}
 
-Figure \ref{fig:overhead} shows the relative fixed sources of overhead to
+Figure \ref{fig:overhead} compares the relative fixed sources of overhead to
 consider with parallel programming. The evaluation of the following simple
 function captures the basic overhead associated with an interpreted
 language like R.
 \begin{verbatim}
 twox = function(x) 2*x
 \end{verbatim}
-Every call to this function will incur this cost. Vectorization refers to
-passing longer vectors to the function to amortize the fixed cost of function
-calls. E
+Every call to this function will incur a fixed overhead that is a couple
+hundred nanoseconds. Vectorization refers to passing longer vectors to the
+function to amortize this fixed cost. For example, if $x$ is an integer
+vector of length 1 then the overhead takes 2 orders of magnitude more time than
+the actual computation. However, if $x$ is of length 1500 then this overhead
+accounts for only 10 percent of the total execution time, so the fixed cost
+has been amortized.
+
+I believe that similar ideas hold for compiled languages. The overhead will
+be different, generally much less. And threads can be used for directly
+passing objects through.
 
 \section{Big Data and Swapping}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
