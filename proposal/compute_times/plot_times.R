@@ -5,7 +5,6 @@ overhead = list("simple_function_call" = 300 * 1e-9
                , "fork_evaluation" = 1.5 * 1e-3
                , "start_R_interpreter" = 150 * 1e-3
                )
-
 overhead = do.call(c, overhead)
 
 pdf("overhead.pdf", height = 4)
