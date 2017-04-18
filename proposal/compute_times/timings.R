@@ -4,7 +4,8 @@
 # when overhead costs are amortized, or whether they can be.
 #
 # - function evaluation
-# - serialization
+# - serialization within one process
+# - serialization over network socket
 # - starting R interpreter
 # - forking
 #
@@ -19,7 +20,7 @@ n = 100 * 0:10
 
 x = lapply(n, function(n_i) seq.int(n_i))
 
-benchmark = function(x){
+time_simple_func = function(x){
     # Wrapping it in a function because I actually want to know how long it
     # takes to call an R function
     twox = function(x) 2 * x
@@ -27,7 +28,7 @@ benchmark = function(x){
     quantile(bm$time)
 }
 
-times = t(sapply(x, benchmark))
+times = t(sapply(x, time_simple_func))
 
 # Sometimes this is linear, sometimes it has irregular spikes. 
 # Could be garbage collection, but I'm not sure.
@@ -44,9 +45,26 @@ summary(fit)
 overhead = coef(fit)[1]
 slope = coef(fit)[2]
 
+# Takes ~300 ns overhead with 2 ns per additional element
+
 # For which value of n is the overhead only 10 percent?
 p = 0.1
 np = (overhead - p * overhead) / (p * slope)
-# For these observations it's np = 1650
+# Varies around np = 1500
 
 
+# Requires a listening process
+# Not sure if this works
+s = socketConnection(port = 33000, open = "wb", server = TRUE, blocking = FALSE)
+
+time_serialize = function(x){
+    bm = microbenchmark(serialize(x, s), times = 100L)
+    quantile(bm$time)
+}
+
+times = t(sapply(x, time_serialize))
+
+# Running the same code above we see:
+# Takes ~8000 ns overhead with 3 ns per additional element
+# Which means you need to transfer about 22000 integers before one time
+# overhead of serialization costs take 10% of the total time.
