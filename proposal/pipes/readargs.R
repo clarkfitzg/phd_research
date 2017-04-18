@@ -1,5 +1,5 @@
-#args = commandArgs(trailingOnly=TRUE)
-args = strsplit("1000 2000000 5 X.txt Y2.txt", " ")[[1]]
+args = commandArgs(trailingOnly=TRUE)
+#args = strsplit("1000 2000000 5 X.txt Y2.txt", " ")[[1]]
 
 CHUNKSIZE = as.integer(args[1])
 N =         as.integer(args[2])
