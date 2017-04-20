@@ -1,6 +1,7 @@
 source("readargs.R")
 
 fY = file(OUTFILE)
+
 open(fY, "w")
 
 

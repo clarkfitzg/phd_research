@@ -1,4 +1,4 @@
-CHUNKSIZE=1000
+CHUNKSIZE=10
 N:=$(shell wc -l X.txt | cut -f 1 -d " ")
 NCOL:=$(shell head X.txt -n 1 | wc -w)
 

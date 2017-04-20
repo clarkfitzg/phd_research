@@ -3,7 +3,13 @@ source("readargs.R")
 fY = file(OUTFILE)
 open(fY, "w")
 
-s = socketConnection(port = 33000, open = "rb", timeout = 10, blocking = TRUE)
+while(TRUE){
+    try({
+        s <- socketConnection(port = 33000, open = "rb", timeout = 10, blocking = TRUE)
+        break
+    })
+    Sys.sleep(0.01)
+}
 
 while(N > 0){
 
