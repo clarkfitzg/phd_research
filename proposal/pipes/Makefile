@@ -5,6 +5,11 @@ NCOL:=$(shell head X.txt -n 1 | wc -w)
 Y.txt: X.txt predict.R readargs.R
 	Rscript predict.R $(CHUNKSIZE) $(N) $(NCOL) $< $@
 
-Y2.txt: X.txt step1.R step2.R
+Y2.txt: X.txt step1.R step2.R readargs.R
 	Rscript step1.R $(CHUNKSIZE) $(N) $(NCOL) $< $@ &
 	Rscript step2.R $(CHUNKSIZE) $(N) $(NCOL) $< $@
+
+Y3.txt: X.txt step1A.R step2A.R step3A.R readargs.R
+	Rscript step1A.R $(CHUNKSIZE) $(N) $(NCOL) $< $@ &
+	Rscript step2A.R $(CHUNKSIZE) $(N) $(NCOL) $< $@ &
+	Rscript step3A.R $(CHUNKSIZE) $(N) $(NCOL) $< $@ 

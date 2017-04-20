@@ -76,12 +76,13 @@
     Conventional systems for parallel programming require users to modify
     existing code to take advantage of a system's computational
     capabilities, which may include multiprocessing or Graphical Processing
-    Units (GPU)s. In this presentation we introduce code analysis to detect
-    the potential for parallel execution. The results of the analysis can
-    then be used to rewrite and execute the code more efficiently, without
-    requiring the user to modify their code. We consider a motivating case
-    study analyzing the operating characteristics California's highway
-    traffic sensor stations on hundreds of GB of traffic sensor data.
+    Units (GPU)s. In this presentation we introduce analysis methods for R
+    code to detect the potential for parallel execution. The results of the
+    analysis can then be used to rewrite and execute the code more
+    efficiently, without requiring the user to modify their code. We
+    consider a motivating case study using robust regression to analyze the
+    operating characteristics California's highway traffic sensor stations
+    on hundreds of gigabytes of traffic sensor data.
 
 \end{abstract}
 
@@ -244,7 +245,11 @@ language like R.
 twox = function(x) 2*x
 \end{verbatim}
 Every call to this function will incur a fixed overhead that is a couple
-hundred nanoseconds. Vectorization refers to passing longer vectors to the
+hundred nanoseconds. 
+
+TODO: check. This is consistent with results \cite{chambers2016extending}
+
+Vectorization refers to passing longer vectors to the
 function to amortize this fixed cost. For example, if $x$ is an integer
 vector of length 1 then the overhead takes 2 orders of magnitude more time than
 the actual computation. However, if $x$ is of length 1500 then this overhead
@@ -252,8 +257,8 @@ accounts for only 10 percent of the total execution time, so the fixed cost
 has been amortized.
 
 I believe that similar ideas hold for compiled languages. The overhead will
-be different, generally much less. And threads can be used for directly
-passing objects through.
+be different, generally much less. And threads can be used for handing off
+and directly manipulating the same objects.
 
 \section{Big Data and Swapping}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

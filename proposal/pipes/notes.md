@@ -28,6 +28,18 @@ Rscript step2.R 1000 2000000 5 X.txt Y2.txt
 real    0m7.787s
 user    0m4.800s
 sys     0m3.012s
+
+
+$ time make Y3.txt
+
+Worker 1 connected
+Worker 3 connected
+Worker 2 connected
+
+real    0m8.023s
+user    0m3.564s
+sys     0m3.652s
+
 ```
 
 I believe the following error comes from sequencing. One tries to read
