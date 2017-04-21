@@ -6,6 +6,7 @@ N =         as.integer(args[2])
 NCOL =      as.integer(args[3])
 INFILE =    args[4]
 OUTFILE =   args[5]
+TIMEOUT =   as.numeric(args[6])
 
 
 # Dummy model

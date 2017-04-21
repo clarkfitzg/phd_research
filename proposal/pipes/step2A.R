@@ -6,13 +6,13 @@ source("readargs.R")
 
 while(TRUE){
     try({
-        s_in <- socketConnection(port = 33000, open = "rb", timeout = 10, blocking = TRUE)
+        s_in <- socketConnection(port = 33000, open = "rb", timeout = TIMEOUT, blocking = TRUE)
         break
     })
     Sys.sleep(0.01)
 }
 
-s_out = socketConnection(port = 33001, open = "wb", server = TRUE, timeout = 10, blocking = TRUE)
+s_out = socketConnection(port = 33001, open = "wb", server = TRUE, timeout = TIMEOUT, blocking = TRUE)
 
 message("Worker 2 connected")
 

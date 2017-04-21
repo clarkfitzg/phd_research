@@ -31,7 +31,6 @@ sys     0m3.012s
 
 ```
 
-10000 is slower than 1000.
 
 ```
 $ time make Y2.txt
@@ -42,6 +41,20 @@ real    0m9.863s
 user    0m5.440s
 sys     0m4.472s
 ```
+This shows 10000 is slower than 1000. 
+
+
+```
+$ time make Y2.txt
+Rscript step1.R 10 2000000 5 X.txt Y2.txt 1 &
+Rscript step2.R 10 2000000 5 X.txt Y2.txt 1
+
+real    1m46.196s
+user    1m42.280s
+sys     0m3.936s
+```
+And a chunksize of 10 is much worse, about 14 times slower than the 1K
+chunks. This needs to be made into a graphic.
 
 
 When I do three they still work. It would be interesting to measure the

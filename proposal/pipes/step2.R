@@ -5,7 +5,7 @@ open(fY, "w")
 
 while(TRUE){
     try({
-        s <- socketConnection(port = 33000, open = "rb", timeout = 10, blocking = TRUE)
+        s <- socketConnection(port = 33000, open = "rb", timeout = TIMEOUT, blocking = TRUE)
         break
     })
     Sys.sleep(0.01)

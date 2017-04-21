@@ -3,7 +3,7 @@ source("readargs.R")
 fX = file(INFILE)
 open(fX)
 
-s_out = socketConnection(port = 33000, open = "wb", server = TRUE, timeout = 10, blocking = TRUE)
+s_out = socketConnection(port = 33000, open = "wb", server = TRUE, timeout = TIMEOUT, blocking = TRUE)
 
 message("Worker 1 connected")
 
