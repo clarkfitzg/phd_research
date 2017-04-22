@@ -809,6 +809,31 @@ Buffers:          232348 kB
 
 \appendix
 
+\section{Alternating Direction Method of Multipliers}
+
+Notes as I read through \cite{boyd2011distributed}. ADMM useful for distributed
+data.
+
+Background- Dual ascent. Use Lagrange multiplier to solve the dual problem.
+If the objective function $f$ can be split into several components then the
+Lagrangian can be split and evaluated in parallel then recombined. Scatter
+gather.
+
+For method of multipliers the Lagrangian is augmented with a penalty term
+to make it differentiable, making the problem easier to solve compared to
+dual ascent. Algorithm: update $x$ by minimizing the lagrangian, then
+update $y$ by plugging in the constraint. Downside: Lagrangian no longer
+sepearable so it can't be computed in parallel.
+
+To get to ADMM you basically start out with splitting the objective vector
+and the Lagrangian into two components, $x$ and $z$.
+
+How does this get to parallel and distributed computing? I better keep
+reading.
+
+
+\section{Miscellaneous}
+
 Here's my philosophy for software design:
 
 \begin{itemize}
