@@ -3,15 +3,18 @@ Mon Apr 24 09:58:41 PDT 2017
 Starting this outline after Duncan's review of my prospectus draft and
 email thread with Norm.
 
-Goals:
-- Clarify objectives of research
+My current goals with the design document are:
+
+- Clarify objectives of research, particularly how I'll interface and
+  interact with other existing projects like iotools, data.table, and
+  partools
 - Improve examples
 
 Main points
 ============================================================
 
 - Several strategies exist to improve performance.
-- It's not known
+- It's not known which will be best.
 
 Examples
 ============================================================
@@ -33,6 +36,7 @@ Computational Strategies
 ============================================================
 
 ## Chunks
+
 
 ## Threads
 
