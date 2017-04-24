@@ -78,11 +78,12 @@
     capabilities, which may include multiprocessing or Graphical Processing
     Units (GPU)s. In this presentation we introduce analysis methods for R
     code to detect the potential for parallel execution. The results of the
-    analysis can then be used to rewrite and execute the code more
-    efficiently, without requiring the user to modify their code. We
-    consider a motivating case study using robust regression to analyze the
-    operating characteristics California's highway traffic sensor stations
-    on hundreds of gigabytes of traffic sensor data.
+    analysis can then be used to rewrite and execute semantically
+    equivalent instructions efficiently, without requiring the user to
+    modify their code. We consider a motivating case study using robust
+    regression to analyze the operating characteristics California's
+    highway traffic sensor stations on hundreds of gigabytes of traffic
+    sensor data.
 
 \end{abstract}
 
@@ -138,6 +139,15 @@ run on 134 GB of data.
 This is a poor level of performance.  Another drawback is that it
 requires specific custom code. Parallelizing and tuning it makes it even
 more specific to the data and platform.
+
+Norm has asked- why not sample? Great idea! Sampling would be appropriate
+here. There are a few ways to sample. Sampling days is
+computationally convenient because the files are organized by days. Then we
+only have to read a subset of the days. Sampling stations isn't
+ideal because we'd like to compute a statistic for each station to use for
+later analysis. Sampling rows for each station is acceptable- but this data
+is skewed with more observations of low density than 
+of high density. We could balance this when sampling by 
 
 What if I didn't have to write this custom code? What if we had a system
 that could inspect the idiomatic R code that one would write to perform an
