@@ -13,8 +13,12 @@ My current goals with the design document are:
 Main points
 ============================================================
 
-- Several strategies exist to improve performance.
-- It's not known which will be best.
+1. Sequential processing only goes so far
+2. Several parallel strategies exist to improve performance
+3. It's not known which will be best
+4. Each one requires deeper knowledge of that particular technology
+5. Therefore techniques to programmatically identify and use parallel
+  patterns implicit in code would be valuable
 
 Examples
 ============================================================
@@ -22,12 +26,30 @@ Examples
 Listing the characteristics that make these interesting and relevant to
 research.
 
+## Sufficient statistics for exponential families
+
+For iid rows of an `n x p` matrix `X`, compute the sufficient
+statistics `T(X_i)`. Say for multivariate normal with `p = 1000`.
+
+- Easily understood
+- Relates to statistics
+- Embarrassingly parallel row-wise operations
+
 ## Prediction from a fitted model
+
+Given a fitted model `f`, and an `n x p`  matrix `X`, compute 
+`yhat_i = f(x_i)`.
 
 - Easily understood
 - Embarrassingly parallel row-wise operations
 
+When do we need to predict these super large objects? No examples come
+immediately to mind. 
+
 ## PEMS robust regression
+
+Perform iteratively reweighted least squares after grouping the data by
+station.
 
 - Realistic, interesting problem involving large data
 - Not embarrassingly parallel because of initial data organization

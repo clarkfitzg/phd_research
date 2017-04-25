@@ -108,7 +108,22 @@ Idea for metadata- see notes in partools. Could use a data structure
 describing characteristics for how each chunk of the data is accessed,
 ideally along with something about the sizes.
 
-\section{An Example}
+\section{Statistics Example}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Given an exponential family with parameter $\theta$, consider evaluating
+the log likelihood. An appealing property of exponential families is that
+one can compute the likelihood for an iid sample by summing the
+sufficient statistics $T(x_i)$.
+
+TODO: Numerical issues with sums this large.
+
+More concretely Ethan's likelihood for the cosmic microwave background. 
+This is just one sample, but one could observe many samples.
+If $\theta \in \mathbb{R}^m$ is high dimensional, then it may be
+especially desirable to use many data points when computing likelihood.
+
+\section{Data Example}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 The California Department of Transportation collects traffic
