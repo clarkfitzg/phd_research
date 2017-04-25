@@ -110,54 +110,47 @@ especially desirable to use many data points when computing likelihood.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 The California Department of Transportation collects traffic data through
-sensors embedded in highways. The sensors measure three quantities:
-count of passing vehicles, time during which a vehicle is directly above
-the sensor (occupancy), and average velocity \cite{jia2001pems}.  Every thirty seconds
-they produce a new data point. $43,680$ sensors in california measuring 3
-parameters multiplied by $(2 \times 60 \times 24)$ measurements per day
-results in 377 million new data points per day.  This raw data is organized
-into files grouped by (day, district), and is available for
+sensors embedded in highways. The sensors measure three quantities: count
+of passing vehicles, time during which a vehicle is directly above the
+sensor (occupancy), and average velocity \cite{jia2001pems}.  Every thirty
+seconds they produce a new data point. $43,680$ sensors in California
+measuring 3 parameters multiplied by $(2 \times 60 \times 24)$ measurements
+per day results in 377 million new data points per day.  This raw data is
+organized into files grouped by (day, district), and is available for
 public download.  As an analyst I would like to model velocity as a
 function of occupancy for each sensor. This relationship is called the
 ``fundamental diagram'' within traffic engineering, because it captures the
 operating characteristic of this section of road
 \cite{daganzo1997fundamentals}.
 
-Robust regression is a preferred tool, because it
+Robust regression can be used to fit the fundamental diagram, approximating
+the integer programming approach to minimize the L1 norm as in
+\cite{li2011fundamental}.  From the R language this can be done easily and
+efficiently, for example with the \texttt{rlm} (robust linear model)
+function in the MASS package \cite{venables2013modern}:
 
-From the R language this can be done
-easily and efficiently, for example with the \texttt{rlm} (robust linear
-model) function in the MASS package \cite{venables2013modern}.
+\begin{verbatim}
+fit1 = rlm(velocity ~ occupancy, data = station1)
+\end{verbatim}
 
 However, the size and organization of the data makes the task much more
 difficult.  I've downloaded a subset of the data consisting of measurements
-in the San Francisco Bay Area for part of 2016. This takes up hundreds of
-gigabytes, so it will not fit in memory.
+in the San Francisco Bay Area for part of 2016.  It would be easier to
+perform the regression if the data were organized in files for each sensor
+rather than in files for each day.  One approach then is to reorganize the
+data on disk into this file structure. I did this using a simple single
+threaded R program, and it took 23 hours to run on 134 GB of data.
+This is a poor level of performance. Another drawback is that it requires
+very specific instructions to reorganize the data for computations grouped
+by station. Using parallel code will make this even more specific to the
+data and platform.
 
-It would be easier to perform the regression if the data were
-organized in files for each sensor rather than in files for each day.  One
-approach then is to reorganize the data on disk into this file structure. I
-did this using a simple single threaded R program, and it took 23 hours to
-run on 134 GB of data.
-
-This is a poor level of performance.  Another drawback is that it
-requires specific custom code. Parallelizing and tuning it makes it even
-more specific to the data and platform.
-
-Norm has asked- why not sample? Great idea! Sampling would be appropriate
-here. There are a few ways to sample. Sampling days is
-computationally convenient because the files are organized by days. Then we
-only have to read a subset of the days. Sampling stations isn't
-ideal because we'd like to compute a statistic for each station to use for
-later analysis. Sampling rows for each station is acceptable- but this data
-is skewed with more observations of low density than 
-of high density. We could balance this when sampling by 
-
-What if I didn't have to write this custom code? What if we had a system
-that could inspect the idiomatic R code that one would write to perform an
-operation as if the data were small, and then automatically take steps to
-scale and to parallelize the operations? It could also tune them for the
-specifics of the system and the data. This is what I'm working towards.
+What if it wasn't necessary to write this custom code? What if we had a
+system that could inspect the idiomatic R code that one would write to
+perform an operation as if the data were small, and then automatically take
+steps to scale and to parallelize the operations? It could also tune them
+for the specifics of the system and the data. This is what we're working
+towards.
 
 \subsection{Code, Data, Platform}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -832,6 +825,42 @@ Buffers:          232348 kB
 \end{verbatim}
 
 \appendix
+
+\section{Sampling}
+
+Norm has asked- why not sample? Great idea! Consider the case of the PeMS
+data described above. Sampling would be appropriate here. Note that
+this is only a small subset of the data, the SF Bay Area for part of 2016,
+so the scope of the original problem is already greatly reduced. 
+Ideally the sampling scheme accounts for the data having relatively many
+more observations of low occupancy than high occupancy. 
+Here are three ways to sample:
+
+\begin{enumerate}
+
+    \item Sampling days is computationally convenient since files are
+        organized by days. Then for a 10\% sample we only need to process
+        10\% of the files. 
+
+    \item Sampling rows has the advantage of simplicity. It's necessary to
+        process all the files in this case. There's potential for
+        computataional savings because rows of text can be discarded
+        before conversion to numeric objects.
+
+    \item Weighted sampling of rows based on occupancy values is more
+        desirable from a statistical perspective, since this can balance
+        out high and low occupancy observations.  It's also the least
+        computationally efficient.
+
+\end{enumerate}
+
+The above cases demonstrate a tradeoff between ease of computation and
+robustness of the result. For this application the last
+scheme is the most appealing, and I think is worth the computational cost.
+With larger data one may choose to combine the first and last schemes.  The
+point is that a good sampling scheme may well require one to first process
+all the data, but not necessarily keep it in memory.
+
 
 \section{Alternating Direction Method of Multipliers}
 

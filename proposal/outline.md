@@ -35,6 +35,10 @@ statistics `T(X_i)`. Say for multivariate normal with `p = 1000`.
 - Relates to statistics
 - Embarrassingly parallel row-wise operations
 
+__Reservations__
+These can get so specific. The numerically stable way to do this is to use
+the updating formula.
+
 ## Prediction from a fitted model
 
 Given a fitted model `f`, and an `n x p`  matrix `X`, compute 
@@ -43,6 +47,7 @@ Given a fitted model `f`, and an `n x p`  matrix `X`, compute
 - Easily understood
 - Embarrassingly parallel row-wise operations
 
+__Reservations__
 When do we need to predict these super large objects? No examples come
 immediately to mind. 
 
