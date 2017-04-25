@@ -74,7 +74,7 @@
 \begin{abstract}
 
     Conventional systems for parallel programming require users to modify
-    existing code to take advantage of a system's computational
+    existing code to take advantage of a platform's computational
     capabilities, which may include multiprocessing or Graphical Processing
     Units (GPU)s. In this presentation we introduce analysis methods for R
     code to detect the potential for parallel execution. The results of the
@@ -87,26 +87,9 @@
 
 \end{abstract}
 
-Users begin by writing correct R code.  We then analyze their code, and
-transform it into a version which is tailored to the data and the
-capabilities of the platform. This could mean splitting data into
-appropriately sized chunks and using multiprocessing. More ambitiously,
-it could mean transferring data and compiling code for a GPU (graphical
-processing unit).
-
-
 This is a prospectus for distribution to the committee for PhD
 Qualifying Exam in June 2017.
 
-For principled, optimal approaches to parallel chunked computations we
-first have to understand their performance characteristics.
-
-One could think about this as a system architecturally organized in layers- building on
-partools, say, which builds on SNOW. Users are free to enter at any layer.
-
-Idea for metadata- see notes in partools. Could use a data structure
-describing characteristics for how each chunk of the data is accessed,
-ideally along with something about the sizes.
 
 \section{Statistics Example}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -126,17 +109,23 @@ especially desirable to use many data points when computing likelihood.
 \section{Data Example}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-The California Department of Transportation collects traffic
-data through sensors embedded in highways. These detectors count passing
-vehicles, measure activation time, and estimate their average velocity \cite{jia2001pems}.
-Every thirty seconds they produce a new data point. $43,680$ sensors in
-California $\times 3$ parameters $\times (2 \times 60 \times 24)$
-measurements per day results in 377 million new data points per day.
-This raw data is organized into files by management district and day and is
-publicly available to download.
+The California Department of Transportation collects traffic data through
+sensors embedded in highways. The sensors measure three quantities:
+count of passing vehicles, time during which a vehicle is directly above
+the sensor (occupancy), and average velocity \cite{jia2001pems}.  Every thirty seconds
+they produce a new data point. $43,680$ sensors in california measuring 3
+parameters multiplied by $(2 \times 60 \times 24)$ measurements per day
+results in 377 million new data points per day.  This raw data is organized
+into files grouped by (day, district), and is available for
+public download.  As an analyst I would like to model velocity as a
+function of occupancy for each sensor. This relationship is called the
+``fundamental diagram'' within traffic engineering, because it captures the
+operating characteristic of this section of road
+\cite{daganzo1997fundamentals}.
 
-As an analyst I would like to perform a statistical computation involving a
-robust regression for each sensor. From the R language this can be done
+Robust regression is a preferred tool, because it
+
+From the R language this can be done
 easily and efficiently, for example with the \texttt{rlm} (robust linear
 model) function in the MASS package \cite{venables2013modern}.
 
@@ -186,6 +175,10 @@ matter regardless of how well the platform is utilized and how efficient
 the code is. Conversely, if the data is ``large enough'' then
 \emph{everything} matters, since small inefficiencies will be magnified
 when they occur millions of times.
+
+For principled approaches to parallel chunked computations we
+first have to understand their performance characteristics.
+
 
 \subsection{Data Movement}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -241,6 +234,12 @@ building blocks are in place:
 
 partools in particular is a nice base to build on.
 
+One could think about this as a system architecturally organized in layers- building on
+partools, say, which builds on SNOW. Users are free to enter at any layer.
+
+Idea for metadata- see notes in partools. Could use a data structure
+describing characteristics for how each chunk of the data is accessed,
+ideally along with something about the sizes. Something like a schema.
 Code analysis seems like the most esoteric thing compared to the others.
 
 Some functions can be applied in a streaming manner, where they visit the
