@@ -113,12 +113,13 @@ i.i.d. $\sim N(0, 1)$. This simple example allows us to focus on the
 underlying computational models. In R this code is written:
 
 \begin{verbatim}
-mean(rnorm(n))
+xbar = mean(rnorm(n))
 \end{verbatim}
 
 To evaluate this R will first build an intermediate vector $x = (x_1,
 \dots, x_n)$ and then take the mean. Eventually that unreferenced
-intermediate vector will be garbage collected.  Once $n$ becomes large
+intermediate vector will be garbage collected. Execution time increases
+linearly with $n$. Once $n$ becomes large
 enough this vector will no longer fit into available physical memory, so
 the operating system will use swap space. On a machine with 8 GB memory
 this happens when $O(n) = 10^9$, causing the execution time
@@ -136,9 +137,37 @@ Equation \ref{eq:mean} as a weighted mean.
 \label{eq:mean_partial}
 \end{equation}
 
-\subsection{Chunked Execution}
+It's important to correctly handle the cases when $n$ is not divisible by $p$
+and the computation / data cannot be evenly split. For simplicity in the
+examples below, suppose that they can be split evenly so $n_i$ is the same
+for all $i$.
 
-Equation \ref{eq:mean_partial} can be directly translated
+\subsection{Sequential Execution}
+
+Equation \ref{eq:mean_partial} can be directly translated into R code as
+follows:
+
+\begin{verbatim}
+n = 2e9
+p = 10
+n_i = as.integer(n / p)
+
+meanrnorm = function(n) mean(rnorm(n))
+
+partial_means = sapply(rep(n_i, p), meanrnorm)
+xbar = mean(partial_means)
+\end{verbatim}
+
+This code does not run in parallel, but it does use the same functional
+programming patterns as parallel code.  It's high performance in the sense
+that execution time will continue to be linear while $n < 10^{17}$, just
+as it was for small $n < 10^9$.  This is because \texttt{sapply} runs
+sequentially, so the memory footprint can be bounded since the intermediate
+vectors will be of length $n / p$. 
+
+What aspects of the code needed to change? In the initial code the user
+supplied $n$, and it was left to us to choose $p$ and $n_i$.
+The expression \texttt{mean(rnorm(n))} was changed into a function
 
 \subsection{SNOW cluster}
 
