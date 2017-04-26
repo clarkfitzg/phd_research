@@ -91,20 +91,58 @@ This is a prospectus for distribution to the committee for PhD
 Qualifying Exam in June 2017.
 
 
-\section{Statistics Example}
+\section{Simple Example}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Given an exponential family with parameter $\theta$, consider evaluating
-the log likelihood. An appealing property of exponential families is that
-one can compute the likelihood for an iid sample by summing the
-sufficient statistics $T(x_i)$.
+% Duncan:
+% Come up with concrete and realistic examples.  Show how you would do things
+% differently for different computational platform Go through this explicitly
+% by hand to show the "ideal" transformed code (keep high level) Identify how
+% you might identify these programmatically and what are some of the
+% challenges
 
-TODO: Numerical issues with sums this large.
+Consider computing the mean,
 
-More concretely Ethan's likelihood for the cosmic microwave background. 
-This is just one sample, but one could observe many samples.
-If $\theta \in \mathbb{R}^m$ is high dimensional, then it may be
-especially desirable to use many data points when computing likelihood.
+\begin{equation}
+    \bar{x} = \frac{1}{n} \sum_{i = 1}^n x_i
+\label{eq:mean}
+\end{equation}
+
+where the $x_i$'s are
+i.i.d. $\sim N(0, 1)$. This simple example allows us to focus on the
+underlying computational models. In R this code is written:
+
+\begin{verbatim}
+mean(rnorm(n))
+\end{verbatim}
+
+To evaluate this R will first build an intermediate vector $x = (x_1,
+\dots, x_n)$ and then take the mean. Eventually that unreferenced
+intermediate vector will be garbage collected.  Once $n$ becomes large
+enough this vector will no longer fit into available physical memory, so
+the operating system will use swap space. On a machine with 8 GB memory
+this happens when $O(n) = 10^9$, causing the execution time
+to increase by an order of magnitude, roughly from 1 minute to 15
+minutes. Once $n$ exceeds memory and swap space R will not be able to allocate a
+large enough object, and the computation will fail.
+
+Now we consider alternative ways to execute this code.  Most rely on
+splitting the sum into $p$ partial sums with $n_j$ terms each and then rewriting
+Equation \ref{eq:mean} as a weighted mean.
+
+\begin{equation}
+    \bar{x} = \frac{1}{n} \sum_{j = 1}^p \sum_{i = 1}^{n_j} x_{ij}
+    = \sum_{j = 1}^p \frac{n_j}{n} \bar{x}_j
+\label{eq:mean_partial}
+\end{equation}
+
+\subsection{Chunked Execution}
+
+Equation \ref{eq:mean_partial} can be directly translated
+
+\subsection{SNOW cluster}
+
+SNOW
 
 \section{Data Example}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -276,56 +314,6 @@ has been amortized.
 I believe that similar ideas hold for compiled languages. The overhead will
 be different, generally much less. And threads can be used for handing off
 and directly manipulating the same objects.
-
-\section{Big Data and Swapping}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-What happens when data is too big? One runs into algorithmic limitations as
-well, ie. $O(n^2)$ operations become very expensive for large $n$.
-
-R can do some computations out of memory through the use of the system
-swap. Swap space aka ``virtual memory'' is a portion of the hard drive that
-the host operating system allocates for memory to spill over into so that
-the computer doesn't run out of memory.  Exceeding the physical memory on
-the system causes several problems.
-
-First, data that's too big will still fail. Swap space is typically
-around the same size as memory. For example, my Ubuntu Linux desktop has
-8GB of RAM and 8GB of swap space on a spinning disk (not an SSD). Objects
-in R can't take up more space than the size of memory plus the size of
-swap. Here's a typical error:
-
-\begin{verbatim}
-> trillion = 1e12
-> x = rnorm(trillion)
-Error: cannot allocate vector of size 7450.6 Gb
-\end{verbatim}
-
-Second, computation is much faster if the data fits in memory.
-Figure \ref{fig:spinning_disk_swap} shows what happens to run time when
-simply computing the mean of $n$ random numbers, for $n$ chosen to create a
-vector pushing the limits of memory.\footnote{Note that this computation
-could just as easily be done in a streaming fashion, producing random
-numbers, updating the mean, and then discarding them.} For vectors using between $(0.1, 0.85)$
-of the available memory the timings are linear as expected.
-Once the computation spills into swap space the timings immediately become
-worse by an order of magnitude, and they are less predictable.
-
-Lastly, loading data from disk into memory and then swapping back into disk
-is fundamentally inefficient. The data was already read from disk once, why force it
-to be read again in this way if we can avoid it?
-
-\begin{figure}
-\centering
-\includegraphics[width=.8\linewidth]{swap/spinning_disk_swap}
-\caption{Performance is reasonable while data fits in memory.}
-\label{fig:spinning_disk_swap}
-\end{figure}
-
-Compilation can alleviate this issue, but it can't resolve it, since it
-can't give the system more memory. It may be able to help reduce the
-creation of large intermediate data objects.
-
 
 \section{Chunking Approaches to Large Data}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -884,6 +872,56 @@ and the Lagrangian into two components, $x$ and $z$.
 How does this get to parallel and distributed computing? I better keep
 reading.
 
+\section{Big Data and Swapping}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+What happens when data is too big? One runs into algorithmic limitations as
+well, ie. $O(n^2)$ operations become very expensive for large $n$.
+
+R can do some computations out of memory through the use of the system
+swap. Swap space aka ``virtual memory'' is a portion of the hard drive that
+the host operating system allocates for memory to spill over into so that
+the computer doesn't run out of memory.  Exceeding the physical memory on
+the system causes several problems.
+
+First, data that's too big will still fail. Swap space is typically
+around the same size as memory. For example, my Ubuntu Linux desktop has
+8GB of RAM and 8GB of swap space on a spinning disk (not an SSD). Objects
+in R can't take up more space than the size of memory plus the size of
+swap. Here's a typical error:
+
+\begin{verbatim}
+> trillion = 1e12
+> x = rnorm(trillion)
+Error: cannot allocate vector of size 7450.6 Gb
+\end{verbatim}
+
+Second, computation is much faster if the data fits in memory.
+Figure \ref{fig:spinning_disk_swap} shows what happens to run time when
+simply computing the mean of $n$ random numbers, for $n$ chosen to create a
+vector pushing the limits of memory.\footnote{Note that this computation
+could just as easily be done in a streaming fashion, producing random
+numbers, updating the mean, and then discarding them.} For vectors using between $(0.1, 0.85)$
+of the available memory the timings are linear as expected.
+Once the computation spills into swap space the timings immediately become
+worse by an order of magnitude, and they are less predictable.
+
+Lastly, loading data from disk into memory and then swapping back into disk
+is fundamentally inefficient. The data was already read from disk once, why force it
+to be read again in this way if we can avoid it?
+
+\begin{figure}
+\centering
+\includegraphics[width=.8\linewidth]{swap/spinning_disk_swap}
+\caption{Performance is reasonable while data fits in memory.}
+\label{fig:spinning_disk_swap}
+\end{figure}
+
+Compilation can alleviate this issue, but it can't resolve it, since it
+can't give the system more memory. It may be able to help reduce the
+creation of large intermediate data objects.
+
+
 \section{Extra examples}
 
 Andrew Latimer's regression across pixels of images over time to predict
@@ -904,6 +942,20 @@ Here's my philosophy for software design:
     \item Avoid choosing. If there's some way to pass things through to the
         user, ie. R's $\dots$, then use that rather than choosing for them.
 \end{itemize}
+
+\section{Scratch}
+
+Given an exponential family with parameter $\theta$, consider evaluating
+the log likelihood. An appealing property of exponential families is that
+one can compute the likelihood for an iid sample by summing the
+sufficient statistics $T(x_i)$.
+
+TODO: Numerical issues with sums this large.
+
+More concretely Ethan's likelihood for the cosmic microwave background. 
+This is just one sample, but one could observe many samples.
+If $\theta \in \mathbb{R}^m$ is high dimensional, then it may be
+especially desirable to use many data points when computing likelihood.
 
 
 
