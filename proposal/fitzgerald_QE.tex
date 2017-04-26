@@ -110,7 +110,8 @@ Consider computing the mean,
 
 where the $x_i$'s are
 i.i.d. $\sim N(0, 1)$. This simple example allows us to focus on the
-underlying computational models. In R this code is written:
+underlying computational models to see what can be achieved for large $n$
+given various platforms. In R this code is written:
 
 \begin{verbatim}
 xbar = mean(rnorm(n))
@@ -142,13 +143,18 @@ and the computation / data cannot be evenly split. For simplicity in the
 examples below, suppose that they can be split evenly so $n_i$ is the same
 for all $i$.
 
+Many of the performance characteristics of the different platforms can be
+understood in terms of the overhead to set them up, then the latency and
+bandwidth as data is transferred.
+
 \subsection{Sequential Execution}
 
 Equation \ref{eq:mean_partial} can be directly translated into R code as
 follows:
 
 \begin{verbatim}
-n = 2e9
+
+n = 1e5
 p = 10
 n_i = as.integer(n / p)
 
@@ -159,19 +165,107 @@ xbar = mean(partial_means)
 \end{verbatim}
 
 This code does not run in parallel, but it does use the same functional
-programming patterns as parallel code.  It's high performance in the sense
-that execution time will continue to be linear while $n < 10^{17}$, just
-as it was for small $n < 10^9$.  This is because \texttt{sapply} runs
+programming patterns as parallel code. If $M$ is the size of physical memory in
+bytes then this code is high performance in the sense
+that execution time will continue to be linear while $n < O(M^2)$, just
+as it was for small $n < O(M)$. It can also be modified to handle
+arbitrarily large $n$. This is because \texttt{sapply} runs
 sequentially, so the memory footprint can be bounded since the intermediate
 vectors will be of length $n / p$. 
 
-What aspects of the code needed to change? In the initial code the user
-supplied $n$, and it was left to us to choose $p$ and $n_i$.
-The expression \texttt{mean(rnorm(n))} was changed into a function
+What aspects of the code changed? In the initial code the user
+supplied $n$, and it remained to choose $p$ and $n_i$.
+The expression \texttt{mean(rnorm(n))} was changed into a function that was
+called and reduced using \texttt{mean()}.
 
 \subsection{SNOW cluster}
 
-SNOW
+Clusters created by SNOW, a simple network of workstations consist of independent
+worker R processes created by a manager process. The processes communicate
+over network sockets, and they may be on one or many physical machines.
+This is the type of cluster used by partools \cite{R-partools}.
+
+\begin{verbatim}
+cluster = parallel::makeCluster(p)
+partial_means = parallel::clusterCall(cluster, meanrnorm, n_i)
+xbar = mean(unlist(partial_means))
+\end{verbatim}
+
+Given an existing cluster this is very efficient, since we are sending a
+few bytes of code over the network and then returning a single number.
+
+\subsection{forking}
+
+On a server capable of forking, for example the department servers which
+have as many as 72 cores, one could use this approach. Forking uses a
+system fork, which will create several worker processes which can read data from
+the manager without copying.
+
+This is inefficient when generating data as we are here, but it's more
+efficient if we have already loaded a large data set into the manager
+process.
+
+\begin{verbatim}
+x = rnorm(n)
+
+starting_indices = as.integer(seq(from = 1, to = n, by = n_i))
+ending_indices = starting_indices + (n_i - 1L)
+
+index_mean = function(start, end) mean(x[start:end])
+
+partial_means = parallel::mcmapply(index_mean, starting_indices, ending_indices)
+
+xbar = mean(partial_means)
+\end{verbatim}
+
+\subsection{GPU}
+
+The GPU offers the highest level of parallelism, which could consist of
+1000's of threads working at once. Following the OpenCL documentation we'll
+refer to a GPU as a device, because this can run on other architectures as
+well. Here are the simplified steps:
+
+\begin{itemize}
+    \item create a kernel which will run in parallel
+    \item transfer the data to the device
+    \item run the kernel
+    \item transfer the results back
+\end{itemize}
+
+For this operation the kernel should do the equivalent of the
+\texttt{meanrnorm()} function above.
+Here's psuedo code for how a kernel might look in OpenCL:
+
+\begin{verbatim}
+# include <random.h>
+
+__kernel void bootbeta(__global float *x
+        , __global float *partial_means
+        , int n_i
+        )
+{
+    int id = get_global_id(0);
+
+    Random random_state = seed_rand(id);
+    int start_index = id * n_i;
+    int end_index = start_index + n_i;
+
+    for(int i = start_index; i < end_index; i++)
+    {
+        random_state = next_rand(random_state);
+        x[i] = rnorm(random_state);
+    }
+    xbar_local = mean(x, start_index, end_index);
+    partial_means[id] = xbar_local;
+}
+\end{verbatim}
+
+One can then either write another kernel to reduce
+\texttt{partial\_means} on the GPU or return them to the CPU.
+
+\subsection{memory mapping}
+
+\subsection{pipelines}
 
 \section{Data Example}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
