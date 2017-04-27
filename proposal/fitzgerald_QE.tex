@@ -76,14 +76,14 @@
     Conventional systems for parallel programming require users to modify
     existing code to take advantage of a platform's computational
     capabilities, which may include multiprocessing or Graphical Processing
-    Units (GPU)s. In this presentation we introduce analysis methods for R
-    code to detect the potential for parallel execution. The results of the
-    analysis can then be used to rewrite and execute semantically
-    equivalent instructions efficiently, without requiring the user to
-    modify their code. We consider a motivating case study using robust
-    regression to analyze the operating characteristics California's
-    highway traffic sensor stations on hundreds of gigabytes of traffic
-    sensor data.
+    Units (GPU)s. In this presentation we review the state of the art for
+    parallel programming in R and propose code analysis methods to detect
+    the potential for parallel execution. The results of the analysis can
+    then be used to rewrite and execute semantically equivalent
+    instructions efficiently, without requiring the user to modify their
+    code. We consider a motivating case study using robust regression to
+    analyze the operating characteristics California's highway traffic
+    sensor stations on hundreds of gigabytes of traffic sensor data.
 
 \end{abstract}
 
@@ -118,8 +118,9 @@ xbar = mean(rnorm(n))
 \end{verbatim}
 
 To evaluate this R will first build an intermediate vector $x = (x_1,
-\dots, x_n)$ and then take the mean. Eventually that unreferenced
-intermediate vector will be garbage collected. Execution time increases
+\dots, x_n)$ and then compute the mean. Eventually that unreferenced
+intermediate vector will be garbage collected.
+Execution time increases
 linearly with $n$. Once $n$ becomes large
 enough this vector will no longer fit into available physical memory, so
 the operating system will use swap space. On a machine with 8 GB memory
@@ -148,6 +149,7 @@ understood in terms of the overhead to set them up, then the latency and
 bandwidth as data is transferred.
 
 \subsection{Sequential Execution}
+\label{section:sequential}
 
 Equation \ref{eq:mean_partial} can be directly translated into R code as
 follows:
@@ -233,13 +235,15 @@ well. Here are the simplified steps:
 \end{itemize}
 
 For this operation the kernel should do the equivalent of the
-\texttt{meanrnorm()} function above.
-Here's psuedo code for how a kernel might look in OpenCL:
+\texttt{meanrnorm()} function above.  Here's psuedo code for how a kernel
+might look in OpenCL, provided the device can fit all of $x$ in memory.
+This could be written for larger than device memory by following the
+approach in \ref{section:sequential}.
 
 \begin{verbatim}
 # include <random.h>
 
-__kernel void bootbeta(__global float *x
+__kernel void meanrnorm(__global float *x
         , __global float *partial_means
         , int n_i
         )
@@ -263,9 +267,73 @@ __kernel void bootbeta(__global float *x
 One can then either write another kernel to reduce
 \texttt{partial\_means} on the GPU or return them to the CPU.
 
+\subsection{Threads}
+
+For this problem CPU threads could be utilized in the same way as the CPU.
+Indeed, OpenCL was designed to work on multiple platforms including CPU's
+and GPU's. The difference is that the memory transfers are not required.
+
+The GPU code above also uses shared memory, since $x$ is a global array.
+
 \subsection{memory mapping}
 
 \subsection{pipelines}
+
+This parallel programming pattern is rather different. A useful analogy is a
+factory assembly line, with each worker performing one or more operations
+and then passing it to the next worker. The first worker could generate a
+subvector of random numbers and pass it along. Ignoring the setup and
+looping over chunks the important parts of the code are:
+
+\begin{verbatim}
+# Worker 1
+
+x_chunk = rnorm(n_i)
+serialize(x_chunk, worker2)
+\end{verbatim}
+
+The second worker receives the random numbers and computes the mean.
+
+\begin{verbatim}
+# Worker 2
+
+x_chunk = unserialize(worker1)
+partial_means[i] = mean(x_chunk)
+i = i + 1
+\end{verbatim}
+
+This approach is sensible if the load can be balanced across the workers.
+Each function should take approximately the same amount of time, and the
+overhead required to pass between workers must be much smaller than the
+time spent doing work. These assumptions do not all hold in this case,
+since if $n = 1000$ then \texttt{xchunk = rnorm(n)} takes 125 $\mu s$,
+\texttt{mean(x\_chunk)} takes 6 $\mu s$, and serialization takes at least
+15 $\mu s$. On a practical level this can all be implemented over network
+sockets or through MPI.
+
+\section{From Serial to Parallel}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Apply functions}
+
+The obvious way to make code parallel is to search for the use of
+apply functions and transform them into the parallel versions. For example, 
+\texttt{lapply()} can be replaced with \texttt{mclapply()} from the
+parallel package to use fork based parallelism.
+
+\subsection{Reduce functions}
+
+\texttt{mean()} as used in \texttt{mean(rnorm(n))} 
+
+\subsection{Vectorization}
+
+Goes hand in hand with loop fusion.
+
+\subsection{Dependency Analysis}
+
+\section{Issues}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 \section{Data Example}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -301,17 +369,30 @@ perform the regression if the data were organized in files for each sensor
 rather than in files for each day.  One approach then is to reorganize the
 data on disk into this file structure. I did this using a simple single
 threaded R program, and it took 23 hours to run on 134 GB of data.
-This is a poor level of performance. Another drawback is that it requires
+Throughput for a conventional hard disk is around 100 MB/s\footnote{RAID,
+an array of disks, could make this faster}, so a lower bound for reading
+then writing this reorganized data is approximately $2 * 134000 / 100$
+seconds, or 45 minutes. The naive code is 30 times slower than this. So
+small inefficiencies add up.
+
+Another drawback is that it requires
 very specific instructions to reorganize the data for computations grouped
 by station. Using parallel code will make this even more specific to the
-data and platform.
+data and platform. The following R code captures the desired semantics:
 
-What if it wasn't necessary to write this custom code? What if we had a
-system that could inspect the idiomatic R code that one would write to
-perform an operation as if the data were small, and then automatically take
-steps to scale and to parallelize the operations? It could also tune them
-for the specifics of the system and the data. This is what we're working
-towards.
+\begin{verbatim}
+
+by(sensor_obs, INDICES = station, FUN = piecewise_rlm)
+
+\end{verbatim}
+
+This says group \texttt{sensor\_obs} by \texttt{station}, and apply the
+function \texttt{piecewise\_rlm} to each group.
+
+What if we had a system that could inspect the idiomatic R code above that
+works on small data sets, and then automatically take steps to scale and to
+parallelize the operations? It could also tune them for the specifics of
+the system and the data. This is what we're working towards.
 
 \subsection{Code, Data, Platform}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

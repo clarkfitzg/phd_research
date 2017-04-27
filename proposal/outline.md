@@ -81,3 +81,7 @@ Computational Strategies
 ## Pipeline Parallelism
 
 - MPI or sockets
+
+
+Issues
+============================================================
