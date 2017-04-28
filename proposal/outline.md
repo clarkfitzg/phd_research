@@ -10,6 +10,16 @@ My current goals with the design document are:
   partools
 - Improve examples
 
+Outline:
+
+- Introduction
+- Simple Example
+- Real Example
+- Code Analysis
+- Issues
+- Conclusion
+
+
 Main points
 ============================================================
 

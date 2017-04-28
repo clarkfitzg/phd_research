@@ -90,6 +90,21 @@
 This is a prospectus for distribution to the committee for PhD
 Qualifying Exam in June 2017.
 
+\section{Code, Data, Platform}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\textbf{Code} is a script to be executed.
+\textbf{Data} could be data in memory, single or multiple files, a
+memory-mapped file, a database, a parallel file system, etc.
+\textbf{Platform} is the computing setup, such as a CPU with 8 cores, a
+Spark cluster, or 2 GPUs with a high bandwidth connection. The combination
+of (Code, Data, Platform) dictates what strategies should be used for
+efficient evaluation. Given this knowledge, our goal is to analyze the code
+and reorganize it for efficient execution on the data and platform. This
+doesn't mean that the system is inventing new algorithms on the fly.
+But it should be capable of tuning existing parameters to the system at
+hand. An example of a parameter to be tuned is the chunk size $n_i$ as
+described in \ref{section:sequential}.
 
 \section{Simple Example}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -334,6 +349,15 @@ Goes hand in hand with loop fusion.
 \section{Issues}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+How to interface between existing systems? Where to pick up
+
+A layered view of the architecture:
+
+\begin{verbatim}
+User layer: foreach, future, partools, ddR
+R Foundational layer: SNOW, multicore, (parallel)
+System Foundational layers: *NIX fork(), processes, network sockets
+\end{verbatim}
 
 \section{Data Example}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -370,20 +394,18 @@ rather than in files for each day.  One approach then is to reorganize the
 data on disk into this file structure. I did this using a simple single
 threaded R program, and it took 23 hours to run on 134 GB of data.
 Throughput for a conventional hard disk is around 100 MB/s\footnote{RAID,
-an array of disks, could make this faster}, so a lower bound for reading
+an array of disks, could make this faster.}, so a lower bound for reading
 then writing this reorganized data is approximately $2 * 134000 / 100$
 seconds, or 45 minutes. The naive code is 30 times slower than this. So
 small inefficiencies add up.
 
-Another drawback is that it requires
-very specific instructions to reorganize the data for computations grouped
-by station. Using parallel code will make this even more specific to the
-data and platform. The following R code captures the desired semantics:
+Another drawback is that it requires very specific instructions to
+reorganize the data for computations grouped by station. Any parallel
+programming will make this even more specific to the data and platform. The
+following R code captures the desired semantics:
 
 \begin{verbatim}
-
 by(sensor_obs, INDICES = station, FUN = piecewise_rlm)
-
 \end{verbatim}
 
 This says group \texttt{sensor\_obs} by \texttt{station}, and apply the
@@ -393,27 +415,6 @@ What if we had a system that could inspect the idiomatic R code above that
 works on small data sets, and then automatically take steps to scale and to
 parallelize the operations? It could also tune them for the specifics of
 the system and the data. This is what we're working towards.
-
-\subsection{Code, Data, Platform}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-Duncan Temple Lang deserves credit for the following idea:
-\textbf{Code} is the R (or whatever language) script to be executed.
-\textbf{Data} could be single or multiple files, a database, a parallel
-file system, etc.  \textbf{Platform} is the physical hardware, such as a
-CPU with 8 cores or 2 GPUs with a high end connection. The combination of
-(Code, Data, Platform) dictates what strategies should be used for
-efficient evaluation.
-
-If the data is ``small enough'' then performance will be acceptable no
-matter regardless of how well the platform is utilized and how efficient
-the code is. Conversely, if the data is ``large enough'' then
-\emph{everything} matters, since small inefficiencies will be magnified
-when they occur millions of times.
-
-For principled approaches to parallel chunked computations we
-first have to understand their performance characteristics.
-
 
 \subsection{Data Movement}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -487,6 +488,15 @@ can we detect it?
 
 \section{Small Data and Overhead}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+For principled approaches to parallel chunked computations we
+first have to understand their performance characteristics.
+
+If the data is ``small enough'' then performance will be acceptable no
+matter regardless of how well the platform is utilized and how efficient
+the code is. Conversely, if the data is ``large enough'' then
+\emph{everything} matters, since small inefficiencies will be magnified
+when they occur millions of times.
 
 \begin{figure}
 \centering
@@ -810,14 +820,6 @@ The interface systems for parallelism in R include databases, C level
 threads such as OpenMP, Hadoop clusters or GPU's. These don't usually have
 a direct way to run R code. They tend to be more specialized and require
 understanding different languages and computational models.
-
-A view of the architecture:
-
-\begin{verbatim}
-User layer: foreach, future, partools, ddR
-R Foundational layer: SNOW, multicore, (parallel)
-System Foundational layers: *NIX fork(), processes, network sockets
-\end{verbatim}
 
 I propose a translation from straight nonparallel R code using code
 analysis. This offers a level of portability that the others don't really
