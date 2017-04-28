@@ -112,6 +112,7 @@ $n_i$ as described in \ref{section:sequential}.
 
 \section{Motivating Example}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{sec:pems}
 
 The California Department of Transportation collects traffic data through
 sensors embedded in highways. The sensors measure three quantities: count
@@ -253,32 +254,32 @@ supplied $n$, and it remained to choose $p$ and $n_i$.
 The expression \texttt{mean(rnorm(n))} was changed into a function that was
 called and reduced using \texttt{mean()}.
 
-\subsection{SNOW cluster}
+\subsection{SNOW Cluster}
 
-Clusters created by SNOW, a simple network of workstations consist of independent
-worker R processes created by a manager process. The processes communicate
-over network sockets, and they may be on one or many physical machines.
-This is the type of cluster used by partools \cite{R-partools}.
+Clusters created by SNOW, an acronym for Simple Network Of Workstations,
+consist of independent worker R processes created by a manager process. The
+processes communicate over network sockets, and they may be on one or many
+physical machines.  This is the type of cluster used by partools and
+Software Alchemy \cite{R-partools} \cite{matloff2014software}.  This is
+similar to \ref{section:sequential}; the \texttt{sapply}
+becomes:
 
 \begin{verbatim}
-cluster = parallel::makeCluster(p)
 partial_means = parallel::clusterCall(cluster, meanrnorm, n_i)
-xbar = mean(unlist(partial_means))
 \end{verbatim}
 
-Given an existing cluster this is very efficient, since we are sending a
-few bytes of code over the network and then returning a single number.
+This code sends the \texttt{meanrnorm()} function to each worker in the
+cluster to be evaluated in parallel with argument \texttt{n\_i}.  Given an
+existing cluster this is very efficient, since we are sending a few bytes
+of code over the network and then returning a single number.
 
-\subsection{forking}
+\subsection{Forking}
 
-On a server capable of forking, for example the department servers which
-have as many as 72 cores, one could use this approach. Forking uses a
-system fork, which will create several worker processes which can read data from
-the manager without copying.
-
-This is inefficient when generating data as we are here, but it's more
-efficient if we have already loaded a large data set into the manager
-process.
+On a server capable of forking, for example the UC Davis statistics
+department servers which have as many as 72 cores, one can use this
+approach. Forking uses a \texttt{fork()} system call, which can create
+several worker processes with read access to data on the master. This is
+efficient if a large data set has been loaded into the manager process.
 
 \begin{verbatim}
 x = rnorm(n)
@@ -292,6 +293,9 @@ partial_means = parallel::mcmapply(index_mean, starting_indices, ending_indices)
 
 xbar = mean(partial_means)
 \end{verbatim}
+
+This code differs from the SNOW code since each worker can read $x$ without
+explicitly exporting it.
 
 \subsection{GPU}
 
@@ -348,9 +352,25 @@ Indeed, OpenCL was designed to work on multiple platforms including CPU's
 and GPU's. The difference is that the memory transfers from host to device
 don't take any time, because the host and device are the same.
 
-\subsection{memory mapping}
+\subsection{Memory Mapping}
 
-\subsection{pipelines}
+Memory mapping allows one to treat a hard drive as if it is primary memory.
+This allows one to have R objects larger than primary memory, and also to
+share memory between processes \cite{bigmemory}.
+
+\begin{verbatim}
+x = bigmemory::filebacked.big.matrix(nrow = n_i, ncol = p, backingfile = "x.bigmatrix")
+
+for (j in seq(p)){
+
+	x[, j] = rnorm(n_i)
+
+}
+
+xbar = biganalytics::mean(x)
+\end{verbatim}
+
+\subsection{Pipelines}
 
 This parallel programming pattern is rather different. A useful analogy is a
 factory assembly line, with each worker performing one or more operations
@@ -384,35 +404,20 @@ since if $n = 1000$ then \texttt{xchunk = rnorm(n)} takes 125 $\mu s$,
 15 $\mu s$. On a practical level this can all be implemented over network
 sockets or through MPI.
 
+\section{Design Considerations}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Overhead}
 
 Many of the performance characteristics of the different platforms can be
-understood in terms of the overhead to set them up, then the latency and
-bandwidth as data is transferred.
-
-\section{Issues}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-How to interface between existing systems? Where to pick up
-
-A layered view of the architecture:
-
-\begin{verbatim}
-User layer: foreach, future, partools, ddR
-R Foundational layer: SNOW, multicore, (parallel)
-System Foundational layers: *NIX fork(), processes, network sockets
-\end{verbatim}
-
-\section{Small Data and Overhead}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-For principled approaches to parallel chunked computations we
-first have to understand their performance characteristics.
-
-If the data is ``small enough'' then performance will be acceptable no
-matter regardless of how well the platform is utilized and how efficient
-the code is. Conversely, if the data is ``large enough'' then
-\emph{everything} matters, since small inefficiencies will be magnified
-when they occur millions of times.
+understood in terms of the overhead to set them up, and then the latency
+and bandwidth for when data must be transferred.  If the data is ``small
+enough'' then performance will be acceptable regardless of how well the
+platform is utilized or how efficient the code is. Conversely, if the data
+is ``large enough'' then \emph{everything} matters, since small
+inefficiencies will be magnified when they occur millions of times, as in
+\ref{sec:pems}.  Therefore the focus here is on problems which take longer
+to run.
 
 \begin{figure}
 \centering
@@ -430,7 +435,24 @@ language like R.
 twox = function(x) 2*x
 \end{verbatim}
 Every call to this function will incur a fixed overhead that is a couple
-hundred nanoseconds. 
+hundred nanoseconds. Vectorization refers to passing longer vectors to the
+function to amortize this fixed cost. For example, if $x$ is an integer
+vector of length 1 then the overhead takes 2 orders of magnitude more time
+than the actual computation. However, if $x$ is of length 1500 then this
+overhead accounts for only 10 percent of the total execution time, so the
+fixed cost has been amortized.
+
+\subsection{Interfaces}
+
+How to interface between existing systems? Where to pick up
+
+A layered view of the architecture:
+
+\begin{verbatim}
+User layer: foreach, future, partools, ddR
+R Foundational layer: SNOW, multicore, (parallel)
+System Foundational layers: *NIX fork(), processes, network sockets
+\end{verbatim}
 
 
 

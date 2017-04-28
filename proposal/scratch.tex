@@ -144,12 +144,6 @@ can we detect it?
 
 TODO: check. This is consistent with results \cite{chambers2016extending}
 
-Vectorization refers to passing longer vectors to the
-function to amortize this fixed cost. For example, if $x$ is an integer
-vector of length 1 then the overhead takes 2 orders of magnitude more time than
-the actual computation. However, if $x$ is of length 1500 then this overhead
-accounts for only 10 percent of the total execution time, so the fixed cost
-has been amortized.
 
 I believe that similar ideas hold for compiled languages. The overhead will
 be different, generally much less. And threads can be used for handing off

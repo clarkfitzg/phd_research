@@ -15,10 +15,13 @@ Outline:
 - Introduction
 - Simple Example
 - Real Example
+- Design Considerations / Issues
 - Code Analysis
-- Issues
 - Conclusion
 
+Extra Examples
+
+- Andrew Latimer's pixel data
 
 Main points
 ============================================================
