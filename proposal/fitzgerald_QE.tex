@@ -103,10 +103,10 @@ memory-mapped file, a database, a parallel file system, etc.
 \textbf{Platform} is the computing setup, such as a CPU with 8 cores, a
 Spark cluster, or 2 GPUs with a high bandwidth connection. The combination
 of (Code, Data, Platform) dictates what strategies should be used for
-efficient evaluation. Given this knowledge, our goal is to analyze the
+efficient evaluation. Given these three components, our goal is to analyze the
 code, potentially reorganizing it for efficient execution on the data and
-platform.  This doesn't mean that the system is inventing new algorithms on
-the fly.  But it should be capable of tuning existing parameters to the
+platform. This doesn't mean that the system is inventing new algorithms on
+the fly. But it should be capable of tuning existing parameters to the
 system at hand. An example of a parameter to be tuned is the chunk size
 $n_i$ as described in \ref{section:sequential}.
 
@@ -126,7 +126,9 @@ public download.  As an analyst I would like to model velocity as a
 function of occupancy for each sensor. This relationship is called the
 ``fundamental diagram'' within traffic engineering, because it captures the
 operating characteristic of this section of road
-\cite{daganzo1997fundamentals}.
+\cite{daganzo1997fundamentals}. Once these fundamental diagrams have been
+modeled for each station they can be used to understand how other road
+characteristics such as on ramps and off ramps affect the flow of traffic.
 
 Robust regression can be used to fit the fundamental diagram, approximating
 the integer programming approach to minimize the L1 norm as in
@@ -360,27 +362,26 @@ share memory between processes \cite{bigmemory}.
 
 \begin{verbatim}
 x = bigmemory::filebacked.big.matrix(nrow = n_i, ncol = p, backingfile = "x.bigmatrix")
-
 for (j in seq(p)){
-
 	x[, j] = rnorm(n_i)
-
 }
-
 xbar = biganalytics::mean(x)
 \end{verbatim}
+
+Here \texttt{biganalytics::mean(x)} is used explicitly to emphasize that we
+are calling the \texttt{mean()} method defined for \texttt{bigmatrix}
+objects.
 
 \subsection{Pipelines}
 
 This parallel programming pattern is rather different. A useful analogy is a
 factory assembly line, with each worker performing one or more operations
-and then passing it to the next worker. The first worker could generate a
+and then passing the result to the next worker. The first worker could generate a
 subvector of random numbers and pass it along. Ignoring the setup and
 looping over chunks the important parts of the code are:
 
 \begin{verbatim}
 # Worker 1
-
 x_chunk = rnorm(n_i)
 serialize(x_chunk, worker2)
 \end{verbatim}
@@ -389,7 +390,6 @@ The second worker receives the random numbers and computes the mean.
 
 \begin{verbatim}
 # Worker 2
-
 x_chunk = unserialize(worker1)
 partial_means[i] = mean(x_chunk)
 i = i + 1
@@ -444,18 +444,26 @@ fixed cost has been amortized.
 
 \subsection{Interfaces}
 
-How to interface between existing systems? Where to pick up
+Parallel programming in pure R (not at the C level) can be understood in
+terms of a layered architecture. The foundational \textbf{System Layer}
+provides the basic interfaces used by any programming language. The
+\textbf{R Layer} consists of packages which adapt the basic interfaces for
+use specifically in R. The packages in the \textbf{User Layer} are meant to
+simplify parallel programming, or they are for applications with specific
+use cases.  Here are a few examples of packages at each layer:
 
-A layered view of the architecture:
+\begin{itemize}
+\item User Layer: foreach, future, partools, ddR, biganalytics
+\item R layer: SNOW, multicore, parallel, bigmemory, Rmpi
+\item System Layer: *NIX fork(), processes, memory maps, network sockets,
+    MPI
+\end{itemize}
 
-\begin{verbatim}
-User layer: foreach, future, partools, ddR
-R Foundational layer: SNOW, multicore, (parallel)
-System Foundational layers: *NIX fork(), processes, network sockets
-\end{verbatim}
+Users write code using packages from the User Layer or the R Layer. Code
+analysis allows us to skip these layers, and instead write the same code
+which will run in serial as in parallel.
 
-
-
+TODO: pipeline parallelism with iterators package?
 
 \section{Code analysis}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
