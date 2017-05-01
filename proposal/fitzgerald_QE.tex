@@ -110,6 +110,10 @@ the fly. But it should be capable of tuning existing parameters to the
 system at hand. An example of a parameter to be tuned is the chunk size
 $n_i$ as described in \ref{section:sequential}.
 
+This project is in the spirit of compiling R, since it treats R code as
+a set of high level directions, and it potentially generates alternative
+code for execution \cite{lang2014enhancing}.
+
 \section{Motivating Example}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \label{sec:pems}
@@ -182,8 +186,7 @@ the system and the data. This is what we're working towards.
 % challenges
 
 Now we use a simple example to focus on the underlying computational models
-to see what can be achieved for large $n$ given various platforms.
-Consider computing the mean,
+for various platforms. Consider computing the mean,
 
 \begin{equation}
     \bar{x} = \frac{1}{n} \sum_{i = 1}^n x_i
@@ -456,25 +459,25 @@ use cases.  Here are a few examples of packages at each layer:
 \begin{itemize}
 \item User Layer: foreach, future, partools, ddR, biganalytics, RevoScaleR
 \item R layer: SNOW, multicore, parallel, bigmemory, Rmpi
-\item System Layer: *NIX fork(), processes, memory maps, network sockets,
+\item System Layer: processes, *NIX fork(), memory maps, network sockets,
     MPI
 \end{itemize}
 
 Currently, users write code using packages from the User Layer or the R
-Layer. Code analysis allows us to skip these layers, and instead write the
-same base R code which will run in serial as in parallel.  This is
-appealing for a few reasons. Base R is stable, so users can write the same
-working code without committing to a particular package or architecture. If
-the code runs on a different system or with a different data set then one
-can automatically generate code to run more efficiently on that system.
+Layer. Code analysis potentially can allow us to skip these layers, and
+instead write the same base R code which will run in serial as in parallel.
+This is appealing for a few reasons. Base R is stable, so users can write
+the same working code without committing to a particular package or
+architecture. If the code runs on a different system or with a different
+data set then one can automatically generate code to run more efficiently
+on that system.
 
 TODO: pipeline parallelism with iterators package?
 
 \section{Code analysis}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Code analysis is integral to this approach, and we build on the approaches
-developed for compiling R \cite{lang2014enhancing}, in particular the
+Static code analysis is integral to this approach, and we build on the 
 CodeDepends package \cite{R-CodeDepends}.
 
 \subsection{Apply functions}
@@ -484,36 +487,34 @@ apply functions and transform them into the parallel versions. For example,
 \texttt{lapply()} can be replaced with \texttt{mclapply()} from the
 parallel package to use fork based parallelism.
 
+\subsection{Vectorization}
+
+Vectorization
+
+Goes hand in hand with loop fusion.
+
+
 \subsection{Reduce functions}
 
 \texttt{mean()} as used in \texttt{mean(rnorm(n))} reduces a vector to a
-single number. Here's one way to write this in R:
-
+single number. Here's one way to write this using \texttt{Map(), Reduce()}
+explicitly in R:
 
 \begin{verbatim}
 
 N = 100
 p = 9
-weightmean = function(xi, xj, .N = N)
-{
-    xi_part = (length(xi) / .N) * mean(xi)
-    xj_part = (length(xj) / .N) * mean(xj)
-    xi_part + xj_part
-}
+weightmean = function(x_i, N) (length(x_i) / N) * mean(x_i)
 
 x = rnorm(N)
 xsplit = split(x, seq(p))
+parts = Map(weightmean, xsplit, N = N)
+xbar1 = Reduce(`+`, parts, 0)
 
-Reduce(weightmean, xsplit, 0, accumulate = FALSE)
-mean(x)
-
+# matches up to numerical precision
+xbar2 = mean(x)
 
 \end{verbatim}
-
-
-\subsection{Vectorization}
-
-Goes hand in hand with loop fusion.
 
 \subsection{Dependency Analysis}
 

@@ -691,10 +691,15 @@ update $y$ by plugging in the constraint. Downside: Lagrangian no longer
 sepearable so it can't be computed in parallel.
 
 To get to ADMM you basically start out with splitting the objective vector
-and the Lagrangian into two components, $x$ and $z$.
+and the Lagrangian into two components, $x$ and $z$. If one can write the
+the objective function $f(x) = \sum_{i = 1}^k f_i (x_i)$ where $x_i$'s are
+subvectors partitioning $x$, and also $||Ax||^2$ is separable with respect
+to the partition, then all the $x_i$ updates can happen in parallel
+simultaneously. Then one can update $z$ globally and iterate again on the
+$x_i$'s until convergence.
 
-How does this get to parallel and distributed computing? I better keep
-reading.
+Page 78 has a nice
+abstract algorithm. 
 
 \section{Big Data and Swapping}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
