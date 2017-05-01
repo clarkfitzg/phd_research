@@ -487,7 +487,29 @@ parallel package to use fork based parallelism.
 \subsection{Reduce functions}
 
 \texttt{mean()} as used in \texttt{mean(rnorm(n))} reduces a vector to a
-single number. It can 
+single number. Here's one way to write this in R:
+
+
+\begin{verbatim}
+
+N = 100
+p = 9
+weightmean = function(xi, xj, .N = N)
+{
+    xi_part = (length(xi) / .N) * mean(xi)
+    xj_part = (length(xj) / .N) * mean(xj)
+    xi_part + xj_part
+}
+
+x = rnorm(N)
+xsplit = split(x, seq(p))
+
+Reduce(weightmean, xsplit, 0, accumulate = FALSE)
+mean(x)
+
+
+\end{verbatim}
+
 
 \subsection{Vectorization}
 
