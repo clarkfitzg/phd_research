@@ -100,8 +100,8 @@ Qualifying Exam in June 2017.
 \textbf{Code} is a script to be executed.
 \textbf{Data} could be data in memory, single or multiple files, a
 memory-mapped file, a database, a parallel file system, etc.
-\textbf{Platform} is the computing setup, such as a CPU with 8 cores, a
-Spark cluster, or 2 GPUs with a high bandwidth connection. The combination
+\textbf{Platform} is the computing setup, such as a laptop with 4 cores, a
+Spark cluster, or a server with 2 GPUs and a high bandwidth connection. The combination
 of (Code, Data, Platform) dictates what strategies should be used for
 efficient evaluation. Given these three components, our goal is to analyze the
 code, potentially reorganizing it for efficient execution on the data and
@@ -258,7 +258,7 @@ called and reduced using \texttt{mean()}.
 
 \subsection{SNOW Cluster}
 
-Clusters created by SNOW, an acronym for Simple Network Of Workstations,
+Clusters created by SNOW, a Simple Network Of Workstations,
 consist of independent worker R processes created by a manager process. The
 processes communicate over network sockets, and they may be on one or many
 physical machines.  This is the type of cluster used by partools and
@@ -270,7 +270,7 @@ becomes:
 partial_means = parallel::clusterCall(cluster, meanrnorm, n_i)
 \end{verbatim}
 
-This code sends the \texttt{meanrnorm()} function to each worker in the
+The manager sends the \texttt{meanrnorm()} function to each worker in the
 cluster to be evaluated in parallel with argument \texttt{n\_i}.  Given an
 existing cluster this is very efficient, since we are sending a few bytes
 of code over the network and then returning a single number.
@@ -302,7 +302,7 @@ explicitly exporting it.
 \subsection{GPU}
 
 The GPU offers the highest level of parallelism, which could consist of
-1000's of threads working at once. Following the OpenCL documentation we'll
+1000's of threads working at once. Following the OpenCL specification we'll
 refer to a GPU as a device, because this can run on other architectures as
 well. Here are the simplified steps:
 
@@ -363,7 +363,7 @@ share memory between processes \cite{bigmemory}.
 \begin{verbatim}
 x = bigmemory::filebacked.big.matrix(nrow = n_i, ncol = p, backingfile = "x.bigmatrix")
 for (j in seq(p)){
-	x[, j] = rnorm(n_i)
+    x[, j] = rnorm(n_i)
 }
 xbar = biganalytics::mean(x)
 \end{verbatim}
@@ -416,8 +416,9 @@ enough'' then performance will be acceptable regardless of how well the
 platform is utilized or how efficient the code is. Conversely, if the data
 is ``large enough'' then \emph{everything} matters, since small
 inefficiencies will be magnified when they occur millions of times, as in
-\ref{sec:pems}.  Therefore the focus here is on problems which take longer
-to run.
+Section \ref{sec:pems}.  Therefore the focus here is on problems which take longer
+to run. A priori one doesn't even know if it's possible to run code more
+efficiently in parallel, due to the overhead.
 
 \begin{figure}
 \centering
@@ -430,7 +431,7 @@ to run.
 Figure \ref{fig:overhead} compares the relative fixed sources of overhead to
 consider with parallel programming. The evaluation of the following simple
 function captures the basic overhead associated with an interpreted
-language like R.
+language like R:
 \begin{verbatim}
 twox = function(x) 2*x
 \end{verbatim}
@@ -453,23 +454,28 @@ simplify parallel programming, or they are for applications with specific
 use cases.  Here are a few examples of packages at each layer:
 
 \begin{itemize}
-\item User Layer: foreach, future, partools, ddR, biganalytics
+\item User Layer: foreach, future, partools, ddR, biganalytics, RevoScaleR
 \item R layer: SNOW, multicore, parallel, bigmemory, Rmpi
 \item System Layer: *NIX fork(), processes, memory maps, network sockets,
     MPI
 \end{itemize}
 
-Users write code using packages from the User Layer or the R Layer. Code
-analysis allows us to skip these layers, and instead write the same code
-which will run in serial as in parallel.
+Currently, users write code using packages from the User Layer or the R
+Layer. Code analysis allows us to skip these layers, and instead write the
+same base R code which will run in serial as in parallel.  This is
+appealing for a few reasons. Base R is stable, so users can write the same
+working code without committing to a particular package or architecture. If
+the code runs on a different system or with a different data set then one
+can automatically generate code to run more efficiently on that system.
 
 TODO: pipeline parallelism with iterators package?
 
 \section{Code analysis}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Code analysis is critical to this approach, and we build on the approaches
-developed for compiling R \cite{lang2014enhancing}.
+Code analysis is integral to this approach, and we build on the approaches
+developed for compiling R \cite{lang2014enhancing}, in particular the
+CodeDepends package \cite{R-CodeDepends}.
 
 \subsection{Apply functions}
 
