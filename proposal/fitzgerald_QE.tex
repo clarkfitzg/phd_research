@@ -476,13 +476,44 @@ architecture. If the code runs on a different system or with a different
 data set then one can automatically generate code to run more efficiently
 on that system.
 
-TODO: pipeline parallelism with iterators package?
-
 \section{Code analysis}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Static code analysis is integral to this approach, and we build on the 
 CodeDepends package \cite{R-CodeDepends}.
+
+\subsection{Streaming Parallelism}
+
+This approach resembles the iterators package \cite{R-iterators} which
+provides data to R as an abstract stream. The difference is that here
+parallelism comes from pipelined operations rather than the more typical
+data parallel model.
+
+Let $x$ be a data structure which can be partitioned into chunks $x_1,
+\dots x_k$. Chained function calls such as $f(g(h(x)))$ become:
+
+\begin{itemize}
+    \item Worker 1: Compute $h(x_i)$, pass result to worker 2
+    \item Worker 2: Compute $g(\dots)$, pass result to worker 3
+    \item Worker 3: Compute $f(\dots)$.
+\begin{itemize}
+
+This operation can potentially be efficient if each function $h, g,
+f$ takes approximately the same amount of time $T_f$ and $T_f >> T_p$,
+where $T_p$ is the time it takes to pipe the data between the 
+workers \cite{arnold2015iotools}. More generally, if there is a sequence of
+functions $f(x) = f_n(\dots f(_1(x)))$ then a single worker can execute
+multiple functions such that the load is balanced. Every added worker will
+increase the latency because of communication overhead.
+
+I've implemented this over network sockets and with FIFO's (named pipes).
+First results have been encouraging.  It could also be implemented with MPI
+or files.  The blocking behavior with network sockets is very nice. It
+handles larger objects better than a FIFO.  It takes 0.4 seconds to
+serialize / deserialize a vector of 10 million random numbers which takes
+up 76.3 MB.  For comparison it takes 26.5 seconds to write to disk using
+\texttt{write()} and 5.6 seconds to read using \texttt{scan}.  This means
+that serializing over sockets is about 50 times faster than hitting disk.
 
 \subsection{Apply functions}
 
@@ -525,12 +556,11 @@ xbar2 = mean(x)
 One way to approach the question of how to run the code is as an
 optimization problem. The objective function to minimize is the total run
 time. The solution needs to select an appropriate computational model. Each
-model may have various parameters to optimize over, for example
+model may have various parameters to optimize over, for example:
 
 \begin{itemize}
     \item number of cores to use
     \item size of each chunk
-    \item total 
 \end{itemize}
 
 Constraints may include:
@@ -539,8 +569,8 @@ Constraints may include:
     \item number of cores available
     \item network bandwidth
     \item disk IO speed
+    \item available memory
 \end{itemize}
-
 
 \subsection{Dependency Analysis}
 
