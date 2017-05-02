@@ -186,7 +186,7 @@ the system and the data. This is what we're working towards.
 % challenges
 
 Now we use a simple example to focus on the underlying computational models
-for various platforms. Consider computing the mean,
+for various platforms.  Consider computing the mean,
 
 \begin{equation}
     \bar{x} = \frac{1}{n} \sum_{i = 1}^n x_i
@@ -410,6 +410,10 @@ sockets or through MPI.
 \section{Design Considerations}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+The approaches in the previous section can sometimes be combined together
+into hybrid approaches. For example, forked process might run multithreaded
+code.
+
 \subsection{Overhead}
 
 Many of the performance characteristics of the different platforms can be
@@ -515,6 +519,28 @@ xbar1 = Reduce(`+`, parts, 0)
 xbar2 = mean(x)
 
 \end{verbatim}
+
+\subsection{Optimization problem}
+
+One way to approach the question of how to run the code is as an
+optimization problem. The objective function to minimize is the total run
+time. The solution needs to select an appropriate computational model. Each
+model may have various parameters to optimize over, for example
+
+\begin{itemize}
+    \item number of cores to use
+    \item size of each chunk
+    \item total 
+\end{itemize}
+
+Constraints may include:
+
+\begin{itemize}
+    \item number of cores available
+    \item network bandwidth
+    \item disk IO speed
+\end{itemize}
+
 
 \subsection{Dependency Analysis}
 

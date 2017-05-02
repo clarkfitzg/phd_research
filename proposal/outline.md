@@ -23,6 +23,11 @@ Extra Examples
 
 - Andrew Latimer's pixel data
 
+What am I targeting?
+Embarrassingly parallel ops and group by. But Spark and Hadoop already do
+this. So is it a reimplementation of Map reduce? partools and distributed R
+also similar.
+
 Main points
 ============================================================
 
