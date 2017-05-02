@@ -496,7 +496,7 @@ Let $x$ be a data structure which can be partitioned into chunks $x_1,
     \item Worker 1: Compute $h(x_i)$, pass result to worker 2
     \item Worker 2: Compute $g(\dots)$, pass result to worker 3
     \item Worker 3: Compute $f(\dots)$.
-\begin{itemize}
+\end{itemize}
 
 This operation can potentially be efficient if each function $h, g,
 f$ takes approximately the same amount of time $T_f$ and $T_f >> T_p$,
