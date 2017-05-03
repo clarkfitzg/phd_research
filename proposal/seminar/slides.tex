@@ -246,11 +246,8 @@ xbar = biganalytics::mean(x)
 # Worker 1
 x_chunk = rnorm(n_i)
 serialize(x_chunk, worker2)
-\end{verbatim}
 
-The second worker receives the random numbers and computes the mean.
 
-\begin{verbatim}
 # Worker 2
 x_chunk = unserialize(worker1)
 partial_means[i] = mean(x_chunk)
@@ -323,9 +320,12 @@ i = i + 1
 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\begin{frame}[t,allowframebreaks]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{frame}
+\begin{frame}
 \frametitle{References}
 \printbibliography
 \end{frame}
