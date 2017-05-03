@@ -7,8 +7,12 @@
 \documentclass{beamer}
 \usetheme{Singapore}
 
+% Bibliography
+\usepackage{cite}
+
 \hypersetup{colorlinks=true}
 
+% Show table of contents between sections
 \AtBeginSection[]
 {
   \begin{frame}
@@ -43,20 +47,51 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
+    \frametitle{Loop detectors count cars, measuring velocity and
+    occupancy}
 
-\frametitle{Topics}
-
-\begin{itemize}
-
-    \item Why I'm a bad programmer
-    \item Introduction to scipy.stats (from Python!)
-    \item Live Demo
-
-\end{itemize}
+\centerline{\includegraphics[height=2.5in]{loop_detector.jpg}}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Example}
+\begin{frame}
+
+\frametitle{Caltrans Performance Measurement System (PeMS) records this
+data for the whole state}
+
+    \begin{itemize}
+        \item Each sensor measures 3 quantities
+        \item Every thirty seconds they produce a new data point
+        \item $43,680$ sensors in California
+    \end{itemize}
+
+    $\implies$  377 million new data points per day
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{Traffic engineers study the relationship between 
+    density and flow \cite{li2011fundamental}}
+
+\centerline{\includegraphics[height=2.5in]{fundamental_diagram.png}}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{Using more data allows new types of analyses}
+
+    \begin{itemize}
+        \item Finding groups of similar detectors
+        \item Effect of policy such as speed limits and carpool lanes
+        \item Impact of road features such as on/off ramps
+        \item Effect of weather
+    \end{itemize}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Simple example}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
@@ -80,18 +115,15 @@
 
 \frametitle{Topics}
 
-\begin{itemize}
-
-    \item Why I'm a bad programmer
-    \item Introduction to scipy.stats (from Python!)
-    \item Live Demo
-
-\end{itemize}
-
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+\begin{frame}
+    {\footnotesize
+    \bibliographystyle{authortitle1}
+    \bibliography{../../citations}
+    }
+\end{frame}
 
 
 \end{document}

@@ -10,3 +10,5 @@ data/*
 *.bbl
 *.blg
 *.out
+*.nav
+*.toc
