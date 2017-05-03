@@ -8,7 +8,9 @@
 \usetheme{Singapore}
 
 % Bibliography
-\usepackage{cite}
+%\usepackage{cite}
+\usepackage{biblatex}
+
 
 \hypersetup{colorlinks=true}
 
@@ -91,6 +93,20 @@ data for the whole state}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{Lets scale up the computations with parallel programming}
+
+    \begin{itemize}
+        \item Several parallel strategies exist to improve performance
+        \item Which is best depends on the platform and data
+        \item Each one requires deeper knowledge of that particular technology
+        \item Therefore techniques to programmatically identify and use parallel
+  patterns implicit in code would be valuable
+    \end{itemize}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Simple example}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
@@ -118,12 +134,9 @@ data for the whole state}
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\begin{frame}
-    {\footnotesize
-    \bibliographystyle{authortitle1}
-    \bibliography{../../citations}
-    }
+\begin{frame}[t,allowframebreaks]
+\frametitle{References}
+\printbibliography
 \end{frame}
-
 
 \end{document}
