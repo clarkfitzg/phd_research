@@ -65,9 +65,8 @@ data for the whole state}
         \item Each sensor measures 3 quantities
         \item Every thirty seconds they produce a new data point
         \item $43,680$ sensors in California
+        \item $\implies$  377 million new data points per day
     \end{itemize}
-
-    $\implies$  377 million new data points per day
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -258,18 +257,72 @@ partial_means[i] = mean(x_chunk)
 i = i + 1
 \end{verbatim}
 
-
-
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Conclusion}
+\section{Design Considerations}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
+\frametitle{Different computational models incur their own types of overhead}
 
-\frametitle{Topics}
+    \centerline{\includegraphics[height=2.5in]{../compute_times/overhead}}
+
+% So if you start up a process, you want to keep it around
 
 \end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{Layers mark ways for users to write parallel code for one
+    platform}
+
+\begin{itemize}
+\item User Layer: foreach, future, partools, ddR, biganalytics, RevoScaleR
+\item R layer: SNOW, multicore, parallel, bigmemory, Rmpi
+\item System Layer: processes, *NIX fork(), memory maps, network sockets,
+    MPI
+\end{itemize}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{How can we transform R code into a lower layer?}
+
+\begin{itemize}
+    \item \textbf{Plain old R code: \texttt{lapply(), sapply(), for(), \dots}}
+\item User Layer: foreach, future, partools, ddR, biganalytics, RevoScaleR
+\item R layer: SNOW, multicore, parallel, bigmemory, Rmpi
+\item System Layer: processes, *NIX fork(), memory maps, network sockets,
+    MPI
+\end{itemize}
+
+% Potentially we can transform to any of these layers
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Code Analysis}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{Apply family of functions / vectorization}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{Reduce functions}
+
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{Creating efficient code as a constrained optimization
+    problem}
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}[t,allowframebreaks]
