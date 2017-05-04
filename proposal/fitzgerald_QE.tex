@@ -276,7 +276,8 @@ partial_means = parallel::clusterCall(cluster, meanrnorm, n_i)
 The manager sends the \texttt{meanrnorm()} function to each worker in the
 cluster to be evaluated in parallel with argument \texttt{n\_i}.  Given an
 existing cluster this is very efficient, since we are sending a few bytes
-of code over the network and then returning a single number.
+of code over the network and then returning a single number. This parallel model is
+useful in statistics when doing independent simulations.
 
 \subsection{Forking}
 
@@ -300,7 +301,9 @@ xbar = mean(partial_means)
 \end{verbatim}
 
 This code differs from the SNOW code since each worker can read $x$ without
-explicitly exporting it.
+explicitly exporting it. In statistics we might use this approach for
+parallel cross validation of a model, since each worker will need to read
+the same data.
 
 \subsection{GPU}
 

@@ -406,6 +406,14 @@ Probably follow the OpenCL kernel model.
 
     \frametitle{Follow up on the sensor example}
 
+    Program should:
+
+\begin{itemize}
+    \item Remove
+    \item Reorganize files on disk based on station ID
+    \item Apply 
+\end{itemize}
+
     The natural way to make this parallel from R is to first apply the
     row selection criterion, then group by (or
     sort) based on station ID, then use multiple processors to fit the
@@ -418,7 +426,7 @@ Probably follow the OpenCL kernel model.
     \frametitle{Some support infrastructure is necessary}
 
 \begin{itemize}
-\item Use profiling and microbenchmark to understand overhead
+\item Use profiling and microbenchmark to measure overhead
 \item A file sort from R
 \end{itemize}
 
@@ -430,11 +438,29 @@ Probably follow the OpenCL kernel model.
     \frametitle{Next Steps}
 
     The larger data sets are very interesting. 
+
+    Solving the right problem...
     
     How can we come back
     to statistics? Norm keeps pushing me back to thinking about the 
 
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
 
+    \frametitle{Questions?}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{Additional Slides}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{The weighted mean can be directly translated into R code}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
