@@ -527,6 +527,9 @@ apply functions and transform them into the parallel versions. For example,
 \texttt{lapply()} can be replaced with \texttt{mclapply()} from the
 parallel package to use fork based parallelism.
 
+Many of the language idioms in base R already express computation in the
+map reduce paradigm.
+
 \subsection{Vectorization}
 
 Vectorization
@@ -564,8 +567,9 @@ time. The solution needs to select an appropriate computational model. Each
 model may have various parameters to optimize over, for example:
 
 \begin{itemize}
-    \item number of cores to use
+    \item number of processor cores to use
     \item size of each chunk
+    \item which functions to combine in one processing step
 \end{itemize}
 
 Constraints may include:

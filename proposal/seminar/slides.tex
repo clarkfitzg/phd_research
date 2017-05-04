@@ -45,7 +45,7 @@
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Motivation}
+\section{Motivating Example}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
@@ -89,6 +89,18 @@ data for the whole state}
         \item Impact of road features such as on/off ramps
         \item Effect of weather
     \end{itemize}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]
+
+    \frametitle{R can conveniently express desired statistical computation}
+
+\centerline{\includegraphics[height=2in]{fundamental_diagram.png}}
+
+\begin{verbatim}
+by(data, INDICES = station, FUN = piecewise_rlm)
+\end{verbatim}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -300,16 +312,58 @@ i = i + 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Code Analysis}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
+\begin{frame}[fragile]
 
-    \frametitle{Apply family of functions / vectorization}
+    \frametitle{Idiomatic R already expresses computation in a natural
+    parallel way through ``apply'' functions}
+
+\begin{verbatim}
+x = replicate(5, rnorm(n_i), simplify = FALSE)
+
+partialmeans = lapply(x, mean)
+
+by(data, INDICES = station, FUN = piecewise_rlm)
+\end{verbatim}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
+    \frametitle{Map and reduce functions}
+
+    Let $f: x \rightarrow y$ and $x = O(n)$, a data structure with $O(n)$
+    elements.
+
+    \begin{itemize}
+        \item If $y$ is also $O(n)$ then we can call $f$ a \textbf{Map} function.
+
+        \item Example: $f(x) = 2x$ for $x \in R^n$.
+
+    % This is vectorization in R
+    
+        \item If $y$ is $O(1)$ then $f$ is a \textbf{Reduce} function.
+
+        \item Example: $f(x) = \sum_{i = 1}^n x_i$
+    \end{itemize}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{Apply family of functions}
+
+    ``apply'' refers to apply, lapply, sapply, tapply, by, mapply, Map,
+    vapply, replicate, outer
+
+    These are all higher order functions.
+
+    \end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
     \frametitle{Reduce functions}
 
+    Common ones include sum, mean, min, max, prod
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -318,6 +372,67 @@ i = i + 1
     \frametitle{Creating efficient code as a constrained optimization
     problem}
 
+\textbf{Parameters}
+\begin{itemize}
+    \item number of processor cores to use
+    \item size of each chunk
+    \item which functions to combine in one processing step
+\end{itemize}
+
+\textbf{Constraints}
+\begin{itemize}
+    \item number of cores available
+    \item network bandwidth
+    \item disk IO speed
+    \item available memory
+\end{itemize}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{Compiled R code provides even more efficiency}
+
+    This work will complement efforts to compile R.
+
+Probably follow the OpenCL kernel model.
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusion}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+
+    \frametitle{Follow up on the sensor example}
+
+    The natural way to make this parallel from R is to first apply the
+    row selection criterion, then group by (or
+    sort) based on station ID, then use multiple processors to fit the
+    robust linear model on each station ID.
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{Some support infrastructure is necessary}
+
+\begin{itemize}
+\item Use profiling and microbenchmark to understand overhead
+\item A file sort from R
+\end{itemize}
+
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{Next Steps}
+
+    The larger data sets are very interesting. 
+    
+    How can we come back
+    to statistics? Norm keeps pushing me back to thinking about the 
 
 
 
