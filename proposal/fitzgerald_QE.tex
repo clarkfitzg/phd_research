@@ -514,15 +514,6 @@ functions $f(x) = f_n(\dots f(_1(x)))$ then a single worker can execute
 multiple functions such that the load is balanced. Every added worker will
 increase the latency because of communication overhead.
 
-I've implemented this over network sockets and with FIFO's (named pipes).
-First results have been encouraging.  It could also be implemented with MPI
-or files.  The blocking behavior with network sockets is very nice. It
-handles larger objects better than a FIFO.  It takes 0.4 seconds to
-serialize / deserialize a vector of 10 million random numbers which takes
-up 76.3 MB.  For comparison it takes 26.5 seconds to write to disk using
-\texttt{write()} and 5.6 seconds to read using \texttt{scan}.  This means
-that serializing over sockets is about 50 times faster than hitting disk.
-
 \subsection{Apply functions}
 
 The obvious way to make code parallel is to search for the use of
@@ -583,6 +574,27 @@ Constraints may include:
     \item disk IO speed
     \item available memory
 \end{itemize}
+
+\subsection{Statistical Problem}
+
+The time it takes for the same computations to execute can vary quite a
+bit. Let $x_i$ be a data vector of length $n_i$. Suppose we want to evaluate
+$f(x_i)$ in parallel.
+
+Consider these parameters:
+
+\begin{itemize}
+    \item $w$ time to start up a worker process
+    \item $l$ latency for communication between manager and worker
+    \item $t(n_i)$ time required to compute $f(x_i)$ on the worker
+\end{itemize}
+
+Then starting without a cluster it takes
+\[
+    T_i = w + 2l + t(n_i)
+\]
+to evaluate an expression on a worker. If the worker already exists then
+take $w = 0$.
 
 \subsection{Dependency Analysis}
 
