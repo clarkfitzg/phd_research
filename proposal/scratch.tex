@@ -70,6 +70,513 @@
 
 \begin{document}
 
+This is a prospectus for distribution to the committee for PhD
+Qualifying Exam in June 2017.
+
+\section{Code, Data, Platform}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\textbf{Code} is a script to be executed.
+\textbf{Data} could be data in memory, single or multiple files, a
+memory-mapped file, a database, a parallel file system, etc.
+\textbf{Platform} is the computing setup, such as a laptop with 4 cores, a
+Spark cluster, or a server with 2 GPUs and a high bandwidth connection. The combination
+of (Code, Data, Platform) dictates what strategies should be used for
+efficient evaluation. Given these three components, our goal is to analyze the
+code, potentially reorganizing it for efficient execution on the data and
+platform. This doesn't mean that the system is inventing new algorithms on
+the fly. But it should be capable of tuning existing parameters to the
+system at hand. An example of a parameter to be tuned is the chunk size
+$n_i$ as described in \ref{section:sequential}.
+
+This project is in the spirit of compiling R, since it treats R code as
+a set of high level directions, and it potentially generates alternative
+code for execution \cite{lang2014enhancing}.
+
+\section{Motivating Example}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{sec:pems}
+
+The California Department of Transportation collects traffic data through
+sensors embedded in highways. The sensors measure three quantities: count
+of passing vehicles, time during which a vehicle is directly above the
+sensor (occupancy), and average velocity \cite{jia2001pems}.  Every thirty
+seconds they produce a new data point. $43,680$ sensors in California
+measuring 3 parameters multiplied by $(2 \times 60 \times 24)$ measurements
+per day results in 377 million new data points per day.  This raw data is
+organized into files grouped by (day, district), and is available for
+public download.  As an analyst I would like to model velocity as a
+function of occupancy for each sensor. This relationship is called the
+``fundamental diagram'' within traffic engineering, because it captures the
+operating characteristic of this section of road
+\cite{daganzo1997fundamentals}. Once these fundamental diagrams have been
+modeled for each station they can be used to understand how other road
+characteristics such as on ramps and off ramps affect the flow of traffic.
+
+Robust regression can be used to fit the fundamental diagram, approximating
+the integer programming approach to minimize the L1 norm as in
+\cite{li2011fundamental}.  From the R language this can be done easily and
+efficiently, for example with the \texttt{rlm} (robust linear model)
+function in the MASS package \cite{venables2013modern}:
+
+\begin{verbatim}
+fit1 = rlm(velocity ~ occupancy, data = station1)
+\end{verbatim}
+
+However, the size and organization of the data makes the task much more
+difficult.  I've downloaded a subset of the data consisting of measurements
+in the San Francisco Bay Area for part of 2016.  It would be easier to
+perform the regression if the data were organized in files for each sensor
+rather than in files for each day.  One approach then is to reorganize the
+data on disk into this file structure. I did this using a simple single
+threaded R program, and it took 23 hours to run on 134 GB of data.
+Throughput for a conventional hard disk is around 100 MB/s\footnote{RAID,
+an array of disks, could make this faster.}, so a lower bound for reading
+then writing this reorganized data is approximately $2 * 134000 / 100$
+seconds, or 45 minutes. The naive code is 30 times slower than this. So
+small inefficiencies add up.
+
+Another drawback is that it requires very specific instructions to
+reorganize the data for computations grouped by station. Any parallel
+programming will make this even more specific to the data and platform. The
+following R code captures the desired semantics:
+
+\begin{verbatim}
+by(data, INDICES = station, FUN = piecewise_rlm)
+\end{verbatim}
+
+This says group \texttt{data} by \texttt{station}, and apply the
+function \texttt{piecewise\_rlm} to each group.
+
+What if we had a system that could inspect the idiomatic R code above that
+works on small data sets, and then automatically take steps to scale and to
+parallelize the operations? It could also tune them for the specifics of
+the system and the data. This is what we're working towards.
+
+
+\section{Simple Example}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Duncan:
+% Come up with concrete and realistic examples.  Show how you would do things
+% differently for different computational platform Go through this explicitly
+% by hand to show the "ideal" transformed code (keep high level) Identify how
+% you might identify these programmatically and what are some of the
+% challenges
+
+Now we use a simple example to focus on the underlying computational models
+for various platforms.  Consider computing the mean,
+
+\begin{equation}
+    \bar{x} = \frac{1}{n} \sum_{i = 1}^n x_i
+\label{eq:mean}
+\end{equation}
+
+where the $x_i$'s are
+i.i.d. $\sim N(0, 1)$.  In R this code is written:
+
+\begin{verbatim}
+xbar = mean(rnorm(n))
+\end{verbatim}
+
+To evaluate this R will first build an intermediate vector $x = (x_1,
+\dots, x_n)$ and then compute the mean. Eventually that unreferenced
+intermediate vector will be garbage collected.
+Execution time increases
+linearly with $n$. Once $n$ becomes large
+enough this vector will no longer fit into available physical memory, so
+the operating system will use swap space. On a machine with 8 GB memory
+this happens when $O(n) = 10^9$, causing the execution time
+to increase by an order of magnitude, roughly from 1 minute to 15
+minutes. Once $n$ exceeds memory and swap space R will not be able to allocate a
+large enough object, and the computation will fail.
+
+Now we consider alternative ways to execute this code.  Most rely on
+splitting the sum into $p$ partial sums with $n_j$ terms each and then rewriting
+Equation \ref{eq:mean} as a weighted mean.
+
+\begin{equation}
+    \bar{x} = \frac{1}{n} \sum_{j = 1}^p \sum_{i = 1}^{n_j} x_{ij}
+    = \sum_{j = 1}^p \frac{n_j}{n} \bar{x}_j
+\label{eq:mean_partial}
+\end{equation}
+
+It's important to correctly handle the cases when $n$ is not divisible by $p$
+and the computation / data cannot be evenly split. For simplicity in the
+examples below, suppose that they can be split evenly so $n_i$ is the same
+for all $i$.
+
+\subsection{Sequential Execution}
+\label{section:sequential}
+
+Equation \ref{eq:mean_partial} can be directly translated into R code as
+follows:
+
+\begin{verbatim}
+
+n = 1e5
+p = 10
+n_i = as.integer(n / p)
+
+meanrnorm = function(n) mean(rnorm(n))
+
+partial_means = sapply(rep(n_i, p), meanrnorm)
+xbar = mean(partial_means)
+\end{verbatim}
+
+This code does not run in parallel, but it does use the same functional
+programming patterns as parallel code. If $M$ is the size of physical memory in
+bytes then this code is high performance in the sense
+that execution time will continue to be linear while $n < O(M^2)$, just
+as it was for small $n < O(M)$. It can also be modified to handle
+arbitrarily large $n$. This is because \texttt{sapply} runs
+sequentially, so the memory footprint can be bounded since the intermediate
+vectors will be of length $n / p$. 
+
+What aspects of the code changed? In the initial code the user
+supplied $n$, and it remained to choose $p$ and $n_i$.
+The expression \texttt{mean(rnorm(n))} was changed into a function that was
+called and reduced using \texttt{mean()}.
+
+\subsection{SNOW Cluster}
+
+Clusters created by SNOW, a Simple Network Of Workstations,
+consist of independent worker R processes created by a manager process. The
+processes communicate over network sockets, and they may be on one or many
+physical machines.  This is the type of cluster used by partools and
+Software Alchemy \cite{R-partools} \cite{matloff2014software}.  This is
+similar to \ref{section:sequential}; the \texttt{sapply}
+becomes:
+
+\begin{verbatim}
+partial_means = parallel::clusterCall(cluster, meanrnorm, n_i)
+\end{verbatim}
+
+The manager sends the \texttt{meanrnorm()} function to each worker in the
+cluster to be evaluated in parallel with argument \texttt{n\_i}.  Given an
+existing cluster this is very efficient, since we are sending a few bytes
+of code over the network and then returning a single number. This parallel model is
+useful in statistics when doing independent simulations.
+
+\subsection{Forking}
+
+On a server capable of forking, for example the UC Davis statistics
+department servers which have as many as 72 cores, one can use this
+approach. Forking uses a \texttt{fork()} system call, which can create
+several worker processes with read access to data on the master. This is
+efficient if a large data set has been loaded into the manager process.
+
+\begin{verbatim}
+x = rnorm(n)
+
+starting_indices = as.integer(seq(from = 1, to = n, by = n_i))
+ending_indices = starting_indices + (n_i - 1L)
+
+index_mean = function(start, end) mean(x[start:end])
+
+partial_means = parallel::mcmapply(index_mean, starting_indices, ending_indices)
+
+xbar = mean(partial_means)
+\end{verbatim}
+
+This code differs from the SNOW code since each worker can read $x$ without
+explicitly exporting it. In statistics we might use this approach for
+parallel cross validation of a model, since each worker will need to read
+the same data.
+
+\subsection{GPU}
+
+The GPU offers the highest level of parallelism, which could consist of
+1000's of threads working at once. Following the OpenCL specification we'll
+refer to a GPU as a device, because this can run on other architectures as
+well. Here are the simplified steps:
+
+\begin{itemize}
+    \item create a kernel which will run in parallel
+    \item transfer the data to the device
+    \item run the kernel
+    \item transfer the results back
+\end{itemize}
+
+For this operation the kernel should do the equivalent of the
+\texttt{meanrnorm()} function above.  Here's psuedo code for how a kernel
+might look in OpenCL, provided the device can fit all of $x$ in memory.
+This could be rewritten for larger than device memory by following the
+approach in \ref{section:sequential}.
+
+\begin{verbatim}
+# include <random.h>
+
+__kernel void meanrnorm(__global float *x
+        , __global float *partial_means
+        , int n_i
+        )
+{
+    int id = get_global_id(0);
+
+    Random random_state = seed_rand(id);
+    int start_index = id * n_i;
+    int end_index = start_index + n_i;
+
+    for(int i = start_index; i < end_index; i++)
+    {
+        random_state = next_rand(random_state);
+        x[i] = rnorm(random_state);
+    }
+    xbar_local = mean(x, start_index, end_index);
+    partial_means[id] = xbar_local;
+}
+\end{verbatim}
+
+This code uses shared memory, since $x$ is a global array.
+One can then either write another kernel to reduce
+\texttt{partial\_means} on the GPU or return them to the CPU.
+
+\subsection{Threads}
+
+For this problem CPU threads could be utilized in the same way as the GPU.
+Indeed, OpenCL was designed to work on multiple platforms including CPU's
+and GPU's. The difference is that the memory transfers from host to device
+don't take any time, because the host and device are the same.
+
+\subsection{Memory Mapping}
+
+Memory mapping allows one to treat a hard drive as if it is primary memory.
+This allows one to have R objects larger than primary memory, and also to
+share memory between processes \cite{bigmemory}.
+
+\begin{verbatim}
+x = bigmemory::filebacked.big.matrix(nrow = n_i, ncol = p, backingfile = "x.bigmatrix")
+for (j in seq(p)){
+    x[, j] = rnorm(n_i)
+}
+xbar = biganalytics::mean(x)
+\end{verbatim}
+
+Here \texttt{biganalytics::mean(x)} is used explicitly to emphasize that we
+are calling the \texttt{mean()} method defined for \texttt{bigmatrix}
+objects.
+
+\subsection{Pipelines}
+
+This parallel programming pattern is rather different. A useful analogy is a
+factory assembly line, with each worker performing one or more operations
+and then passing the result to the next worker. The first worker could generate a
+subvector of random numbers and pass it along. Ignoring the setup and
+looping over chunks the important parts of the code are:
+
+\begin{verbatim}
+# Worker 1
+x_chunk = rnorm(n_i)
+serialize(x_chunk, worker2)
+\end{verbatim}
+
+The second worker receives the random numbers and computes the mean.
+
+\begin{verbatim}
+# Worker 2
+x_chunk = unserialize(worker1)
+partial_means[i] = mean(x_chunk)
+i = i + 1
+\end{verbatim}
+
+This approach is sensible if the load can be balanced across the workers.
+Each function should take approximately the same amount of time, and the
+overhead required to pass between workers must be much smaller than the
+time spent doing work. These assumptions do not all hold in this case,
+since if $n = 1000$ then \texttt{xchunk = rnorm(n)} takes 125 $\mu s$,
+\texttt{mean(x\_chunk)} takes 6 $\mu s$, and serialization takes at least
+15 $\mu s$. On a practical level this can all be implemented over network
+sockets or through MPI.
+
+\section{Design Considerations}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The approaches in the previous section can sometimes be combined together
+into hybrid approaches. For example, forked process might run multithreaded
+code.
+
+\subsection{Overhead}
+
+Many of the performance characteristics of the different platforms can be
+understood in terms of the overhead to set them up, and then the latency
+and bandwidth for when data must be transferred.  If the data is ``small
+enough'' then performance will be acceptable regardless of how well the
+platform is utilized or how efficient the code is. Conversely, if the data
+is ``large enough'' then \emph{everything} matters, since small
+inefficiencies will be magnified when they occur millions of times, as in
+Section \ref{sec:pems}.  Therefore the focus here is on problems which take longer
+to run. A priori one doesn't even know if it's possible to run code more
+efficiently in parallel, due to the overhead.
+
+\begin{figure}
+\centering
+\includegraphics[width=.8\linewidth]{compute_times/overhead}
+\caption{Simple function calls take less than a microsecond. Launching a
+    new R interpreter takes hundreds of milliseconds, which is relatively expensive.}
+\label{fig:overhead}
+\end{figure}
+
+Figure \ref{fig:overhead} compares the relative fixed sources of overhead to
+consider with parallel programming. The evaluation of the following simple
+function captures the basic overhead associated with an interpreted
+language like R:
+\begin{verbatim}
+twox = function(x) 2*x
+\end{verbatim}
+Every call to this function will incur a fixed overhead that is a couple
+hundred nanoseconds. Vectorization refers to passing longer vectors to the
+function to amortize this fixed cost. For example, if $x$ is an integer
+vector of length 1 then the overhead takes 2 orders of magnitude more time
+than the actual computation. However, if $x$ is of length 1500 then this
+overhead accounts for only 10 percent of the total execution time, so the
+fixed cost has been amortized.
+
+\subsection{Interfaces}
+
+Parallel programming in pure R (not at the C level) can be understood in
+terms of a layered architecture. The foundational \textbf{System Layer}
+provides the basic interfaces used by any programming language. The
+\textbf{R Layer} consists of packages which adapt the basic interfaces for
+use specifically in R. The packages in the \textbf{User Layer} are meant to
+simplify parallel programming, or they are for applications with specific
+use cases.  Here are a few examples of packages at each layer:
+
+\begin{itemize}
+\item User Layer: foreach, future, partools, ddR, biganalytics, RevoScaleR
+\item R layer: SNOW, multicore, parallel, bigmemory, Rmpi
+\item System Layer: processes, *NIX fork(), memory maps, network sockets,
+    MPI
+\end{itemize}
+
+Currently, users write code using packages from the User Layer or the R
+Layer. Code analysis potentially can allow us to skip these layers, and
+instead write the same base R code which will run in serial as in parallel.
+This is appealing for a few reasons. Base R is stable, so users can write
+the same working code without committing to a particular package or
+architecture. If the code runs on a different system or with a different
+data set then one can automatically generate code to run more efficiently
+on that system.
+
+%TODO: expand
+Some of the work here may mean enhancing the capabilities of these
+intermediate layers. For example, a file based sort usable from R allows
+``group by'' and facilitiates streaming applications.
+
+\section{Code analysis}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Static code analysis is integral to this approach, and we build on the 
+CodeDepends package \cite{R-CodeDepends}.
+
+\subsection{Streaming Parallelism}
+
+This approach resembles the iterators package \cite{R-iterators} which
+provides data to R as an abstract stream. The difference is that here
+parallelism comes from pipelined operations rather than the more typical
+data parallel model.
+
+Let $x$ be a data structure which can be partitioned into chunks $x_1,
+\dots x_k$. Chained function calls such as $f(g(h(x)))$ become:
+
+\begin{itemize}
+    \item Worker 1: Compute $h(x_i)$, pass result to worker 2
+    \item Worker 2: Compute $g(\dots)$, pass result to worker 3
+    \item Worker 3: Compute $f(\dots)$.
+\end{itemize}
+
+This operation can potentially be efficient if each function $h, g,
+f$ takes approximately the same amount of time $T_f$ and $T_f >> T_p$,
+where $T_p$ is the time it takes to pipe the data between the 
+workers \cite{arnold2015iotools}. More generally, if there is a sequence of
+functions $f(x) = f_n(\dots f(_1(x)))$ then a single worker can execute
+multiple functions such that the load is balanced. Every added worker will
+increase the latency because of communication overhead.
+
+\subsection{Apply functions}
+
+The obvious way to make code parallel is to search for the use of
+apply functions and transform them into the parallel versions. For example, 
+\texttt{lapply()} can be replaced with \texttt{mclapply()} from the
+parallel package to use fork based parallelism.
+
+Many of the language idioms in base R already express computation in the
+map reduce paradigm.
+
+\subsection{Vectorization}
+
+Vectorization
+
+Goes hand in hand with loop fusion.
+
+
+\subsection{Reduce functions}
+
+\texttt{mean()} as used in \texttt{mean(rnorm(n))} reduces a vector to a
+single number. Here's one way to write this using \texttt{Map(), Reduce()}
+explicitly in R:
+
+\begin{verbatim}
+
+N = 100
+p = 9
+weightmean = function(x_i, N) (length(x_i) / N) * mean(x_i)
+
+x = rnorm(N)
+xsplit = split(x, seq(p))
+parts = Map(weightmean, xsplit, N = N)
+xbar1 = Reduce(`+`, parts, 0)
+
+# matches up to numerical precision
+xbar2 = mean(x)
+
+\end{verbatim}
+
+\subsection{Optimization problem}
+
+One way to approach the question of how to run the code is as an
+optimization problem. The objective function to minimize is the total run
+time. The solution needs to select an appropriate computational model. Each
+model may have various parameters to optimize over, for example:
+
+\begin{itemize}
+    \item number of processor cores to use
+    \item size of each chunk
+    \item which functions to combine in one processing step
+\end{itemize}
+
+Constraints may include:
+
+\begin{itemize}
+    \item number of cores available
+    \item network bandwidth
+    \item disk IO speed
+    \item available memory
+\end{itemize}
+
+\subsection{Statistical Problem}
+
+The time it takes for the same computations to execute can vary quite a
+bit. Let $x_i$ be a data vector of length $n_i$. Suppose we want to evaluate
+$f(x_i)$ in parallel.
+
+Consider these parameters:
+
+\begin{itemize}
+    \item $w$ time to start up a worker process
+    \item $l$ latency for communication between manager and worker
+    \item $t(n_i)$ time required to compute $f(x_i)$ on the worker
+\end{itemize}
+
+Then starting without a cluster it takes
+\[
+    T_i = w + 2l + t(n_i)
+\]
+to evaluate an expression on a worker. If the worker already exists then
+take $w = 0$.
+
+\subsection{Dependency Analysis}
+
 
 \section{Databases}
 

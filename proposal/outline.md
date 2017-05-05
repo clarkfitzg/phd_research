@@ -1,3 +1,6 @@
+
+
+
 Mon Apr 24 09:58:41 PDT 2017
 
 Starting this outline after Duncan's review of my prospectus draft and
@@ -21,7 +24,8 @@ Outline:
 
 Extra Examples
 
-- Andrew Latimer's pixel data
+- Andrew Latimer's forest 'greenness' data, split by forest type, elevation and do
+  regression based on pixel
 
 What am I targeting?
 Embarrassingly parallel ops and group by. But Spark and Hadoop already do

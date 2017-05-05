@@ -4,8 +4,11 @@ TEXFILE = fitzgerald_QE
 
 all: $(TEXFILE).pdf
 
+workflow.pdf: workflow.dot
+	dot -Tpdf $< -o $@
+
 # $< references the first prerequisite
-$(TEXFILE).pdf: $(TEXFILE).tex ../citations.bib
+$(TEXFILE).pdf: $(TEXFILE).tex ../citations.bib workflow.pdf
 	pdflatex $<
 	bibtex $(TEXFILE).aux
 	pdflatex $<
