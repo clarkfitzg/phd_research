@@ -83,11 +83,11 @@
     Units (GPU)s. In this presentation we review the state of the art for
     parallel programming in R and propose code analysis methods to detect
     the potential for parallel execution. The results of the analysis can
-    then be used to rewrite and execute semantically equivalent
-    instructions efficiently, without requiring the user to modify their
-    code. We consider a motivating case study using robust regression to
-    analyze the operating characteristics California's highway traffic
-    sensor stations on hundreds of gigabytes of traffic sensor data.
+    then be used to rewrite and execute semantically equivalent parallel
+    instructions, without requiring the user to modify their original code.
+    We consider a motivating case study using robust regression to analyze
+    the operating characteristics California's highway traffic sensor
+    stations on hundreds of gigabytes of traffic sensor data.
 
 \end{abstract}
 
@@ -180,12 +180,24 @@ the system and the data. This is what we're working towards.
 \begin{figure}
 \centering
 \includegraphics[width=.5\linewidth]{workflow}
-\caption{Given sequential R code and a description of the data we seek to
-    create a modified computational parallel plan tailored to a specific platform.}
+\caption{Given sequential code and a description of the data we want
+    a modified computational parallel plan tailored to a specific platform.}
 \label{fig:workflow}
 \end{figure}
 
 Figure \ref{fig:workflow} shows the high level idea.
+
+Steps:
+
+\begin{itemize}
+    \item Parse the code, gathering dependency information
+    \item Identify points to parallelize
+    \item May try to evaluate some expressions to learn how long they'll
+        take
+    \item Determine if preprocessing of the data is required
+    \item Generate code that will run in parallel on that platform
+    \item Estimate total time required to run
+\end{itemize}
 
 
 
@@ -497,6 +509,11 @@ on that system.
 Some of the work here may mean enhancing the capabilities of these
 intermediate layers. For example, a file based sort usable from R allows
 ``group by'' and facilitiates streaming applications.
+
+\section{Example: Fraud detection}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Benford's law
 
 \section{Code analysis}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

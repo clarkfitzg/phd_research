@@ -1049,8 +1049,7 @@ deserialize a vector of 10 million random numbers which takes up 76.3 MB.
 There's nothing tying this to the sockets- I could write and read from
 files incrementally as well.  For comparison it takes 26.5 seconds to write
 to disk using \texttt{write()} and 5.6 seconds to read using \texttt{scan}.
-This means that serializing over sockets is about 50 times faster than
-hitting disk.
+NOTE - includes formatting time.
 
 I wonder if this would slow down if say 20 different processes were
 involved in the pipeline, and they're all using the networking.
