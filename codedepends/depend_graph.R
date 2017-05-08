@@ -43,6 +43,7 @@ vargraph = function(varname, used_vars, outputs)
     for(i in used){
         edges = c(edges, one_edge(i, output))
     }
+
     edges
 }
 
@@ -107,6 +108,14 @@ depend_graph = function(script, add_source = FALSE)
     vars = unique(unlist(outputs))
 
     edges = lapply(vars, vargraph, used_vars, assign_vars)
+
+    badones = (sapply(edges, length) %% 2) == 1
+
+    # TODO: This must be odd. Haven't figured out yet why it's failing
+    if(any(badones)){
+        warning("Something broke in dependgraph(), threw out:", sum(badones))
+        edges[badones] = NULL
+    }
 
     edges = unlist(edges)
 
