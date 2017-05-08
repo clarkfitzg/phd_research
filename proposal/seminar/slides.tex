@@ -259,15 +259,13 @@ partial_means[i] = mean(x_chunk)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-    \frametitle{(Code, Data, Platform) dic}
+    \frametitle{(Code, Data, Platform) together determine the execution
+    strategy}
 
     \begin{itemize}
     \item \textbf{Code} script to be executed
     \item \textbf{Data} in-memory, files, database, etc
-    \item \textbf{Platform} is the computing setup, such as a laptop with 4 cores, a
-Spark cluster, or a server with 2 GPUs and a high bandwidth connection. The combination
-of (Code, Data, Platform) dictates what strategies should be used for
-efficient evaluation. G
+    \item \textbf{Platform} 4 core laptop, server with GPU, Spark cluster
 
     \end{itemize}
 
@@ -366,6 +364,55 @@ by(data, INDICES = station, FUN = piecewise_rlm)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
+    \frametitle{For computations fitting in memory optimization might look like:}
+
+\begin{itemize}
+    \item $w$ worker startup time
+    \item $l$ latency in communication
+    \item $t(n_i)$ time to compute on $n_i$ elements
+\end{itemize}
+
+Then we minimize
+\[
+    w + 2l + \max (t(n_i))
+\]
+such that 
+
+\begin{itemize}
+    \item $\sum n_i = n$ total data points
+\end{itemize}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{If we want to compute on out of memory data:}
+
+    TODO
+
+
+\begin{itemize}
+    \item $w$ worker startup time
+    \item $l$ latency in communication
+    \item $t(n_i)$ time to compute on $n_i$ elements
+    \item $m(n_i)$ memory required to compute on $n_i$ elements
+\end{itemize}
+
+Then we minimize
+\[
+    w + 2l + \max (t(n_i))
+\]
+such that 
+
+\begin{itemize}
+    \item $\sum n_i = n$ total data points
+\end{itemize}
+
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
     \frametitle{Compiled R code provides even more efficiency}
 
     This work will complement efforts to compile R.
@@ -383,11 +430,11 @@ Probably follow the OpenCL kernel model.
 
     Program should:
 
-\begin{itemize}
+\begin{enumerate}
     \item Remove any observations it can
     \item Reorganize files on disk based on station ID
     \item Apply function to each station ID file
-\end{itemize}
+\end{enumerate}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
