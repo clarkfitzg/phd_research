@@ -36,6 +36,7 @@
 \date{10 May 2017}
 \author{Clark Fitzgerald}
 \institute{UC Davis - Statistics Student Seminar}
+\titlegraphic{\includegraphics[height=.5\textheight]{../workflow.pdf}}
 
 \frame{\titlepage}
 
@@ -63,17 +64,17 @@ data for the whole state}
 
     \begin{itemize}
         \item Each sensor measures 3 quantities
-        \item Every thirty seconds they produce a new data point
+        \item Data point every 30 seconds
         \item $43,680$ sensors in California
-        \item $\implies$  377 million new data points per day
+        \item $\implies$  377 million data points per day
     \end{itemize}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-    \frametitle{Traffic engineers study the relationship between 
-    density and flow \cite{li2011fundamental}}
+    \frametitle{Traffic engineers study the relationships between variables
+    \cite{li2011fundamental}}
 
 \centerline{\includegraphics[height=2.5in]{fundamental_diagram.png}}
 
@@ -84,17 +85,21 @@ data for the whole state}
     \frametitle{Using more data allows new types of analyses}
 
     \begin{itemize}
-        \item Finding groups of similar detectors
         \item Effect of policy such as speed limits and carpool lanes
         \item Impact of road features such as on/off ramps
         \item Effect of weather
+        \item Clustering detectors
     \end{itemize}
+
+    % Policy is especially interesting, because that can potentially be changed
+    % Recommending state wide policy, then why not look at data for the
+    % whole state?
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
-    \frametitle{R can conveniently express desired statistical computation}
+    \frametitle{R expresses statistical computation well}
 
 \centerline{\includegraphics[height=2in]{fundamental_diagram.png}}
 
@@ -102,19 +107,30 @@ data for the whole state}
 by(data, INDICES = station, FUN = piecewise_rlm)
 \end{verbatim}
 
+% This is a good reason to stay with R, for that matter.
+
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-    \frametitle{Lets scale up the computations with parallel programming}
+    \frametitle{Parallel code allows computation on larger data sets}
 
-    \begin{itemize}
-        \item Several parallel strategies exist to improve performance
-        \item Which is best depends on the platform and data
-        \item Each one requires deeper knowledge of that particular technology
-        \item Therefore techniques to programmatically identify and use the parallel
-  patterns implicit in code would be valuable
-    \end{itemize}
+    \pause
+    But it can distract from the research question.
+
+%\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{frame}
+%
+%    \frametitle{Lets scale up the computations with parallel programming}
+%
+%    \begin{itemize}
+%        \item Several parallel strategies exist to improve performance
+%        \item Which is best depends on the platform and data
+%        \item Each one requires deeper knowledge of that particular technology
+%        \item Therefore techniques to programmatically identify and use the parallel
+%  patterns implicit in code would be valuable
+%    \end{itemize}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -177,82 +193,22 @@ xbar = mean(partial_means)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
-    \frametitle{Send code to workers in a SNOW cluster}
+    \frametitle{The same computation can be evaluated on many workers
+    simultaneously}
+
+\centerline{\includegraphics[height=2in]{../snow.pdf}}
 
 \begin{verbatim}
-partial_means = parallel::clusterCall(cluster, meanrnorm, n_i)
+parallel::clusterCall(cluster, meanrnorm, n_i)
 \end{verbatim}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
-    \frametitle{A system \texttt{fork()} can share read only data}
+    \frametitle{Pipeline parallelism is like a factory assembly line.}
 
-\begin{verbatim}
-x = rnorm(n)
-
-starting_indices = as.integer(seq(from = 1, to = n, by = n_i))
-ending_indices = starting_indices + (n_i - 1L)
-
-index_mean = function(start, end) mean(x[start:end])
-
-partial_means = parallel::mcmapply(index_mean, starting_indices, ending_indices)
-\end{verbatim}
-
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]
-
-    \frametitle{GPU code can use shared (device) memory}
-
-\begin{verbatim}
-# include <random.h>
-
-__kernel void meanrnorm(__global float *x
-        , __global float *partial_means
-        , int n_i
-        )
-{
-    int id = get_global_id(0);
-
-    Random random_state = seed_rand(id);
-    int start_index = id * n_i;
-    int end_index = start_index + n_i;
-
-    for(int i = start_index; i < end_index; i++)
-    {
-        random_state = next_rand(random_state);
-        x[i] = rnorm(random_state);
-    }
-    xbar_local = mean(x, start_index, end_index);
-    partial_means[id] = xbar_local;
-}
-\end{verbatim}
-
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]
-
-    \frametitle{File backed data structures help with memory and
-    parallelism}
-
-\begin{verbatim}
-x = bigmemory::filebacked.big.matrix(nrow = n_i, ncol = p, backingfile = "x.bigmatrix")
-for (j in seq(p)){
-    x[, j] = rnorm(n_i)
-}
-xbar = biganalytics::mean(x)
-\end{verbatim}
-
-% mention interaction effect, using SNOW
-
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]
-
-    \frametitle{Parallelism can also happen in a pipeline of data
-    processing steps}
+\centerline{\includegraphics[width=\textwidth]{../pipeline.pdf}}
 
 \begin{verbatim}
 # Worker 1
@@ -263,7 +219,6 @@ serialize(x_chunk, worker2)
 # Worker 2
 x_chunk = unserialize(worker1)
 partial_means[i] = mean(x_chunk)
-i = i + 1
 \end{verbatim}
 
 \end{frame}
@@ -272,23 +227,13 @@ i = i + 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-\frametitle{Different computational models incur their own types of overhead}
-
-    \centerline{\includegraphics[height=2.5in]{../compute_times/overhead}}
-
-% So if you start up a process, you want to keep it around
-
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
-
     \frametitle{Layers mark ways for users to write parallel code for one
     platform}
 
 \begin{itemize}
-\item User Layer: foreach, future, partools, ddR, biganalytics, RevoScaleR
-\item R layer: SNOW, multicore, parallel, bigmemory, Rmpi
-\item System Layer: processes, *NIX fork(), memory maps, network sockets,
+    \item \textbf{User Layer}: foreach, future, partools, ddR, biganalytics, RevoScaleR
+    \item \textbf{R layer}: SNOW, multicore, parallel, bigmemory, Rmpi
+    \item \textbf{System Layer}: processes, *NIX fork(), memory maps, network sockets,
     MPI
 \end{itemize}
 
@@ -315,7 +260,7 @@ i = i + 1
 \begin{frame}[fragile]
 
     \frametitle{Idiomatic R already expresses computation in a natural
-    parallel way through ``apply'' functions}
+    parallel way through ``apply'' functions.}
 
 \begin{verbatim}
 x = replicate(5, rnorm(n_i), simplify = FALSE)
@@ -369,6 +314,20 @@ by(data, INDICES = station, FUN = piecewise_rlm)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
+\frametitle{Parallel processing comes with overhead}
+
+    \centerline{\includegraphics[height=2.5in]{../compute_times/overhead}}
+
+% If there wasn't any overhead, we would use it all the time for
+    % everything.
+
+% So if you start up a process, you want to keep it around
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+
     \frametitle{Creating efficient code as a constrained optimization
     problem}
 
@@ -409,15 +368,10 @@ Probably follow the OpenCL kernel model.
     Program should:
 
 \begin{itemize}
-    \item Remove
+    \item Remove any observations it can
     \item Reorganize files on disk based on station ID
-    \item Apply 
+    \item Apply function to each station ID file
 \end{itemize}
-
-    The natural way to make this parallel from R is to first apply the
-    row selection criterion, then group by (or
-    sort) based on station ID, then use multiple processors to fit the
-    robust linear model on each station ID.
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -448,7 +402,31 @@ Probably follow the OpenCL kernel model.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
+    \frametitle{More Applications}
+
+\begin{itemize}
+    \item Benford test on election campaign contribution data
+    \item Forest greenness satellite imagery (Andrew Latimer)
+    \item Simulating spread of disease (Nistara Randhawa)
+\end{itemize}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{Acknowledgements}
+
+\begin{itemize}
+    \item Feedback from Duncan Temple Lang and Nick Ulle
+    \item Applications from Data Science Institute Affiliates
+\end{itemize}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
     \frametitle{Questions?}
+    \centerline{\includegraphics[height=2.5in]{../workflow.pdf}}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -465,6 +443,7 @@ Probably follow the OpenCL kernel model.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \end{frame}
 \begin{frame}
 \frametitle{References}

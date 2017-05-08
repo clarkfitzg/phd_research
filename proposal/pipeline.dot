@@ -1,0 +1,18 @@
+
+digraph {
+    rankdir=LR;
+    //size="8,5"
+    //node [shape = square]; 2;
+    //node [shape = none];
+
+    0 [label="Raw\nData In"];
+    1 [label="Worker 1"];
+    2 [label="Worker 2"];
+    3 [label="..."];
+    4 [label="Processed\nData Out"];
+
+    0 -> 1;
+    1 -> 2;
+    2 -> 3;
+    3 -> 4;
+}

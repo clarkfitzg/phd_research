@@ -7,6 +7,12 @@ all: $(TEXFILE).pdf
 workflow.pdf: workflow.dot
 	dot -Tpdf $< -o $@
 
+pipeline.pdf: pipeline.dot
+	dot -Tpdf $< -o $@
+
+snow.pdf: snow.dot
+	dot -Tpdf $< -o $@
+
 # $< references the first prerequisite
 $(TEXFILE).pdf: $(TEXFILE).tex ../citations.bib workflow.pdf
 	pdflatex $<

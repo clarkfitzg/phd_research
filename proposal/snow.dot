@@ -1,0 +1,19 @@
+digraph {
+    //rankdir=LR;
+    //size="8,5"
+    //node [shape = square]; 2;
+    //node [shape = none];
+
+    0 [label="Manager"];
+    1 [label="Worker 1"];
+    2 [label="Worker 2"];
+    3 [label="..."];
+    4 [label="Manager"];
+
+    0 -> 1;
+    0 -> 2;
+    0 -> 3 [label="(meanrnorm, n_i)"];
+    1 -> 4;
+    2 -> 4;
+    3 -> 4 [label="evaluated"];
+}
