@@ -257,6 +257,22 @@ partial_means[i] = mean(x_chunk)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Code Analysis}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{(Code, Data, Platform) dic}
+
+    \begin{itemize}
+    \item \textbf{Code} script to be executed
+    \item \textbf{Data} in-memory, files, database, etc
+    \item \textbf{Platform} is the computing setup, such as a laptop with 4 cores, a
+Spark cluster, or a server with 2 GPUs and a high bandwidth connection. The combination
+of (Code, Data, Platform) dictates what strategies should be used for
+efficient evaluation. G
+
+    \end{itemize}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
     \frametitle{Idiomatic R already expresses computation in a natural
