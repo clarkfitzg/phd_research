@@ -29,7 +29,7 @@ itcont = read.table("~/data/itcont.txt"
 itcont = read.table("~/data/itcont.txt"
            , sep = "|"
            , colClasses = cc
-           , skip = 200
+           , skip = 100
            , nrows = 300
            )
 # skip = 10, fails on line 260, consistent with above

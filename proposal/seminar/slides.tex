@@ -2,7 +2,6 @@
 % 
 % To produce pdf run:
 %   $ pdflatex beamer.tex 
-%
 
 \documentclass{beamer}
 \usetheme{Singapore}
@@ -167,7 +166,7 @@ xbar = mean(rnorm(n))
 \label{eq:mean_partial}
 \end{equation}
 
-Suppose that all $n_i$'s are the same for the following examples.
+Suppose that all $n_j$'s are the same for the following examples.
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -223,7 +222,25 @@ partial_means[i] = mean(x_chunk)
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Design Considerations}
+\section{Code Analysis}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]
+
+    \frametitle{Idiomatic R already expresses computation in a natural
+    parallel way through ``apply'' functions.}
+
+\begin{verbatim}
+x = replicate(5, rnorm(n_i), simplify = FALSE)
+
+partialmeans = lapply(x, mean)
+
+by(data, INDICES = station, FUN = piecewise_rlm)
+\end{verbatim}
+
+%    Specifically: apply, lapply, sapply, tapply, by, mapply, Map, vapply,
+%    replicate, outer
+
+\end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
@@ -232,7 +249,7 @@ partial_means[i] = mean(x_chunk)
 
 \begin{itemize}
     \item \textbf{User Layer}: foreach, future, partools, ddR, biganalytics, RevoScaleR
-    \item \textbf{R layer}: SNOW, multicore, parallel, bigmemory, Rmpi
+    \item \textbf{R layer}: SNOW, parallel, bigmemory, Rmpi
     \item \textbf{System Layer}: processes, *NIX fork(), memory maps, network sockets,
     MPI
 \end{itemize}
@@ -253,9 +270,24 @@ partial_means[i] = mean(x_chunk)
 
 % Potentially we can transform to any of these layers
 
+%\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{frame}
+%
+%   \frametitle{Preserving language semantics can be challenging.}
+%
+%    For example, R's dynamic lookups 
+%
+%\begin{verbatim}
+%
+%    f = function() 0
+%    g = function() f() + 1
+%    f = function() 10
+%    g()                     # Returns 11!
+%
+%\end{verbatim}
+
 \end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Code Analysis}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
@@ -266,63 +298,69 @@ partial_means[i] = mean(x_chunk)
     \item \textbf{Code} script to be executed
     \item \textbf{Data} in-memory, files, database, etc
     \item \textbf{Platform} 4 core laptop, server with GPU, Spark cluster
-
     \end{itemize}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
-    \frametitle{Idiomatic R already expresses computation in a natural
-    parallel way through ``apply'' functions.}
+    \frametitle{One challenge is how to properly abstract ``data''}
 
-\begin{verbatim}
-x = replicate(5, rnorm(n_i), simplify = FALSE)
-
-partialmeans = lapply(x, mean)
-
-by(data, INDICES = station, FUN = piecewise_rlm)
-\end{verbatim}
-
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
-
-    \frametitle{Map and reduce functions}
-
-    Let $f: x \rightarrow y$ and $x = O(n)$, a data structure with $O(n)$
-    elements.
+    Some options:
 
     \begin{itemize}
-        \item If $y$ is also $O(n)$ then we can call $f$ a \textbf{Map} function.
+        \item Iterators of chunks as in R's \texttt{iterators} package
+        \item ``file-like'' objects from *NIX
+        \item Pick one serialization format, ie. CSV, feather
+        \item Abstract parallel data structures
+    \end{itemize}
 
-        \item Example: $f(x) = 2x$ for $x \in R^n$.
+    \pause
 
-    % This is vectorization in R
-    
-        \item If $y$ is $O(1)$ then $f$ is a \textbf{Reduce} function.
-
-        \item Example: $f(x) = \sum_{i = 1}^n x_i$
+    \begin{itemize}
+        \item Maintain custom metadata objects?
+        \item Only focus on data frames / tables?
     \end{itemize}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-    \frametitle{Apply family of functions}
+    \frametitle{An iterator produces data on demand}
 
-    ``apply'' refers to apply, lapply, sapply, tapply, by, mapply, Map,
-    vapply, replicate, outer
+    \centerline{\includegraphics[height=2in]{../iterator.pdf}}
 
-    These are all higher order functions.
+    \begin{itemize}
+        \item Most flexible of the above options
+        \item Natural in pipeline parallel model
+        \item Operate well with high performance IO libraries
+    \end{itemize}
 
-    \end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
 
-    \frametitle{Reduce functions}
 
-    Common ones include sum, mean, min, max, prod
+    % Iterators are appealing for pipelined parallelism, and for using an
+    % underl
+
+%\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{frame}
+%
+%    \frametitle{Map and reduce functions}
+%
+%    Let $f: x \rightarrow y$ and $x = O(n)$, a data structure with $O(n)$
+%    elements.
+%
+%    \begin{itemize}
+%        \item If $y$ is also $O(n)$ then we can call $f$ a \textbf{Map} function.
+%
+%        \item Example: $f(x) = 2x$ for $x \in R^n$.
+%
+%    % This is vectorization in R
+%    
+%        \item If $y$ is $O(1)$ then $f$ is a \textbf{Reduce} function.
+%
+%        \item Example: $f(x) = \sum_{i = 1}^n x_i$
+%    \end{itemize}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -364,32 +402,26 @@ by(data, INDICES = station, FUN = piecewise_rlm)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-    \frametitle{For computations fitting in memory optimization might look like:}
+    \frametitle{One version of the optimization problem}
 
+    % TODO: Get Duncan's feedback
 \begin{itemize}
-    \item $w$ worker startup time
-    \item $l$ latency in communication
-    \item $t(n_i)$ time to compute on $n_i$ elements
+    \item $w_i$ worker startup time
+    \item $c(x_i)$ communication time to send $x_i$ and receive $f(x_i)$.
+    \item $e(x_i)$ time to evaluate $f(x_i)$ on a worker.
 \end{itemize}
 
 Then we minimize
 \[
-    w + 2l + \max (t(n_i))
+    \max_{x_i} w_i + c(x_i) + e(x_i)
 \]
-such that 
-
-\begin{itemize}
-    \item $\sum n_i = n$ total data points
-\end{itemize}
+for $x = (x_1, \dots, x_m)$, a partition of $x$ into chunks.
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
     \frametitle{If we want to compute on out of memory data:}
-
-    TODO
-
 
 \begin{itemize}
     \item $w$ worker startup time
@@ -469,6 +501,7 @@ Probably follow the OpenCL kernel model.
 
 \begin{itemize}
     \item Benford test on election campaign contribution data
+        \cite{tam2007breaking}
     \item Forest greenness satellite imagery (Andrew Latimer)
     \item Simulating spread of disease (Nistara Randhawa)
 \end{itemize}

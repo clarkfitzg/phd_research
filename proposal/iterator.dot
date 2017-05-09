@@ -1,0 +1,26 @@
+digraph {
+    rankdir=LR;
+    //size="8,5"
+    //node [shape = square]; 2;
+    //node [shape = none];
+
+    1 [style="invis"];
+
+    0 [label="Chunk 1"];
+
+    2 [label="Chunk 1", style="dashed"];
+    3 [label="Chunk 2"];
+
+    4 [label="Chunk 1", style="dashed"];
+    5 [label="Chunk 2", style="dashed"];
+    6 [label="Chunk 3"];
+
+    1 -> 0 [style="invis"];
+    1 -> 2 [style="invis"];
+    1 -> 4 [style="invis"];
+
+    2 -> 3;
+
+    4 -> 5;
+    5 -> 6;
+}

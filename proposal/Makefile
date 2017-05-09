@@ -13,6 +13,10 @@ pipeline.pdf: pipeline.dot
 snow.pdf: snow.dot
 	dot -Tpdf $< -o $@
 
+iterator.pdf: iterator.dot
+	dot -Tpdf $< -o $@
+
+
 # $< references the first prerequisite
 $(TEXFILE).pdf: $(TEXFILE).tex ../citations.bib workflow.pdf
 	pdflatex $<
