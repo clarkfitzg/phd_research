@@ -72,8 +72,8 @@ data for the whole state}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-    \frametitle{Traffic engineers study the relationships between variables
-    \cite{li2011fundamental}}
+    \frametitle{Traffic engineers study the relationships between count and
+    occupancy \cite{li2011fundamental}}
 
 \centerline{\includegraphics[height=2.5in]{fundamental_diagram.png}}
 
@@ -154,6 +154,8 @@ In R this code is written:
 xbar = mean(rnorm(n))
 \end{verbatim}
 
+% Explain what this does and how it fails.
+
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
@@ -166,7 +168,8 @@ xbar = mean(rnorm(n))
 \label{eq:mean_partial}
 \end{equation}
 
-Suppose that all $n_j$'s are the same for the following examples.
+Suppose that all $n_j$'s are the same for the following examples, so $n =
+    n_j p$ and the equation becomes $\frac{1}{p} \sum_{j = 1}^p \bar{x}_j$
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -177,7 +180,8 @@ Suppose that all $n_j$'s are the same for the following examples.
 \begin{verbatim}
 meanrnorm = function(n) mean(rnorm(n))
 
-partial_means = sapply(rep(n_i, p), meanrnorm)
+partial_means = sapply(rep(n_j, p), meanrnorm)
+
 xbar = mean(partial_means)
 \end{verbatim}
 
@@ -185,7 +189,7 @@ xbar = mean(partial_means)
 
     \begin{itemize}
         \item While not parallel, this effectively removes the memory limits.
-        \item How to choose the $n_i$ and $p$?
+        \item How to choose the $n_j$ and $p$?
     \end{itemize}
 
 \end{frame}
@@ -198,7 +202,7 @@ xbar = mean(partial_means)
 \centerline{\includegraphics[height=2in]{../snow.pdf}}
 
 \begin{verbatim}
-parallel::clusterCall(cluster, meanrnorm, n_i)
+parallel::clusterCall(cluster, meanrnorm, n_j)
 \end{verbatim}
 
 \end{frame}
@@ -211,7 +215,7 @@ parallel::clusterCall(cluster, meanrnorm, n_i)
 
 \begin{verbatim}
 # Worker 1
-x_chunk = rnorm(n_i)
+x_chunk = rnorm(n_j)
 serialize(x_chunk, worker2)
 
 
@@ -224,13 +228,116 @@ partial_means[i] = mean(x_chunk)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Code Analysis}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{(Code, Data, Platform) together determine the execution
+    strategy}
+
+\begin{figure}
+            \includegraphics[width=1.4in]{code_screen.png}
+            \hfill
+            \includegraphics[width=1in]{database.png}
+            \hfill
+            \includegraphics[width=1.4in]{gpu.jpg}
+\end{figure}
+
+%    \begin{itemize}
+%    \item \textbf{Code} script to be executed
+%    \item \textbf{Data} in-memory, files, database, etc
+%    \item \textbf{Platform} 4 core laptop, server with GPU, Spark cluster,
+%        etc
+%    \end{itemize}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+
+\frametitle{Is it worth it to go parallel?}
+
+    \centerline{\includegraphics[height=2.5in]{../compute_times/overhead}}
+
+% This has to be answered for every piece of code, every time
+
+% If there wasn't any overhead, we would use it all the time for
+    % everything.
+
+% If you start up a process, you want to keep it around
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+
+    \frametitle{Creating efficient code as a constrained optimization
+    problem}
+
+\textbf{Parameters}
+\begin{itemize}
+    \item number of processor cores to use
+    \item size of each chunk
+    \item which functions to combine in one processing step
+\end{itemize}
+
+\textbf{Constraints}
+\begin{itemize}
+    \item number of cores available
+    \item network bandwidth
+    \item disk IO speed
+    \item available memory
+\end{itemize}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{One version of the optimization problem}
+
+    % TODO: Get Duncan's feedback
+\begin{itemize}
+    \item $w_i$ worker startup time
+    \item $c(x_i)$ communication time to send $x_i$ and receive $f(x_i)$.
+    \item $e(x_i)$ time to evaluate $f(x_i)$ on a worker.
+\end{itemize}
+
+Then we minimize
+\[
+    \max_{x_i} w_i + c(x_i) + e(x_i)
+\]
+for $x = (x_1, \dots, x_m)$, a partition of $x$ into chunks.
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{If we want to compute on out of memory data:}
+
+\begin{itemize}
+    \item $w$ worker startup time
+    \item $l$ latency in communication
+    \item $t(n_j)$ time to compute on $n_j$ elements
+    \item $m(n_j)$ memory required to compute on $n_j$ elements
+\end{itemize}
+
+Then we minimize
+\[
+    w + 2l + \max (t(n_j))
+\]
+such that 
+
+\begin{itemize}
+    \item $\sum n_j = n$ total data points
+\end{itemize}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
     \frametitle{Idiomatic R already expresses computation in a natural
     parallel way through ``apply'' functions.}
 
 \begin{verbatim}
-x = replicate(5, rnorm(n_i), simplify = FALSE)
+x = replicate(5, rnorm(n_j), simplify = FALSE)
 
 partialmeans = lapply(x, mean)
 
@@ -263,7 +370,7 @@ by(data, INDICES = station, FUN = piecewise_rlm)
 \begin{itemize}
     \item \textbf{Plain old R code: \texttt{lapply(), sapply(), for(), \dots}}
 \item User Layer: foreach, future, partools, ddR, biganalytics, RevoScaleR
-\item R layer: SNOW, multicore, parallel, bigmemory, Rmpi
+\item R layer: SNOW, parallel, bigmemory, Rmpi
 \item System Layer: processes, *NIX fork(), memory maps, network sockets,
     MPI
 \end{itemize}
@@ -286,19 +393,6 @@ by(data, INDICES = station, FUN = piecewise_rlm)
 %    g()                     # Returns 11!
 %
 %\end{verbatim}
-
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
-
-    \frametitle{(Code, Data, Platform) together determine the execution
-    strategy}
-
-    \begin{itemize}
-    \item \textbf{Code} script to be executed
-    \item \textbf{Data} in-memory, files, database, etc
-    \item \textbf{Platform} 4 core laptop, server with GPU, Spark cluster
-    \end{itemize}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -361,84 +455,6 @@ by(data, INDICES = station, FUN = piecewise_rlm)
 %
 %        \item Example: $f(x) = \sum_{i = 1}^n x_i$
 %    \end{itemize}
-
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
-
-\frametitle{Parallel processing comes with overhead}
-
-    \centerline{\includegraphics[height=2.5in]{../compute_times/overhead}}
-
-% If there wasn't any overhead, we would use it all the time for
-    % everything.
-
-% So if you start up a process, you want to keep it around
-
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
-
-
-    \frametitle{Creating efficient code as a constrained optimization
-    problem}
-
-\textbf{Parameters}
-\begin{itemize}
-    \item number of processor cores to use
-    \item size of each chunk
-    \item which functions to combine in one processing step
-\end{itemize}
-
-\textbf{Constraints}
-\begin{itemize}
-    \item number of cores available
-    \item network bandwidth
-    \item disk IO speed
-    \item available memory
-\end{itemize}
-
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
-
-    \frametitle{One version of the optimization problem}
-
-    % TODO: Get Duncan's feedback
-\begin{itemize}
-    \item $w_i$ worker startup time
-    \item $c(x_i)$ communication time to send $x_i$ and receive $f(x_i)$.
-    \item $e(x_i)$ time to evaluate $f(x_i)$ on a worker.
-\end{itemize}
-
-Then we minimize
-\[
-    \max_{x_i} w_i + c(x_i) + e(x_i)
-\]
-for $x = (x_1, \dots, x_m)$, a partition of $x$ into chunks.
-
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
-
-    \frametitle{If we want to compute on out of memory data:}
-
-\begin{itemize}
-    \item $w$ worker startup time
-    \item $l$ latency in communication
-    \item $t(n_i)$ time to compute on $n_i$ elements
-    \item $m(n_i)$ memory required to compute on $n_i$ elements
-\end{itemize}
-
-Then we minimize
-\[
-    w + 2l + \max (t(n_i))
-\]
-such that 
-
-\begin{itemize}
-    \item $\sum n_i = n$ total data points
-\end{itemize}
 
 
 \end{frame}

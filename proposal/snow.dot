@@ -1,7 +1,7 @@
 digraph {
     rankdir=LR;
     //size="8,5"
-    //node [shape = square]; 2;
+    node [shape = square]; 1, 2, 3;
     //node [shape = none];
 
     0 [label="Manager"];
