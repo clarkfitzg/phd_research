@@ -39,13 +39,35 @@
 
 \frame{\titlepage}
 
-\begin{frame}
-    \frametitle{Outline}
-    \tableofcontents
-\end{frame}
+%\begin{frame}
+%    \frametitle{Outline}
+%    \tableofcontents
+%\end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{Given sequential code and a description of data, the goal is to
+    produce code which runs in parallel.}
+
+\centerline{\includegraphics[width=.8\textwidth]{../workflow.pdf}}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Motivating Example}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{The purpose of this example is to motivate the proposed research}
+
+    \begin{itemize}
+        \item Working with Professor Michael Zhang from Civil Engineering
+        \item Illustrates complexity which can arise when computing with
+            larger data sets.
+        \item Not everyone who uses R is a software engineer
+    \end{itemize}
+
+\end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
@@ -133,7 +155,7 @@ by(data, INDICES = station, FUN = piecewise_rlm)
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Simple Example}
+\section{Parallel Concepts}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
@@ -446,7 +468,7 @@ by(data, INDICES = station, FUN = piecewise_rlm)
 
     \frametitle{An iterator produces data on demand}
 
-    \centerline{\includegraphics[height=2in]{../iterator.pdf}}
+    \centerline{\includegraphics[height=1.6in]{../iterator.pdf}}
 
     \begin{itemize}
         \item Most flexible of the above options
@@ -454,10 +476,13 @@ by(data, INDICES = station, FUN = piecewise_rlm)
         \item Operate well with high performance IO libraries
     \end{itemize}
 
+    \pause
 
+    \begin{itemize}
+        \item Unfamiliar to R programmers
+        \item Not ideal if you need the whole data set
+    \end{itemize}
 
-    % Iterators are appealing for pipelined parallelism, and for using an
-    % underl
 
 %\end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
