@@ -250,6 +250,30 @@ partial_means[i] = mean(x_chunk)
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]
+
+    \frametitle{CodeDepends is a tool for analyzing code as a data
+    structure.}
+
+    % One should know how 
+
+\begin{verbatim}
+n <- 10
+x <- rnorm(n)
+n <- 100
+print(x + n)
+\end{verbatim}
+
+\begin{figure}
+            %\hfill
+    \includegraphics[width=2in]{../../experiments/ast/ast.pdf}
+            %\hfill
+    \includegraphics[width=1.3in]{../../experiments/ast/codegraph.pdf}
+            \hfill
+\end{figure}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
 
