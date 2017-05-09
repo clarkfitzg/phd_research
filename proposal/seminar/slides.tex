@@ -99,11 +99,19 @@ data for the whole state}
 
 \centerline{\includegraphics[height=2.5in]{fundamental_diagram.png}}
 
+This shows 1 day for 1 station.
+
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
     \frametitle{Using more data allows new types of analyses}
+
+    % Policy is especially interesting, because that can potentially be changed
+    % Recommending state wide policy, then why not look at data for the
+    % whole state?
+
+    We can fit lines in parallel among different stations.
 
     \begin{itemize}
         \item Effect of policy such as speed limits and carpool lanes
@@ -112,23 +120,29 @@ data for the whole state}
         \item Clustering detectors
     \end{itemize}
 
-    % Policy is especially interesting, because that can potentially be changed
-    % Recommending state wide policy, then why not look at data for the
-    % whole state?
-
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
     \frametitle{R expresses statistical computation well}
 
-\centerline{\includegraphics[height=2in]{fundamental_diagram.png}}
+% This is a good reason to stay with R
+
+    % Fork() avoids having to 
+
+\centerline{\includegraphics[height=1in]{fundamental_diagram.png}}
 
 \begin{verbatim}
-by(data, INDICES = station, FUN = piecewise_rlm)
+by(data=single_day, INDICES = station, FUN = my_rlm)
 \end{verbatim}
 
-% This is a good reason to stay with R, for that matter.
+    \begin{itemize}
+        \item For a single day with 377 million observations this can be
+            done on a single machine.
+        \item A sensible way to run this in parallel is to \texttt{fork()}
+            the process after reading in the data.
+        \item So you write a bunch of code to do that :)
+    \end{itemize}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
