@@ -329,8 +329,7 @@ print(x + n)
 \begin{frame}
 
 
-    \frametitle{Creating efficient code as a constrained optimization
-    problem}
+    \frametitle{Factors to consider}
 
 \textbf{Parameters}
 \begin{itemize}
@@ -351,7 +350,7 @@ print(x + n)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-    \frametitle{One version of the optimization problem}
+    \frametitle{For the map reduce paradigm with many workers}
 
     % TODO: Get Duncan's feedback
 \begin{itemize}
@@ -362,33 +361,33 @@ print(x + n)
 
 Then we minimize
 \[
-    \max_{x_i} w_i + c(x_i) + e(x_i)
+    \max_{x_i} \left( w_i + c(x_i) + e(x_i) \right)
 \]
 for $x = (x_1, \dots, x_m)$, a partition of $x$ into chunks.
 
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
-
-    \frametitle{If we want to compute on out of memory data:}
-
-\begin{itemize}
-    \item $w$ worker startup time
-    \item $l$ latency in communication
-    \item $t(n_j)$ time to compute on $n_j$ elements
-    \item $m(n_j)$ memory required to compute on $n_j$ elements
-\end{itemize}
-
-Then we minimize
-\[
-    w + 2l + \max (t(n_j))
-\]
-such that 
-
-\begin{itemize}
-    \item $\sum n_j = n$ total data points
-\end{itemize}
-
+%\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{frame}
+%
+%    \frametitle{If we want to compute on out of memory data:}
+%
+%\begin{itemize}
+%    \item $w$ worker startup time
+%    \item $l$ latency in communication
+%    \item $t(n_j)$ time to compute on $n_j$ elements
+%    \item $m(n_j)$ memory required to compute on $n_j$ elements
+%\end{itemize}
+%
+%Then we minimize
+%\[
+%    w + 2l + \max (t(n_j))
+%\]
+%such that 
+%
+%\begin{itemize}
+%    \item $\sum n_j = n$ total data points
+%\end{itemize}
+%
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
