@@ -52,6 +52,13 @@
 
 \centerline{\includegraphics[width=.8\textwidth]{../workflow.pdf}}
 
+\pause 
+
+    \begin{itemize}
+        \item R's user base consists of data analysts, domain scientists 
+        \item Software engineering skill varies
+    \end{itemize}
+
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Motivating Example}
@@ -62,9 +69,7 @@
 
     \begin{itemize}
         \item Working with Professor Michael Zhang from Civil Engineering
-        \item Illustrates complexity which can arise when computing with
-            larger data sets.
-        \item Not everyone who uses R is a software engineer
+        \item Illustrates complexity when computing with larger data sets
     \end{itemize}
 
 \end{frame}
@@ -95,7 +100,8 @@ data for the whole state}
 \begin{frame}
 
     \frametitle{Traffic engineers study the relationships between count and
-    occupancy \cite{li2011fundamental}}
+    occupancy}
+    %\cite{li2011fundamental}
 
 \centerline{\includegraphics[height=2.5in]{fundamental_diagram.png}}
 
@@ -146,12 +152,35 @@ by(data=single_day, INDICES = station, FUN = my_rlm)
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
+\begin{frame}[fragile]
 
-    \frametitle{Parallel code allows computation on larger data sets}
+    \frametitle{But small changes can totally change the
+    computation}
 
-    \pause
-    But it can distract from the research question.
+    If we compute on one year then this will exceed memory.
+
+\begin{verbatim}
+by(data=one_year, INDICES = station, FUN = my_rlm)
+\end{verbatim}
+
+\pause 
+
+    A different model, such as least squares, may be able to process the
+    data as a stream.
+
+\begin{verbatim}
+by(data=one_year, INDICES = station, FUN = my_lm)
+\end{verbatim}
+
+\pause 
+
+    Adding in another variable, say weather condition, changes everything
+    once again.
+
+\begin{verbatim}
+by(data=one_year, INDICES = list(station, weather),
+    FUN = my_rlm)
+\end{verbatim}
 
 %\end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -214,11 +243,10 @@ Suppose that all $n_j$'s are the same for the following examples, so $n =
     \frametitle{The weighted mean can be directly translated into R code}
 
 \begin{verbatim}
-meanrnorm = function(n) mean(rnorm(n))
 
-partial_means = sapply(rep(n_j, p), meanrnorm)
-
+partial_means = replicate(p, mean(rnorm(n_j)))
 xbar = mean(partial_means)
+
 \end{verbatim}
 
 \pause 
@@ -230,34 +258,53 @@ xbar = mean(partial_means)
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]
+\begin{frame}
 
     \frametitle{The same computation can be evaluated on many workers
     simultaneously}
 
 \centerline{\includegraphics[height=2in]{../snow.pdf}}
 
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]
+
+    \frametitle{Here is one way to parallelize this code}
+
 \begin{verbatim}
-parallel::clusterCall(cluster, meanrnorm, n_j)
+library(parallel)
+p = detectCores()
+n_j = n / p
+cluster = makeCluster(p)
+clusterExport(cluster, "n_j")
+partial_means = unlist(
+    clusterEvalQ(cluster, mean(rnorm(n_j))))
+xbar = mean(partial_means)
 \end{verbatim}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
-    \frametitle{Pipeline parallelism is like a factory assembly line.}
+    \frametitle{We're considering a system that transforms expressions}
 
-\centerline{\includegraphics[width=\textwidth]{../pipeline.pdf}}
+    Input:
 
 \begin{verbatim}
-# Worker 1
-x_chunk = rnorm(n_j)
-serialize(x_chunk, worker2)
+xbar = mean(rnorm(n))
+\end{verbatim}
 
+    Output:
 
-# Worker 2
-x_chunk = unserialize(worker1)
-partial_means[i] = mean(x_chunk)
+\begin{verbatim}
+library(parallel)
+p = detectCores()
+n_j = n / p
+cluster = makeCluster(p)
+clusterExport(cluster, "n_j")
+partial_means = unlist(
+    clusterEvalQ(cluster, mean(rnorm(n_j))))
+xbar = mean(partial_means)
 \end{verbatim}
 
 \end{frame}
@@ -455,6 +502,26 @@ by(data, INDICES = station, FUN = piecewise_rlm)
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{Knowledge of the data allows us to generate more specialized code}
+
+    \begin{itemize}
+
+	\item File size
+	\item Dimensions of table / matrix / array
+	\item Possible values for factor
+	\item Column classes
+	\item Randomized rows
+	\item Sorted / grouped
+	\item Indexed
+	\item Including sufficient statistics
+
+    \end{itemize}
+
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
     \frametitle{One challenge is how to properly abstract ``data''}
@@ -525,30 +592,31 @@ by(data, INDICES = station, FUN = piecewise_rlm)
 
     \frametitle{Compiled R code provides even more efficiency}
 
-    This work will complement efforts to compile R.
-
-Probably follow the OpenCL kernel model.
+\begin{enumerate}
+    \item Parallelization will complement efforts to compile R
+    \item Compiled code potentially allows the use of shared memory threads
+    \item May follow the OpenCL kernel model
+\end{enumerate}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusion}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 \begin{frame}
 
-    \frametitle{Follow up on the sensor example}
-
-    Program should:
-
-\begin{enumerate}
-    \item Remove any observations it can
-    \item Reorganize files on disk based on station ID
-    \item Apply function to each station ID file
-\end{enumerate}
-
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
+%    \frametitle{Follow up on the sensor example}
+%
+%    Program should:
+%
+%\begin{enumerate}
+%    \item Remove any observations it can
+%    \item Reorganize files on disk based on station ID
+%    \item Apply function to each station ID file
+%\end{enumerate}
+%
+%\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{frame}
 
     \frametitle{Some support infrastructure is necessary}
 
@@ -564,24 +632,9 @@ Probably follow the OpenCL kernel model.
 
     \frametitle{Next Steps}
 
-    The larger data sets are very interesting. 
-
-    Solving the right problem...
-    
-    How can we come back
-    to statistics? Norm keeps pushing me back to thinking about the 
-
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
-
-    \frametitle{More Applications}
-
 \begin{itemize}
-    \item Benford test on election campaign contribution data
-        \cite{tam2007breaking}
-    \item Forest greenness satellite imagery (Andrew Latimer)
-    \item Simulating spread of disease (Nistara Randhawa)
+\item Large data sets are only interesting if they provide fresh insight
+\item Combining statistical results with computational capabilities
 \end{itemize}
 
 \end{frame}
@@ -591,7 +644,8 @@ Probably follow the OpenCL kernel model.
     \frametitle{Acknowledgements}
 
 \begin{itemize}
-    \item Feedback from Duncan Temple Lang and Nick Ulle
+    \item Feedback from Professor Duncan Temple Lang and Nick Ulle
+    \item Professor Michael Zhang from Civil Engineering
     \item Applications from Data Science Institute Affiliates
 \end{itemize}
 
@@ -612,16 +666,43 @@ Probably follow the OpenCL kernel model.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-    \frametitle{The weighted mean can be directly translated into R code}
+    \frametitle{More Applications}
+
+\begin{itemize}
+    \item Benford test on election campaign contribution data
+        %\cite{tam2007breaking}
+    \item Forest greenness satellite imagery (Andrew Latimer)
+    \item Simulating spread of disease (Nistara Randhawa)
+\end{itemize}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]
+
+    \frametitle{Pipeline parallelism is like a factory assembly line.}
+
+\centerline{\includegraphics[width=\textwidth]{../pipeline.pdf}}
+
+\begin{verbatim}
+# Worker 1
+x_chunk = rnorm(n_j)
+serialize(x_chunk, worker2)
+
+
+# Worker 2
+x_chunk = unserialize(worker1)
+partial_means[i] = mean(x_chunk)
+\end{verbatim}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \end{frame}
-\begin{frame}
-\frametitle{References}
-\printbibliography
-\end{frame}
+%\begin{frame}
+%\frametitle{References}
+%\printbibliography
+%\end{frame}
 
 \end{document}
