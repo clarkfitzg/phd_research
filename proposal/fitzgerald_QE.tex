@@ -185,20 +185,19 @@ the system and the data. This is what we're working towards.
 \label{fig:workflow}
 \end{figure}
 
-Figure \ref{fig:workflow} shows the high level idea.
+Figure \ref{fig:workflow} shows the high level goal.
 
 Steps:
 
 \begin{itemize}
     \item Parse the code, gathering dependency information
     \item Identify points to parallelize
-    \item May try to evaluate some expressions to learn how long they'll
+    \item Speculatively evaluate some expressions (after checking for side effects) to learn how long they'll
         take
     \item Determine if preprocessing of the data is required
     \item Generate code that will run in parallel on that platform
     \item Estimate total time required to run
 \end{itemize}
-
 
 
 \section{Simple Example}
@@ -260,14 +259,7 @@ Equation \ref{eq:mean_partial} can be directly translated into R code as
 follows:
 
 \begin{verbatim}
-
-n = 1e5
-p = 10
-n_i = as.integer(n / p)
-
-meanrnorm = function(n) mean(rnorm(n))
-
-partial_means = sapply(rep(n_i, p), meanrnorm)
+partial_means = replicate(p, mean(rnorm(n_j)))
 xbar = mean(partial_means)
 \end{verbatim}
 
@@ -276,14 +268,12 @@ programming patterns as parallel code. If $M$ is the size of physical memory in
 bytes then this code is high performance in the sense
 that execution time will continue to be linear while $n < O(M^2)$, just
 as it was for small $n < O(M)$. It can also be modified to handle
-arbitrarily large $n$. This is because \texttt{sapply} runs
+arbitrarily large $n$. This is because \texttt{replicate()} runs
 sequentially, so the memory footprint can be bounded since the intermediate
-vectors will be of length $n / p$. 
+vectors will be of length $n_j$. 
 
 What aspects of the code changed? In the initial code the user
 supplied $n$, and it remained to choose $p$ and $n_i$.
-The expression \texttt{mean(rnorm(n))} was changed into a function that was
-called and reduced using \texttt{mean()}.
 
 \subsection{SNOW Cluster}
 
@@ -296,6 +286,17 @@ similar to \ref{section:sequential}; the \texttt{sapply}
 becomes:
 
 \begin{verbatim}
+library(parallel)
+p = detectCores()
+n_j = n / p
+cluster = makeCluster(p)
+clusterExport(cluster, "n_j")
+partial_means = unlist(
+    clusterEvalQ(cluster, mean(rnorm(n_j))))
+xbar = mean(partial_means)
+\end{verbatim}
+
+\begin{verbatim}
 partial_means = parallel::clusterCall(cluster, meanrnorm, n_i)
 \end{verbatim}
 
@@ -304,6 +305,8 @@ cluster to be evaluated in parallel with argument \texttt{n\_i}.  Given an
 existing cluster this is very efficient, since we are sending a few bytes
 of code over the network and then returning a single number. This parallel model is
 useful in statistics when doing independent simulations.
+
+% TODO: Come back here.
 
 \subsection{Forking}
 
