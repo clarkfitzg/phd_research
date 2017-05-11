@@ -2,7 +2,7 @@ source("../depend_graph.R")
 
 #igraph_options(plot.layout=layout_as_tree)
 
-s = readScript("~/Downloads/DTL.R")
+s = readScript("DTLfirst.R")
 
 # I see 5 edges coming into 24 on the graph, which corresponds to the 5
 # inputs in s[[24]].
