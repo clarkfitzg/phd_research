@@ -1,4 +1,20 @@
+Thu May 11 09:44:55 PDT 2017
 
+Noting feedback after the talk at the student seminar.
+
+- This is pretty different from standard stats QE
+- Could use a better example than the mean, ie. how well does this
+  generalize to something we actually want to do?
+- Have other examples in backup slides
+- Why not sample if just fitting lines? Question came up.
+- Be more concrete in scope, ie. this is what I will do first, this is how
+  far I may be able to get.
+- Wolfgang may push on things such as, "how to find good chunk size ni?"
+- Describe challenges
+
+
+Ideas for other examples: bootstrap or cross validation demonstrating
+shared memory. outer() for exhaustive simulation studies.
 
 
 Mon Apr 24 09:58:41 PDT 2017

@@ -80,14 +80,13 @@
     Conventional systems for parallel programming require users to modify
     existing code to take advantage of a platform's computational
     capabilities, which may include multiprocessing or Graphical Processing
-    Units (GPU)s. In this presentation we review the state of the art for
-    parallel programming in R and propose code analysis methods to detect
-    the potential for parallel execution. The results of the analysis can
-    then be used to rewrite and execute semantically equivalent parallel
-    instructions, without requiring the user to modify their original code.
-    We consider a motivating case study using robust regression to analyze
-    the operating characteristics California's highway traffic sensor
-    stations on hundreds of gigabytes of traffic sensor data.
+    Units (GPU)s. In this proposal we consider code analysis methods to
+    detect the potential for parallel execution. The results of the
+    analysis can then be used to rewrite and execute semantically
+    equivalent parallel instructions, without requiring the user to modify
+    their original code.  We consider a motivating case study analyzing the
+    operating characteristics California's highway traffic sensor stations
+    on hundreds of gigabytes of traffic sensor data.
 
 \end{abstract}
 
@@ -108,7 +107,7 @@ code, potentially reorganizing it for efficient execution on the data and
 platform. This doesn't mean that the system is inventing new algorithms on
 the fly. But it should be capable of tuning existing parameters to the
 system at hand. An example of a parameter to be tuned is the chunk size
-$n_i$ as described in \ref{section:sequential}.
+$n_j$ as described in \ref{section:sequential}.
 
 This project is in the spirit of compiling R, since it treats R code as
 a set of high level directions, and it potentially generates alternative
@@ -192,7 +191,8 @@ Steps:
 \begin{itemize}
     \item Parse the code, gathering dependency information
     \item Identify points to parallelize
-    \item Speculatively evaluate some expressions (after checking for side effects) to learn how long they'll
+    \item Speculatively evaluate some expressions (after checking for side
+        effects) to estimate how long they'll
         take
     \item Determine if preprocessing of the data is required
     \item Generate code that will run in parallel on that platform
@@ -210,8 +210,8 @@ Steps:
 % you might identify these programmatically and what are some of the
 % challenges
 
-Now we use a simple example to focus on the underlying computational models
-for various platforms.  Consider computing the mean,
+Now we use a simple example to see exactly what translating code might look
+like.  Consider computing the mean,
 
 \begin{equation}
     \bar{x} = \frac{1}{n} \sum_{i = 1}^n x_i
@@ -249,8 +249,8 @@ Equation \ref{eq:mean} as a weighted mean.
 
 It's important to correctly handle the cases when $n$ is not divisible by $p$
 and the computation / data cannot be evenly split. For simplicity in the
-examples below, suppose that they can be split evenly so $n_i$ is the same
-for all $i$.
+examples below, suppose that they can be split evenly so $n_n$ is the same
+for all $j$.
 
 \subsection{Sequential Execution}
 \label{section:sequential}
@@ -273,7 +273,7 @@ sequentially, so the memory footprint can be bounded since the intermediate
 vectors will be of length $n_j$. 
 
 What aspects of the code changed? In the initial code the user
-supplied $n$, and it remained to choose $p$ and $n_i$.
+supplied $n$, and it remained to choose $p$ and $n_j$.
 
 \subsection{SNOW Cluster}
 
@@ -282,8 +282,8 @@ consist of independent worker R processes created by a manager process. The
 processes communicate over network sockets, and they may be on one or many
 physical machines.  This is the type of cluster used by partools and
 Software Alchemy \cite{R-partools} \cite{matloff2014software}.  This is
-similar to \ref{section:sequential}; the \texttt{sapply}
-becomes:
+similar to \ref{section:sequential}; the \texttt{replicate()}
+becomes \texttt{clusterEvalQ()}:
 
 \begin{verbatim}
 library(parallel)
@@ -296,116 +296,11 @@ partial_means = unlist(
 xbar = mean(partial_means)
 \end{verbatim}
 
-\begin{verbatim}
-partial_means = parallel::clusterCall(cluster, meanrnorm, n_i)
-\end{verbatim}
-
 The manager sends the \texttt{meanrnorm()} function to each worker in the
-cluster to be evaluated in parallel with argument \texttt{n\_i}.  Given an
+cluster to be evaluated in parallel with argument \texttt{n\_j}.  Given an
 existing cluster this is very efficient, since we are sending a few bytes
 of code over the network and then returning a single number. This parallel model is
 useful in statistics when doing independent simulations.
-
-% TODO: Come back here.
-
-\subsection{Forking}
-
-On a server capable of forking, for example the UC Davis statistics
-department servers which have as many as 72 cores, one can use this
-approach. Forking uses a \texttt{fork()} system call, which can create
-several worker processes with read access to data on the master. This is
-efficient if a large data set has been loaded into the manager process.
-
-\begin{verbatim}
-x = rnorm(n)
-
-starting_indices = as.integer(seq(from = 1, to = n, by = n_i))
-ending_indices = starting_indices + (n_i - 1L)
-
-index_mean = function(start, end) mean(x[start:end])
-
-partial_means = parallel::mcmapply(index_mean, starting_indices, ending_indices)
-
-xbar = mean(partial_means)
-\end{verbatim}
-
-This code differs from the SNOW code since each worker can read $x$ without
-explicitly exporting it. In statistics we might use this approach for
-parallel cross validation of a model, since each worker will need to read
-the same data.
-
-\subsection{GPU}
-
-The GPU offers the highest level of parallelism, which could consist of
-1000's of threads working at once. Following the OpenCL specification we'll
-refer to a GPU as a device, because this can run on other architectures as
-well. Here are the simplified steps:
-
-\begin{itemize}
-    \item create a kernel which will run in parallel
-    \item transfer the data to the device
-    \item run the kernel
-    \item transfer the results back
-\end{itemize}
-
-For this operation the kernel should do the equivalent of the
-\texttt{meanrnorm()} function above.  Here's psuedo code for how a kernel
-might look in OpenCL, provided the device can fit all of $x$ in memory.
-This could be rewritten for larger than device memory by following the
-approach in \ref{section:sequential}.
-
-\begin{verbatim}
-# include <random.h>
-
-__kernel void meanrnorm(__global float *x
-        , __global float *partial_means
-        , int n_i
-        )
-{
-    int id = get_global_id(0);
-
-    Random random_state = seed_rand(id);
-    int start_index = id * n_i;
-    int end_index = start_index + n_i;
-
-    for(int i = start_index; i < end_index; i++)
-    {
-        random_state = next_rand(random_state);
-        x[i] = rnorm(random_state);
-    }
-    xbar_local = mean(x, start_index, end_index);
-    partial_means[id] = xbar_local;
-}
-\end{verbatim}
-
-This code uses shared memory, since $x$ is a global array.
-One can then either write another kernel to reduce
-\texttt{partial\_means} on the GPU or return them to the CPU.
-
-\subsection{Threads}
-
-For this problem CPU threads could be utilized in the same way as the GPU.
-Indeed, OpenCL was designed to work on multiple platforms including CPU's
-and GPU's. The difference is that the memory transfers from host to device
-don't take any time, because the host and device are the same.
-
-\subsection{Memory Mapping}
-
-Memory mapping allows one to treat a hard drive as if it is primary memory.
-This allows one to have R objects larger than primary memory, and also to
-share memory between processes \cite{bigmemory}.
-
-\begin{verbatim}
-x = bigmemory::filebacked.big.matrix(nrow = n_i, ncol = p, backingfile = "x.bigmatrix")
-for (j in seq(p)){
-    x[, j] = rnorm(n_i)
-}
-xbar = biganalytics::mean(x)
-\end{verbatim}
-
-Here \texttt{biganalytics::mean(x)} is used explicitly to emphasize that we
-are calling the \texttt{mean()} method defined for \texttt{bigmatrix}
-objects.
 
 \subsection{Pipelines}
 
@@ -417,7 +312,7 @@ looping over chunks the important parts of the code are:
 
 \begin{verbatim}
 # Worker 1
-x_chunk = rnorm(n_i)
+x_chunk = rnorm(n_j)
 serialize(x_chunk, worker2)
 \end{verbatim}
 
@@ -441,10 +336,6 @@ sockets or through MPI.
 
 \section{Design Considerations}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-The approaches in the previous section can sometimes be combined together
-into hybrid approaches. For example, forked process might run multithreaded
-code.
 
 \subsection{Overhead}
 
@@ -513,16 +404,20 @@ Some of the work here may mean enhancing the capabilities of these
 intermediate layers. For example, a file based sort usable from R allows
 ``group by'' and facilitiates streaming applications.
 
-\section{Example: Fraud detection}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-Benford's law
-
 \section{Code analysis}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Static code analysis is integral to this approach, and we build on the 
 CodeDepends package \cite{R-CodeDepends}.
+
+What to do first:
+
+\begin{itemize}
+    \item Is it possibly worth it to parallelize? Software to identify the
+        entry points and start with profiling.
+    \item SNOW on single node, pure functions
+    \item Data abstraction?
+\end{itemize}
 
 \subsection{Streaming Parallelism}
 
