@@ -1,22 +1,37 @@
-substitute_q = function(x, env)
-    # Follow Hadley's Advanced R book
+lapply_to_mclapply = function(expr)
 {
-    call = substitute(substitute(y, env), list(y = x))
-    eval(call)
-}
-
-
-parallelize = function(expr)
-{
+    # Changes lapply to parallel::mclapply
+    #
     lapply = quote(parallel::mclapply)
-    #inner_expr = expr
     expr = force(expr)
+    # Following Wickham's Advanced R book
     call = substitute(substitute(expr))
     eval(call)
 }
 
+############################################################
 
-# All I want to do is change lapply to parallel::mclapply
 e1 = quote(xmeans <- lapply(x, mean))
 
-parallelize(e1)
+lapply_to_mclapply(e1)
+
+e2 = quote({
+    xmeans <- lapply(x, mean)
+    lapply(x, median)
+})
+
+lapply_to_mclapply(e2)
+
+
+############################################################
+# Swap out functions more generally
+
+func_swap = function(expr, ...)
+{
+    expr = force(expr)
+    # Following Wickham's Advanced R book
+    call = substitute(substitute(expr, list(...)))
+    eval(call)
+}
+
+func_swap(e1, lapply = quote(parallel::mclapply))
