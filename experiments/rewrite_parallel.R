@@ -8,10 +8,15 @@ substitute_q = function(x, env)
 
 parallelize = function(expr)
 {
-    substitute_q(expr, list(lapply = get("mclapply")))
+    lapply = quote(parallel::mclapply)
+    #inner_expr = expr
+    expr = force(expr)
+    call = substitute(substitute(expr))
+    eval(call)
 }
 
 
+# All I want to do is change lapply to parallel::mclapply
 e1 = quote(xmeans <- lapply(x, mean))
 
 parallelize(e1)
