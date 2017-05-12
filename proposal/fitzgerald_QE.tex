@@ -173,32 +173,6 @@ works on small data sets, and then automatically take steps to scale and to
 parallelize the operations? It could also tune them for the specifics of
 the system and the data. This is what we're working towards.
 
-\section{Steps for Code Analysis}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\begin{figure}
-\centering
-\includegraphics[width=.5\linewidth]{workflow}
-\caption{Given sequential code and a description of the data we want
-    a modified computational parallel plan tailored to a specific platform.}
-\label{fig:workflow}
-\end{figure}
-
-Figure \ref{fig:workflow} shows the high level goal.
-
-Steps:
-
-\begin{itemize}
-    \item Parse the code, gathering dependency information
-    \item Identify points to parallelize
-    \item Speculatively evaluate some expressions (after checking for side
-        effects) to estimate how long they'll
-        take
-    \item Determine if preprocessing of the data is required
-    \item Generate code that will run in parallel on that platform
-    \item Estimate total time required to run
-\end{itemize}
-
 
 \section{Simple Example}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -302,38 +276,6 @@ existing cluster this is very efficient, since we are sending a few bytes
 of code over the network and then returning a single number. This parallel model is
 useful in statistics when doing independent simulations.
 
-\subsection{Pipelines}
-
-This parallel programming pattern is rather different. A useful analogy is a
-factory assembly line, with each worker performing one or more operations
-and then passing the result to the next worker. The first worker could generate a
-subvector of random numbers and pass it along. Ignoring the setup and
-looping over chunks the important parts of the code are:
-
-\begin{verbatim}
-# Worker 1
-x_chunk = rnorm(n_j)
-serialize(x_chunk, worker2)
-\end{verbatim}
-
-The second worker receives the random numbers and computes the mean.
-
-\begin{verbatim}
-# Worker 2
-x_chunk = unserialize(worker1)
-partial_means[i] = mean(x_chunk)
-i = i + 1
-\end{verbatim}
-
-This approach is sensible if the load can be balanced across the workers.
-Each function should take approximately the same amount of time, and the
-overhead required to pass between workers must be much smaller than the
-time spent doing work. These assumptions do not all hold in this case,
-since if $n = 1000$ then \texttt{xchunk = rnorm(n)} takes 125 $\mu s$,
-\texttt{mean(x\_chunk)} takes 6 $\mu s$, and serialization takes at least
-15 $\mu s$. On a practical level this can all be implemented over network
-sockets or through MPI.
-
 \section{Design Considerations}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -404,61 +346,60 @@ Some of the work here may mean enhancing the capabilities of these
 intermediate layers. For example, a file based sort usable from R allows
 ``group by'' and facilitiates streaming applications.
 
-\section{Code analysis}
+\section{Code Analysis}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Static code analysis is integral to this approach, and we build on the 
 CodeDepends package \cite{R-CodeDepends}.
 
-What to do first:
+\subsection{Expression Dependency Graphs}
+
+TODO: Copy stuff from last quarter here and relate it to Pablo's example.
+
+\begin{figure}
+\centering
+\includegraphics[width=.5\linewidth]{workflow}
+\caption{Given sequential code and a description of the data we want
+    a modified computational parallel plan tailored to a specific platform.}
+\label{fig:workflow}
+\end{figure}
+
+Figure \ref{fig:workflow} shows the high level goal.
+
+Steps:
 
 \begin{itemize}
-    \item Is it possibly worth it to parallelize? Software to identify the
-        entry points and start with profiling.
-    \item SNOW on single node, pure functions
-    \item Data abstraction?
+    \item Parse the code, gathering dependency information
+    \item Identify points to parallelize
+    \item Speculatively evaluate some expressions (after checking for side
+        effects) to estimate how long they'll
+        take
+    \item Determine if preprocessing of the data is required
+    \item Generate code that will run in parallel on that platform
+    \item Estimate total time required to run
 \end{itemize}
 
-\subsection{Streaming Parallelism}
+\subsection{Interesting parts of code}
 
-This approach resembles the iterators package \cite{R-iterators} which
-provides data to R as an abstract stream. The difference is that here
-parallelism comes from pipelined operations rather than the more typical
-data parallel model.
+Three types of functions in R are of special interest when doing parallel
+computation: apply functions, vectorized
+functions, and reduce functions.
 
-Let $x$ be a data structure which can be partitioned into chunks $x_1,
-\dots x_k$. Chained function calls such as $f(g(h(x)))$ become:
+Apply functions are higher order functions that include an implicit loop
+which can be parallelized. They include \texttt{lapply, apply, sapply,
+vapply, Map, mapply, by, tapply, outer, replicate}, and follow the basic
+form of an embarrassingly parallel map-reduce problem.
 
-\begin{itemize}
-    \item Worker 1: Compute $h(x_i)$, pass result to worker 2
-    \item Worker 2: Compute $g(\dots)$, pass result to worker 3
-    \item Worker 3: Compute $f(\dots)$.
-\end{itemize}
+Vectorized functions apply functions elementwise, for example arithmetic
+operators \texttt{+, -, *, /}.
 
-This operation can potentially be efficient if each function $h, g,
-f$ takes approximately the same amount of time $T_f$ and $T_f >> T_p$,
-where $T_p$ is the time it takes to pipe the data between the 
-workers \cite{arnold2015iotools}. More generally, if there is a sequence of
-functions $f(x) = f_n(\dots f(_1(x)))$ then a single worker can execute
-multiple functions such that the load is balanced. Every added worker will
-increase the latency because of communication overhead.
+TODO: Relate vectorization and loop fusion
 
-\subsection{Apply functions}
-
-The obvious way to make code parallel is to search for the use of
-apply functions and transform them into the parallel versions. For example, 
-\texttt{lapply()} can be replaced with \texttt{mclapply()} from the
-parallel package to use fork based parallelism.
-
-Many of the language idioms in base R already express computation in the
-map reduce paradigm.
-
-\subsection{Vectorization}
-
-Vectorization
-
-Goes hand in hand with loop fusion.
-
+The general form of the \texttt{Reduce()} function in R collapses elements
+into a single result by calling a function $f()$ repeatedly on the
+elements. For example \texttt{Reduce(f, 1:4)} is equivalent to 
+\texttt{f(f(f(1, 2), 3), 4)}. More common examples that can be written this
+way include \texttt{min, max, mean, sum, prod}.
 
 \subsection{Reduce functions}
 

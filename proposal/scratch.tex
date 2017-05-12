@@ -66,12 +66,87 @@
 \newcommand{\Cov}{\operatorname{Cov}}
 
 
+\begin{document}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\begin{document}
+The obvious way to make code parallel is to search for the use of
+apply functions and transform them into the parallel versions. For example, 
+\texttt{lapply()} can be replaced with \texttt{mclapply()} from the
+parallel package to use fork based parallelism.
+
+Many of the language idioms in base R already express computation in the
+map reduce paradigm.
+
+
+What to do first:
+
+\begin{itemize}
+    \item Is it possibly worth it to parallelize? Software to identify the
+        entry points and start with profiling.
+    \item SNOW on single node, pure functions
+    \item Data abstraction?
+\end{itemize}
+
+\subsection{Streaming Parallelism}
+
+This approach resembles the iterators package \cite{R-iterators} which
+provides data to R as an abstract stream. The difference is that here
+parallelism comes from pipelined operations rather than the more typical
+data parallel model.
+
+Let $x$ be a data structure which can be partitioned into chunks $x_1,
+\dots x_k$. Chained function calls such as $f(g(h(x)))$ become:
+
+\begin{itemize}
+    \item Worker 1: Compute $h(x_i)$, pass result to worker 2
+    \item Worker 2: Compute $g(\dots)$, pass result to worker 3
+    \item Worker 3: Compute $f(\dots)$.
+\end{itemize}
+
+This operation can potentially be efficient if each function $h, g,
+f$ takes approximately the same amount of time $T_f$ and $T_f >> T_p$,
+where $T_p$ is the time it takes to pipe the data between the 
+workers \cite{arnold2015iotools}. More generally, if there is a sequence of
+functions $f(x) = f_n(\dots f(_1(x)))$ then a single worker can execute
+multiple functions such that the load is balanced. Every added worker will
+increase the latency because of communication overhead.
+
 
 This is a prospectus for distribution to the committee for PhD
 Qualifying Exam in June 2017.
+
+\subsection{Pipelines}
+
+This parallel programming pattern is rather different. A useful analogy is a
+factory assembly line, with each worker performing one or more operations
+and then passing the result to the next worker. The first worker could generate a
+subvector of random numbers and pass it along. Ignoring the setup and
+looping over chunks the important parts of the code are:
+
+\begin{verbatim}
+# Worker 1
+x_chunk = rnorm(n_j)
+serialize(x_chunk, worker2)
+\end{verbatim}
+
+The second worker receives the random numbers and computes the mean.
+
+\begin{verbatim}
+# Worker 2
+x_chunk = unserialize(worker1)
+partial_means[i] = mean(x_chunk)
+i = i + 1
+\end{verbatim}
+
+This approach is sensible if the load can be balanced across the workers.
+Each function should take approximately the same amount of time, and the
+overhead required to pass between workers must be much smaller than the
+time spent doing work. These assumptions do not all hold in this case,
+since if $n = 1000$ then \texttt{xchunk = rnorm(n)} takes 125 $\mu s$,
+\texttt{mean(x\_chunk)} takes 6 $\mu s$, and serialization takes at least
+15 $\mu s$. On a practical level this can all be implemented over network
+sockets or through MPI.
+
 
 \subsection{Forking}
 

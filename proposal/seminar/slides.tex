@@ -202,7 +202,7 @@ by(data=one_year, INDICES = list(station, weather),
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
-\frametitle{Illustrate different parallel computational models}
+\frametitle{This example is to show how one might transform code.}
 
 Consider computing the mean,
 
@@ -397,7 +397,7 @@ print(x + n)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-    \frametitle{For the map reduce paradigm with many workers}
+    \frametitle{Estimating time required for the map reduce paradigm with many workers}
 
     % TODO: Get Duncan's feedback
 \begin{itemize}
@@ -510,10 +510,10 @@ by(data, INDICES = station, FUN = piecewise_rlm)
 
 	\item File size
 	\item Dimensions of table / matrix / array
-	\item Possible values for factor
 	\item Column classes
 	\item Randomized rows
 	\item Sorted / grouped
+	\item Possible values for factor
 	\item Indexed
 	\item Including sufficient statistics
 
@@ -618,13 +618,27 @@ by(data, INDICES = station, FUN = piecewise_rlm)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\begin{frame}
 
+    \frametitle{We propose using (Code, Data, Platform) to determine a
+    parallel execution strategy}
+
+\begin{figure}
+            \includegraphics[width=1.4in]{code_screen.png}
+            \hfill
+            \includegraphics[width=1in]{database.png}
+            \hfill
+            \includegraphics[width=1.4in]{gpu.jpg}
+\end{figure}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
     \frametitle{Some support infrastructure is necessary}
 
 \begin{itemize}
-\item Use profiling and microbenchmark to measure overhead
-\item A file sort from R
+\item Profiling and microbenchmark to measure overhead
+\item File sort from R
 \end{itemize}
-
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -633,6 +647,7 @@ by(data, INDICES = station, FUN = piecewise_rlm)
     \frametitle{Next Steps}
 
 \begin{itemize}
+    \item Build and prove an actual system
 \item Large data sets are only interesting if they provide fresh insight
 \item Combining statistical results with computational capabilities
 \end{itemize}
@@ -667,6 +682,8 @@ by(data, INDICES = station, FUN = piecewise_rlm)
 \begin{frame}
 
     \frametitle{More Applications}
+
+    % TODO: Expand on each of these
 
 \begin{itemize}
     \item Benford test on election campaign contribution data
