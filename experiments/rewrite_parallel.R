@@ -1,8 +1,14 @@
-parallelize = function(...)
+substitute_q = function(x, env)
+    # Follow Hadley's Advanced R book
 {
-    # Follow Hadley's Advanced R
-    call = substitute(ex, list(lapply = parallel::mclapply))
+    call = substitute(substitute(y, env), list(y = x))
+    eval(call)
+}
 
+
+parallelize = function(expr)
+{
+    substitute_q(expr, list(lapply = get("mclapply")))
 }
 
 
