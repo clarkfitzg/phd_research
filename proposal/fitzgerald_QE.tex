@@ -96,6 +96,15 @@ Qualifying Exam in June 2017.
 \section{Code, Data, Platform}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\begin{figure}
+\centering
+\includegraphics[width=.5\linewidth]{workflow}
+\caption{Given sequential code and a description of the data we seek
+    a modified computational parallel plan tailored to a specific platform.}
+\label{fig:workflow}
+\end{figure}
+
+Figure \ref{fig:workflow} shows the high level goal.
 \textbf{Code} is a script to be executed.
 \textbf{Data} could be data in memory, single or multiple files, a
 memory-mapped file, a database, a parallel file system, etc.
@@ -150,11 +159,11 @@ perform the regression if the data were organized in files for each sensor
 rather than in files for each day.  One approach then is to reorganize the
 data on disk into this file structure. I did this using a simple single
 threaded R program, and it took 23 hours to run on 134 GB of data.
-Throughput for a conventional hard disk is around 100 MB/s\footnote{RAID,
-an array of disks, could make this faster.}, so a lower bound for reading
-then writing this reorganized data is approximately $2 * 134000 / 100$
-seconds, or 45 minutes. The naive code is 30 times slower than this. So
-small inefficiencies add up.
+Throughput for a conventional hard disk is around 100
+MB/s\footnote{Parallel filesystems will increase throughput}, so a lower
+bound for reading then writing this reorganized data is approximately $2 *
+134000 / 100$ seconds, or 45 minutes. The naive code is 30 times slower
+than this. So small inefficiencies add up.
 
 Another drawback is that it requires very specific instructions to
 reorganize the data for computations grouped by station. Any parallel
@@ -223,7 +232,7 @@ Equation \ref{eq:mean} as a weighted mean.
 
 It's important to correctly handle the cases when $n$ is not divisible by $p$
 and the computation / data cannot be evenly split. For simplicity in the
-examples below, suppose that they can be split evenly so $n_n$ is the same
+examples below, suppose that they can be split evenly so $n_j$ is the same
 for all $j$.
 
 \subsection{Sequential Execution}
@@ -255,8 +264,8 @@ Clusters created by SNOW, a Simple Network Of Workstations,
 consist of independent worker R processes created by a manager process. The
 processes communicate over network sockets, and they may be on one or many
 physical machines.  This is the type of cluster used by partools and
-Software Alchemy \cite{R-partools} \cite{matloff2014software}.  This is
-similar to \ref{section:sequential}; the \texttt{replicate()}
+Software Alchemy \cite{R-partools} \cite{matloff2014software}.  The code
+pattern is similar to \ref{section:sequential}; the \texttt{replicate()}
 becomes \texttt{clusterEvalQ()}:
 
 \begin{verbatim}
@@ -270,11 +279,11 @@ partial_means = unlist(
 xbar = mean(partial_means)
 \end{verbatim}
 
-The manager sends the \texttt{meanrnorm()} function to each worker in the
-cluster to be evaluated in parallel with argument \texttt{n\_j}.  Given an
-existing cluster this is very efficient, since we are sending a few bytes
-of code over the network and then returning a single number. This parallel model is
-useful in statistics when doing independent simulations.
+The manager sends the code  \texttt{mean(rnorm(n\_j))} to each worker in
+the cluster to be evaluated in parallel. Given an existing cluster this is
+very efficient, since we are sending a few bytes of code over the network
+and then returning a single number. This parallel model is useful in
+statistics when doing independent simulations.
 
 \section{Design Considerations}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -314,6 +323,23 @@ vector of length 1 then the overhead takes 2 orders of magnitude more time
 than the actual computation. However, if $x$ is of length 1500 then this
 overhead accounts for only 10 percent of the total execution time, so the
 fixed cost has been amortized.
+
+Each platform has constraints which may include:
+
+\begin{itemize}
+    \item number of cores available
+    \item network bandwidth
+    \item disk IO speed
+    \item available memory
+\end{itemize}
+
+We can control:
+
+\begin{itemize}
+    \item number of processor cores to use
+    \item size of each chunk
+    \item which functions to combine in one processing step
+\end{itemize}
 
 \subsection{Interfaces}
 
@@ -356,16 +382,6 @@ CodeDepends package \cite{R-CodeDepends}.
 
 TODO: Copy stuff from last quarter here and relate it to Pablo's example.
 
-\begin{figure}
-\centering
-\includegraphics[width=.5\linewidth]{workflow}
-\caption{Given sequential code and a description of the data we want
-    a modified computational parallel plan tailored to a specific platform.}
-\label{fig:workflow}
-\end{figure}
-
-Figure \ref{fig:workflow} shows the high level goal.
-
 Steps:
 
 \begin{itemize}
@@ -397,33 +413,13 @@ TODO: Relate vectorization and loop fusion
 
 The general form of the \texttt{Reduce()} function in R collapses elements
 into a single result by calling a function $f()$ repeatedly on the
-elements. For example \texttt{Reduce(f, 1:4)} is equivalent to 
-\texttt{f(f(f(1, 2), 3), 4)}. More common examples that can be written this
-way include \texttt{min, max, mean, sum, prod}.
+elements. For example \texttt{Reduce(`+`, 1:4)} is equivalent to 
+\texttt{(((1 + 2) + 3) + 4)}. More common examples that can be written this
+way include \texttt{min, max, mean, sum, prod}. Since we're computing on
+large data sets numerically stable algorithms should be used here, ie.
+Kahan summation \cite{Robey2011217}.
 
-\subsection{Optimization problem}
-
-One way to approach the question of how to run the code is as an
-optimization problem. The objective function to minimize is the total run
-time. The solution needs to select an appropriate computational model. Each
-model may have various parameters to optimize over, for example:
-
-\begin{itemize}
-    \item number of processor cores to use
-    \item size of each chunk
-    \item which functions to combine in one processing step
-\end{itemize}
-
-Constraints may include:
-
-\begin{itemize}
-    \item number of cores available
-    \item network bandwidth
-    \item disk IO speed
-    \item available memory
-\end{itemize}
-
-\subsection{Dependency Analysis}
+\subsection{Related Technologies}
 
 Related technologies include Theano, tensorflow, and arrayfire. Theano and
 tensorflow have the user build computation graphs which are then executed in
