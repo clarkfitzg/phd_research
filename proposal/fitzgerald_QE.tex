@@ -264,9 +264,7 @@ Clusters created by SNOW, a Simple Network Of Workstations,
 consist of independent worker R processes created by a manager process. The
 processes communicate over network sockets, and they may be on one or many
 physical machines.  This is the type of cluster used by partools and
-Software Alchemy \cite{R-partools} \cite{matloff2014software}.  The code
-pattern is similar to \ref{section:sequential}; the \texttt{replicate()}
-becomes \texttt{clusterEvalQ()}:
+Software Alchemy \cite{R-partools} \cite{matloff2014software}.  
 
 \begin{verbatim}
 library(parallel)
@@ -279,11 +277,23 @@ partial_means = unlist(
 xbar = mean(partial_means)
 \end{verbatim}
 
-The manager sends the code  \texttt{mean(rnorm(n\_j))} to each worker in
-the cluster to be evaluated in parallel. Given an existing cluster this is
-very efficient, since we are sending a few bytes of code over the network
-and then returning a single number. This parallel model is useful in
-statistics when doing independent simulations.
+This differs from the code in \ref{section:sequential} since
+the following steps were taken:
+\begin{enumerate}
+    \item $p$ was chosen in a principled way, to use all available
+        resources on a machine\footnote{For multi-user systems it's more
+        considerate to use only the processors you really need}. 
+    \item The chunk size $n_j$ was computed from this.
+    \item $n_j$ is a global variable that doesn't exist on
+        the workers, and therefore it was exported.
+    \item The manager sends the code \texttt{mean(rnorm(n\_j))} to each
+        worker in the cluster to be evaluated in parallel. 
+\end{enumerate}
+
+Given an existing cluster this plan is efficient, since it
+sends a few bytes of code over the network and then returns a single
+number. This parallel model is useful in statistics for independent
+simulations.
 
 \section{Design Considerations}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -395,16 +405,21 @@ Steps:
     \item Estimate total time required to run
 \end{itemize}
 
-\subsection{Interesting parts of code}
+\subsection{Entry points for parallelism}
 
 Three types of functions in R are of special interest when doing parallel
-computation: apply functions, vectorized
-functions, and reduce functions.
+computation: apply functions, vectorized functions, and reduce functions.
 
-Apply functions are higher order functions that include an implicit loop
-which can be parallelized. They include \texttt{lapply, apply, sapply,
-vapply, Map, mapply, by, tapply, outer, replicate}, and follow the basic
-form of an embarrassingly parallel map-reduce problem.
+Apply functions are higher order functions following the basic form of an
+embarrassingly parallel problem calling the same function with potentially
+different arguments.  In R these include \texttt{lapply, apply, sapply,
+vapply, Map, mapply, by, tapply, outer, replicate}. These should be the
+first target for parallelism because they are closest to the existing
+technologies, ie. \texttt{lapply()} has a corresponding function
+\texttt{mclapply()} in the parallel package.
+
+that include an implicit loop
+which can be parallelized. 
 
 Vectorized functions apply functions elementwise, for example arithmetic
 operators \texttt{+, -, *, /}.
@@ -417,7 +432,7 @@ elements. For example \texttt{Reduce(`+`, 1:4)} is equivalent to
 \texttt{(((1 + 2) + 3) + 4)}. More common examples that can be written this
 way include \texttt{min, max, mean, sum, prod}. Since we're computing on
 large data sets numerically stable algorithms should be used here, ie.
-Kahan summation \cite{Robey2011217}.
+Kahan summation \cite{Robey2011217}. Reduce
 
 \subsection{Related Technologies}
 
