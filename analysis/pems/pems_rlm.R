@@ -1,4 +1,6 @@
-library(traffic)
+library(MASS)
+
+set.seed(8420)
 
 # For 10 months of data I expect this many lines:
 10 * 30 * 24 * 60 * 2
@@ -46,3 +48,7 @@ fit_small = rlm(flow2 ~ occupancy2, data = s_high)
 # helpful when using this as preprocessing for more sophisticated
 # inference. Basically we already know the slope of the line to within a
 # std error of 1 or 2 before we start.
+
+fit_lm = lm(flow2 ~ occupancy2, data = s1[highocc, ])
+
+# This shows that the lm and rlm estimates differ.
