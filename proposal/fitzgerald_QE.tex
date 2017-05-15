@@ -401,28 +401,6 @@ elements. For example \texttt{Reduce(f, 1:4)} is equivalent to
 \texttt{f(f(f(1, 2), 3), 4)}. More common examples that can be written this
 way include \texttt{min, max, mean, sum, prod}.
 
-\subsection{Reduce functions}
-
-\texttt{mean()} as used in \texttt{mean(rnorm(n))} reduces a vector to a
-single number. Here's one way to write this using \texttt{Map(), Reduce()}
-explicitly in R:
-
-\begin{verbatim}
-
-N = 100
-p = 9
-weightmean = function(x_i, N) (length(x_i) / N) * mean(x_i)
-
-x = rnorm(N)
-xsplit = split(x, seq(p))
-parts = Map(weightmean, xsplit, N = N)
-xbar1 = Reduce(`+`, parts, 0)
-
-# matches up to numerical precision
-xbar2 = mean(x)
-
-\end{verbatim}
-
 \subsection{Optimization problem}
 
 One way to approach the question of how to run the code is as an
@@ -444,29 +422,6 @@ Constraints may include:
     \item disk IO speed
     \item available memory
 \end{itemize}
-
-\subsection{Statistical Problem}
-
-The time it takes for the same computations to execute can vary quite a
-bit. Let $x_i$ be a data vector of length $n_i$. Suppose we want to evaluate
-$f(x_i)$ in parallel.
-
-Consider these parameters:
-
-\begin{itemize}
-    \item $w$ time to start up a worker process
-    \item $l$ latency for communication between manager and worker
-    \item $t(n_i)$ time required to compute $f(x_i)$ on the worker
-\end{itemize}
-
-Then starting without a cluster it takes
-\[
-    T_i = w + 2l + t(n_i)
-\]
-to evaluate an expression on a worker. If the worker already exists then
-take $w = 0$.
-
-\subsection{Dependency Analysis}
 
 \subsection{Dependency Analysis}
 
