@@ -126,6 +126,12 @@ code for execution \cite{lang2014enhancing}.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \label{sec:pems}
 
+This example is interesting because:
+\begin{enumerate}
+    \item It requires more memory than is available on a single server.
+    \item Parallel programming can greatly increase the speed.
+\end{enumerate}
+
 The California Department of Transportation collects traffic data through
 sensors embedded in highways. The sensors measure three quantities: count
 of passing vehicles, time during which a vehicle is directly above the
@@ -392,6 +398,8 @@ CodeDepends package \cite{R-CodeDepends}.
 
 TODO: Copy stuff from last quarter here and relate it to Pablo's example.
 
+This is an example of a task that isn't obviously parallel.
+
 Steps:
 
 \begin{itemize}
@@ -410,37 +418,71 @@ Steps:
 Three types of functions in R are of special interest when doing parallel
 computation: apply functions, vectorized functions, and reduce functions.
 
-Apply functions are higher order functions following the basic form of an
-embarrassingly parallel problem calling the same function with potentially
-different arguments.  In R these include \texttt{lapply, apply, sapply,
-vapply, Map, mapply, by, tapply, outer, replicate}. These should be the
-first target for parallelism because they are closest to the existing
-technologies, ie. \texttt{lapply()} has a corresponding function
-\texttt{mclapply()} in the parallel package.
-
-that include an implicit loop
-which can be parallelized. 
+Apply functions are higher order functions which call the same function
+with potentially different arguments. They are equivalent to the ``map''
+step in the map reduce paradigm.  In R these include \texttt{lapply, apply,
+    sapply, vapply, Map, mapply, by, tapply, outer, replicate}. These
+    should be the first target for parallelism because they are closest to
+    the existing technologies, ie. \texttt{lapply()} has a corresponding
+    function \texttt{mclapply()} in the parallel package.
 
 Vectorized functions apply functions elementwise, for example arithmetic
-operators \texttt{+, -, *, /}.
+operators \texttt{+, -, *, /}. Implictly, a vectorized function $f$
+operating on an argument $x$ of length $n$ does:
+\[
+    f(x) = (f(x_1), \dots, f(x_n))
+\]
+Splitting $x$ into $p$ subvectors, 
+\[
+    x = \left[ (x_{11}, \dots, x_{1 n_1}), \dots, (x_{p 1}, \dots, (x_{p
+n_p})) \right]
+\]
+allows us to parallelize $f(x)$ as follows:
+\[
+    f(x) = \left[ f(x_{11}, \dots, x_{1 n_1}), \dots, f(x_{p 1}, \dots, f(x_{p
+n_p})) \right].
+\]
+If the subvectors are large enough then this can be efficient in R also.
+It becomes more efficient if it's combined with a reduce function.
+
+The problem with parallelization here is that combining without reducing
+means tra
 
 TODO: Relate vectorization and loop fusion
 
 The general form of the \texttt{Reduce()} function in R collapses elements
 into a single result by calling a function $f()$ repeatedly on the
 elements. For example \texttt{Reduce(`+`, 1:4)} is equivalent to 
-\texttt{(((1 + 2) + 3) + 4)}. More common examples that can be written this
+\texttt{(((1 + 2) + 3) + 4)}. Common examples that can be written this
 way include \texttt{min, max, mean, sum, prod}. Since we're computing on
 large data sets numerically stable algorithms should be used here, ie.
-Kahan summation \cite{Robey2011217}. Reduce
+Kahan summation \cite{Robey2011217}. Reduce style functions can be used to
+reduce the size of the data in a worker before transferring to the manager.
 
 \subsection{Related Technologies}
 
-Related technologies include Theano, tensorflow, and arrayfire. Theano and
+Related technologies include Theano, tensorflow, dask, and arrayfire. Theano and
 tensorflow have the user build computation graphs which are then executed in
 an efficient way based on the available architecture. They are more
 tailored to linear algebra / numerical computing, and are often used for
 components of neural networks.
+
+\section{Conclusion}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Challenges}
+
+Non standard evaluation and dynamic scoping rules make some of the
+code analysis difficult. For example, to fit a linear model with
+\texttt{lm(y ~ x, data}, it's possible that $x$ is a global variable while
+$y$ is a column name in \texttt{data}.
+Dynamic variables make static analysis difficult.
+
+\subsection{Next Steps}
+
+My immediate plan is to build the infrastructure to analyze the highway
+sensor data. At a minimum this means preprocessing and profiling tools and
+a parallel group by.
 
 \bibliographystyle{plain}
 \bibliography{../citations,../Rpackages} 
