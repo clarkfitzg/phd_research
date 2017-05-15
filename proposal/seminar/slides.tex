@@ -659,9 +659,10 @@ by(data, INDICES = station, FUN = piecewise_rlm)
     \frametitle{Acknowledgements}
 
 \begin{itemize}
-    \item Feedback from Professor Duncan Temple Lang and Nick Ulle
+    \item Feedback from Professor Duncan Temple Lang, Henrik Bengsston, and Nick Ulle
     \item Professor Michael Zhang from Civil Engineering
-    \item Applications from Data Science Institute Affiliates
+    \item Data Science Institute Affiliates and statistics students for
+        applications
 \end{itemize}
 
 \end{frame}
@@ -733,6 +734,15 @@ serialize(x_chunk, worker2)
 x_chunk = unserialize(worker1)
 partial_means[i] = mean(x_chunk)
 \end{verbatim}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{Simple row based sampling misses the important areas of high
+    occupancy.}
+
+    \centerline{\includegraphics[height=2.5in]{../../analysis/pems/occ_flow_with_sample.pdf}}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
