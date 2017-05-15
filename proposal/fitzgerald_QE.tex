@@ -429,24 +429,24 @@ step in the map reduce paradigm.  In R these include \texttt{lapply, apply,
 Vectorized functions apply functions elementwise, for example arithmetic
 operators \texttt{+, -, *, /}. Implictly, a vectorized function $f$
 operating on an argument $x$ of length $n$ does:
-\[
+\begin{equation}
+\label{eq:vectorization}
     f(x) = (f(x_1), \dots, f(x_n))
-\]
+\end{equation}
 Splitting $x$ into $p$ subvectors, 
 \[
-    x = \left[ (x_{11}, \dots, x_{1 n_1}), \dots, (x_{p 1}, \dots, (x_{p
-n_p})) \right]
+    x = \left[ (x_{11}, \dots, x_{1 n_1}), \dots, (x_{p 1}, \dots, x_{p
+n_p}) \right]
 \]
 allows us to parallelize $f(x)$ as follows:
 \[
-    f(x) = \left[ f(x_{11}, \dots, x_{1 n_1}), \dots, f(x_{p 1}, \dots, f(x_{p
-n_p})) \right].
+    f(x) = \left[ f(x_{11}, \dots, x_{1 n_1}), \dots, f(x_{p 1}, \dots, x_{p
+n_p}) \right].
 \]
 If the subvectors are large enough then this can be efficient in R also.
+The problem with parallelization in this case is that the overhead of
+recombining $f(x)$ may take more time than calling $f()$ itself.
 It becomes more efficient if it's combined with a reduce function.
-
-The problem with parallelization here is that combining without reducing
-means tra
 
 TODO: Relate vectorization and loop fusion
 
