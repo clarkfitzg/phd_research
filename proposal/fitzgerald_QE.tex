@@ -126,7 +126,7 @@ code for execution \cite{lang2014enhancing}.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \label{sec:pems}
 
-This example is interesting because:
+The following example is interesting because:
 \begin{enumerate}
     \item It requires more memory than is available on a single server.
     \item Parallel programming can greatly increase the speed.
@@ -140,22 +140,22 @@ seconds they produce a new data point. $43,680$ sensors in California
 measuring 3 parameters multiplied by $(2 \times 60 \times 24)$ measurements
 per day results in 377 million new data points per day.  This raw data is
 organized into files grouped by (day, district), and is available for
-public download.  As an analyst I would like to model velocity as a
+public download.  As an analyst I would like to model traffic flow as a
 function of occupancy for each sensor. This relationship is called the
 ``fundamental diagram'' within traffic engineering, because it captures the
 operating characteristic of this section of road
 \cite{daganzo1997fundamentals}. Once these fundamental diagrams have been
-modeled for each station they can be used to understand how other road
-characteristics such as on ramps and off ramps affect the flow of traffic.
+modeled for each station they can be used to understand how road
+characteristics and policy changes affect the flow of traffic.
 
 Robust regression can be used to fit the fundamental diagram, approximating
-the integer programming approach to minimize the L1 norm as in
+the integer programming approach to minimize the L1 norm of the residuals as in
 \cite{li2011fundamental}.  From the R language this can be done easily and
 efficiently, for example with the \texttt{rlm} (robust linear model)
 function in the MASS package \cite{venables2013modern}:
 
 \begin{verbatim}
-fit1 = rlm(velocity ~ occupancy, data = station1)
+fit1 = rlm(count ~ occupancy, data = station1)
 \end{verbatim}
 
 However, the size and organization of the data makes the task much more
@@ -166,9 +166,9 @@ rather than in files for each day.  One approach then is to reorganize the
 data on disk into this file structure. I did this using a simple single
 threaded R program, and it took 23 hours to run on 134 GB of data.
 Throughput for a conventional hard disk is around 100
-MB/s\footnote{Parallel filesystems will increase throughput}, so a lower
+MB/s\footnote{Other technologies such as parallel filesystems or SSDs can increase throughput.}, so a lower
 bound for reading then writing this reorganized data is approximately $2 *
-134000 / 100$ seconds, or 45 minutes. The naive code is 30 times slower
+134000 / 100$ seconds, or 45 minutes. The simple code is 30 times slower
 than this. So small inefficiencies add up.
 
 Another drawback is that it requires very specific instructions to
@@ -177,17 +177,17 @@ programming will make this even more specific to the data and platform. The
 following R code captures the desired semantics:
 
 \begin{verbatim}
-by(data, INDICES = station, FUN = piecewise_rlm)
+by(data, INDICES = station, FUN = my_rlm)
 \end{verbatim}
 
 This says group \texttt{data} by \texttt{station}, and apply the
-function \texttt{piecewise\_rlm} to each group.
+user defined function \texttt{my\_rlm} to each group. Allowing user defined
+functions keeps this flexible, facilitating research and experimentation.
 
 What if we had a system that could inspect the idiomatic R code above that
 works on small data sets, and then automatically take steps to scale and to
-parallelize the operations? It could also tune them for the specifics of
-the system and the data. This is what we're working towards.
-
+parallelize the operations? It should also be capable of tuning for the
+specifics of the system and the data. This is what we're working towards.
 
 \section{Simple Example}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -224,7 +224,7 @@ the operating system will use swap space. On a machine with 8 GB memory
 this happens when $O(n) = 10^9$, causing the execution time
 to increase by an order of magnitude, roughly from 1 minute to 15
 minutes. Once $n$ exceeds memory and swap space R will not be able to allocate a
-large enough object, and the computation will fail.
+large enough object, and the computation will fail with a memory error.
 
 Now we consider alternative ways to execute this code.  Most rely on
 splitting the sum into $p$ partial sums with $n_j$ terms each and then rewriting
@@ -288,7 +288,7 @@ the following steps were taken:
 \begin{enumerate}
     \item $p$ was chosen in a principled way, to use all available
         resources on a machine\footnote{For multi-user systems it's more
-        considerate to use only the processors you really need}. 
+        considerate to use fewer processors.}. 
     \item The chunk size $n_j$ was computed from this.
     \item $n_j$ is a global variable that doesn't exist on
         the workers, and therefore it was exported.
@@ -420,14 +420,14 @@ computation: apply functions, vectorized functions, and reduce functions.
 
 Apply functions are higher order functions which call the same function
 with potentially different arguments. They are equivalent to the ``map''
-step in the map reduce paradigm.  In R these include \texttt{lapply, apply,
-    sapply, vapply, Map, mapply, by, tapply, outer, replicate}. These
-    should be the first target for parallelism because they are closest to
-    the existing technologies, ie. \texttt{lapply()} has a corresponding
-    function \texttt{mclapply()} in the parallel package.
+step in the map reduce paradigm \cite{dean2008mapreduce}.  In R these
+include \texttt{lapply, apply, sapply, vapply, Map, mapply, by, tapply,
+outer, replicate}. These should be the first target for parallelism because
+they are closest to the existing technologies, ie. \texttt{lapply()} has a
+corresponding function \texttt{mclapply()} in the parallel package.
 
 Vectorized functions apply functions elementwise, for example arithmetic
-operators \texttt{+, -, *, /}. Implictly, a vectorized function $f$
+operators \texttt{+, -, *, /}. A vectorized function $f$
 operating on an argument $x$ of length $n$ does:
 \begin{equation}
 \label{eq:vectorization}
@@ -438,26 +438,29 @@ Splitting $x$ into $p$ subvectors,
     x = \left[ (x_{11}, \dots, x_{1 n_1}), \dots, (x_{p 1}, \dots, x_{p
 n_p}) \right]
 \]
-allows us to parallelize $f(x)$ as follows:
+allows us to parallelize $f(x)$ by evaluating $f$ on the subvectors as follows:
 \[
     f(x) = \left[ f(x_{11}, \dots, x_{1 n_1}), \dots, f(x_{p 1}, \dots, x_{p
 n_p}) \right].
 \]
 If the subvectors are large enough then this can be efficient in R also.
 The problem with parallelization in this case is that the overhead of
-recombining $f(x)$ may take more time than calling $f()$ itself.
-It becomes more efficient if it's combined with a reduce function.
-
-TODO: Relate vectorization and loop fusion
+splitting $x$ into subvectors and recombining $f(x)$ may take more time
+than calling $f()$ itself.  It becomes more efficient if it's combined with
+a reduce function.
 
 The general form of the \texttt{Reduce()} function in R collapses elements
 into a single result by calling a function $f()$ repeatedly on the
-elements. For example \texttt{Reduce(`+`, 1:4)} is equivalent to 
-\texttt{(((1 + 2) + 3) + 4)}. Common examples that can be written this
-way include \texttt{min, max, mean, sum, prod}. Since we're computing on
-large data sets numerically stable algorithms should be used here, ie.
-Kahan summation \cite{Robey2011217}. Reduce style functions can be used to
-reduce the size of the data in a worker before transferring to the manager.
+elements. For example \texttt{Reduce(`+`, 1:4)} is equivalent to
+\texttt{(((1 + 2) + 3) + 4)}. Common examples that can be written this way
+include \texttt{min, max, mean, sum, prod}. A more interesting example is
+to simultaneously join many data frames through \texttt{Reduce(merge,
+...)}.  Since we're computing on large data sets numerically stable
+algorithms should be used here, ie.  Kahan summation \cite{Robey2011217}.
+Reduce style functions can be used to reduce the size of the data in a
+worker before transferring to the manager.
+
+TODO: Relate vectorization and loop fusion
 
 \subsection{Related Technologies}
 
