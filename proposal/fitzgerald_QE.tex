@@ -462,14 +462,6 @@ worker before transferring to the manager.
 
 TODO: Relate vectorization and loop fusion
 
-\subsection{Related Technologies}
-
-Related technologies include Theano, tensorflow, dask, and arrayfire. Theano and
-tensorflow have the user build computation graphs which are then executed in
-an efficient way based on the available architecture. They are more
-tailored to linear algebra / numerical computing, and are often used for
-components of neural networks.
-
 \section{Conclusion}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -479,13 +471,28 @@ Non standard evaluation and dynamic scoping rules make some of the
 code analysis difficult. For example, to fit a linear model with
 \texttt{lm(y ~ x, data}, it's possible that $x$ is a global variable while
 $y$ is a column name in \texttt{data}.
-Dynamic variables make static analysis difficult.
+Dynamic variables can make static analysis difficult.
+
+\subsection{Related Technologies}
+
+Related technologies include Theano, tensorflow, dask, and arrayfire. With
+these packages the user explicitly builds computation graphs which are then executed in
+an efficient way based on the available architecture. They are more
+tailored to linear algebra / numerical computing, and are often used for
+components of neural networks. One possible path to explore is the translation
+of R code into these systems. This might be difficult when processing non
+numeric data.
 
 \subsection{Next Steps}
 
 My immediate plan is to build the infrastructure to analyze the highway
-sensor data. At a minimum this means preprocessing and profiling tools and
-a parallel group by.
+sensor data. At a minimum this means preprocessing tools, profiling tools, and
+a parallel group by. The computational platform is the server, potentially
+exceeding memory.
+
+The people who stand to benefit from this are individual researchers and
+domain scientists who may not have access to distributed systems or
+databases. 
 
 \bibliographystyle{plain}
 \bibliography{../citations,../Rpackages} 
