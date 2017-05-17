@@ -77,6 +77,8 @@
 
 \begin{abstract}
 
+%This is a proposal for the Statistics PhD Qualifying Exam in June 2017.
+
     Conventional systems for parallel programming require users to modify
     existing code to take advantage of a platform's computational
     capabilities, which may include multiprocessing or Graphical Processing
@@ -89,9 +91,6 @@
     on hundreds of gigabytes of traffic sensor data.
 
 \end{abstract}
-
-This is a prospectus for distribution to the committee for PhD
-Qualifying Exam in June 2017.
 
 \section{Code, Data, Platform}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -113,7 +112,7 @@ Spark cluster, or a server with 2 GPUs and a high bandwidth connection. The comb
 of (Code, Data, Platform) dictates what strategies should be used for
 efficient evaluation. Given these three components, our goal is to analyze the
 code, potentially reorganizing it for efficient execution on the data and
-platform. This doesn't mean that the system is inventing new algorithms on
+platform. This doesn't mean that the system invents new algorithms on
 the fly. But it should be capable of tuning existing parameters to the
 system at hand. An example of a parameter to be tuned is the chunk size
 $n_j$ as described in \ref{section:sequential}.
@@ -134,18 +133,17 @@ The following example is interesting because:
 
 The California Department of Transportation collects traffic data through
 sensors embedded in highways. The sensors measure three quantities: count
-of passing vehicles, time during which a vehicle is directly above the
+of passing vehicles (flow), time during which a vehicle is directly above the
 sensor (occupancy), and average velocity \cite{jia2001pems}.  Every thirty
 seconds they produce a new data point. $43,680$ sensors in California
 measuring 3 parameters multiplied by $(2 \times 60 \times 24)$ measurements
 per day results in 377 million new data points per day.  This raw data is
 organized into files grouped by (day, district), and is available for
-public download.  As an analyst I would like to model traffic flow as a
-function of occupancy for each sensor. This relationship is called the
-``fundamental diagram'' within traffic engineering, because it captures the
-operating characteristic of this section of road
-\cite{daganzo1997fundamentals}. Once these fundamental diagrams have been
-modeled for each station they can be used to understand how road
+public download.  Traffic engineers model traffic flow as a function of
+occupancy for each sensor. This relationship is called the \emph{fundamental
+diagram} because it captures the operating characteristic of this section
+of road \cite{daganzo1997fundamentals}. Once fundamental diagrams
+have been modeled for each station they can be used to understand how road
 characteristics and policy changes affect the flow of traffic.
 
 Robust regression can be used to fit the fundamental diagram, approximating
@@ -158,31 +156,38 @@ function in the MASS package \cite{venables2013modern}:
 fit1 = rlm(count ~ occupancy, data = station1)
 \end{verbatim}
 
-However, the size and organization of the data makes the task much more
-difficult.  I've downloaded a subset of the data consisting of measurements
-in the San Francisco Bay Area for part of 2016.  It would be easier to
-perform the regression if the data were organized in files for each sensor
-rather than in files for each day.  One approach then is to reorganize the
-data on disk into this file structure. I did this using a simple single
-threaded R program, and it took 23 hours to run on 134 GB of data.
-Throughput for a conventional hard disk is around 100
-MB/s\footnote{Other technologies such as parallel filesystems or SSDs can increase throughput.}, so a lower
-bound for reading then writing this reorganized data is approximately $2 *
-134000 / 100$ seconds, or 45 minutes. The simple code is 30 times slower
-than this. So small inefficiencies add up.
+This analysis can be extended by grouping all of the data by station and
+applying a user defined function \texttt{fit\_fd()} to each
+group.
+Allowing user defined functions keeps this flexible, facilitating research
+and experimentation with different fundamental diagrams. R code expresses
+the extended analysis succintly and clearly:
+
+\begin{verbatim}
+by(alldata, INDICES = station, FUN = fit_fd)
+\end{verbatim}
+
+However, the data won't fit into memory, so this approach will not work.
+Even if the data did fit in memory, it would be slow because \texttt{fit\_fd()} won't
+run in parallel across the 1000's of different stations\footnote{If 
+\texttt{fit\_fd()} is fast then it may be less efficient to run it
+in parallel depending on overhead.}.
+
+It would be easier to perform the regression if the data were
+organized in files for each sensor rather than in files for each day.  One
+approach is to reorganize the data on disk into this file structure. I
+did this using a simple single threaded R program, and it took 23 hours to
+run on 134 GB of data consisting of observations in the San Francisco Bay
+Area for part of 2016.  Throughput for a conventional hard disk is around
+100 MB/s\footnote{Other technologies such as parallel filesystems can
+increase throughput.}, so a lower bound for reading then writing this
+reorganized data is approximately $2 * 134000 / 100$ seconds, or 45
+minutes. The simple code is 30 times slower than this. So small
+inefficiencies add up.
 
 Another drawback is that it requires very specific instructions to
 reorganize the data for computations grouped by station. Any parallel
-programming will make this even more specific to the data and platform. The
-following R code captures the desired semantics:
-
-\begin{verbatim}
-by(data, INDICES = station, FUN = my_rlm)
-\end{verbatim}
-
-This says group \texttt{data} by \texttt{station}, and apply the
-user defined function \texttt{my\_rlm} to each group. Allowing user defined
-functions keeps this flexible, facilitating research and experimentation.
+programming will make this even more specific to the data and platform. 
 
 What if we had a system that could inspect the idiomatic R code above that
 works on small data sets, and then automatically take steps to scale and to
@@ -269,8 +274,8 @@ supplied $n$, and it remained to choose $p$ and $n_j$.
 Clusters created by SNOW, a Simple Network Of Workstations,
 consist of independent worker R processes created by a manager process. The
 processes communicate over network sockets, and they may be on one or many
-physical machines.  This is the type of cluster used by partools and
-Software Alchemy \cite{R-partools} \cite{matloff2014software}.  
+physical machines.  This is the type of cluster used by partools to
+implement Software Alchemy \cite{R-partools} \cite{matloff2014software}.  
 
 \begin{verbatim}
 library(parallel)
@@ -301,8 +306,52 @@ sends a few bytes of code over the network and then returns a single
 number. This parallel model is useful in statistics for independent
 simulations.
 
-\section{Design Considerations}
+\section{Code Analysis}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Steps:
+
+\begin{itemize}
+    \item Parse the code, gathering dependency information
+    \item Identify points to parallelize
+    \item Speculatively evaluate some expressions (after checking for side
+        effects) to estimate how long they'll
+        take
+    \item Estimate total time required to run
+    \item Determine if preprocessing of the data is required
+    \item Generate code that will run in parallel on that platform
+\end{itemize}
+
+
+\subsection{Interfaces}
+
+Parallel programming in pure R (not at the C level) can be understood in
+terms of a layered architecture. The foundational \textbf{System Layer}
+provides the basic interfaces used by any programming language. The
+\textbf{R Layer} consists of packages which adapt the basic interfaces for
+use specifically in R. The packages in the \textbf{User Layer} are meant to
+simplify parallel programming, or they are for applications with specific
+use cases.  Here are a few examples of packages at each layer:
+
+\begin{itemize}
+\item User Layer: foreach, future, partools, ddR, biganalytics, RevoScaleR
+\item R layer: SNOW, multicore, parallel, bigmemory, Rmpi
+\item System Layer: processes, *NIX fork(), memory maps, network sockets,
+    MPI
+\end{itemize}
+
+Today users write code using packages from the User Layer or the R
+Layer. Modifying code programmatically can allow us to skip these layers,
+and instead write the same base R code which will run in serial as in
+parallel.  This is appealing for a few reasons. Base R is stable, so users
+can write the same working code without committing to a particular package
+or architecture. If the code runs on a different system or with a different
+data set then one can automatically generate code to run more efficiently
+on that system.
+
+Some of the work in this project may mean enhancing the capabilities of these
+intermediate layers. For example, a file based sort usable from R allows
+``group by'' and facilitiates streaming applications.
 
 \subsection{Overhead}
 
@@ -320,7 +369,7 @@ efficiently in parallel, due to the overhead.
 \begin{figure}
 \centering
 \includegraphics[width=.8\linewidth]{compute_times/overhead}
-\caption{Simple function calls take less than a microsecond. Launching a
+\caption{The baseline, simple function calls, take less than a microsecond. Starting up a
     new R interpreter takes hundreds of milliseconds, which is relatively expensive.}
 \label{fig:overhead}
 \end{figure}
@@ -357,70 +406,16 @@ We can control:
     \item which functions to combine in one processing step
 \end{itemize}
 
-\subsection{Interfaces}
-
-Parallel programming in pure R (not at the C level) can be understood in
-terms of a layered architecture. The foundational \textbf{System Layer}
-provides the basic interfaces used by any programming language. The
-\textbf{R Layer} consists of packages which adapt the basic interfaces for
-use specifically in R. The packages in the \textbf{User Layer} are meant to
-simplify parallel programming, or they are for applications with specific
-use cases.  Here are a few examples of packages at each layer:
-
-\begin{itemize}
-\item User Layer: foreach, future, partools, ddR, biganalytics, RevoScaleR
-\item R layer: SNOW, multicore, parallel, bigmemory, Rmpi
-\item System Layer: processes, *NIX fork(), memory maps, network sockets,
-    MPI
-\end{itemize}
-
-Currently, users write code using packages from the User Layer or the R
-Layer. Code analysis potentially can allow us to skip these layers, and
-instead write the same base R code which will run in serial as in parallel.
-This is appealing for a few reasons. Base R is stable, so users can write
-the same working code without committing to a particular package or
-architecture. If the code runs on a different system or with a different
-data set then one can automatically generate code to run more efficiently
-on that system.
-
-%TODO: expand
-Some of the work here may mean enhancing the capabilities of these
-intermediate layers. For example, a file based sort usable from R allows
-``group by'' and facilitiates streaming applications.
-
-\section{Code Analysis}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Entry points for parallelism}
 
 Static code analysis is integral to this approach, and we build on the 
 CodeDepends package \cite{R-CodeDepends}.
-
-\subsection{Expression Dependency Graphs}
-
-TODO: Copy stuff from last quarter here and relate it to Pablo's example.
-
-This is an example of a task that isn't obviously parallel.
-
-Steps:
-
-\begin{itemize}
-    \item Parse the code, gathering dependency information
-    \item Identify points to parallelize
-    \item Speculatively evaluate some expressions (after checking for side
-        effects) to estimate how long they'll
-        take
-    \item Determine if preprocessing of the data is required
-    \item Generate code that will run in parallel on that platform
-    \item Estimate total time required to run
-\end{itemize}
-
-\subsection{Entry points for parallelism}
-
 Three types of functions in R are of special interest when doing parallel
 computation: apply functions, vectorized functions, and reduce functions.
 
 Apply functions are higher order functions which call the same function
 with potentially different arguments. They are equivalent to the ``map''
-step in the map reduce paradigm \cite{dean2008mapreduce}.  In R these
+step in the map reduce paradigm \cite{dean2008mapreduce}.  In base R these
 include \texttt{lapply, apply, sapply, vapply, Map, mapply, by, tapply,
 outer, replicate}. These should be the first target for parallelism because
 they are closest to the existing technologies, ie. \texttt{lapply()} has a
@@ -460,25 +455,112 @@ algorithms should be used here, ie.  Kahan summation \cite{Robey2011217}.
 Reduce style functions can be used to reduce the size of the data in a
 worker before transferring to the manager.
 
-TODO: Relate vectorization and loop fusion
+\subsection{Expression Dependency Graphs}
+
+The evaluation model for interpreted languages is simple. Each
+expression of code is evaluated in the order that it appears in a text file. Informally
+each expression is a line of code. This can be
+viewed as a set of constraints on the evaluation order of the expressions:
+
+\begin{enumerate}
+    \item expression 1 executes before expression 2
+    \item expression 2 executes before expression 3
+    \item $\dots$
+\end{enumerate}
+What if these constraints are relaxed? Suppose expression 1 defines the variable
+\texttt{x}, which is not used until expression 17. Then one has the
+constraint:
+\begin{enumerate}
+    \item expression 1 executes before expression 17
+\end{enumerate}
+This can be generalized into a directed graph which we'll refer to here as
+the \textbf{expression dependency graph} by considering expressions as
+nodes and constraints as edges. The edges are implicit based on the order
+of the statements in the code. Add an edge from $i \rightarrow k$ if
+expression $k$ depends on the execution of expression $i$.  It's safe to
+assume $i < k$, because expressions appearing later in a program can't
+affect expressions which have already run. Hence the expression graph is
+acyclic, i.e. a DAG.
+
+Figures \ref{fig:ast} and \ref{fig:codegraph} illustrate the 
+parse tree and expression dependency graph for the four lines of code in
+listing \ref{list:ab}.  Edges 1 and 3 in figure \ref{fig:codegraph} represent the
+respective uses of the variable \texttt{n} and \texttt{x}.  Edge 2 comes
+from the redefinition of \texttt{n}.  Edge 5 propagates the most recent
+definition of \texttt{n}.  The least obvious is edge 4, which is necessary
+to respect R's lexical scoping semantics since \texttt{x <- rnorm(n)} uses
+the first definition of \texttt{n}. The general rule here is that all
+statements using one version of the variable \texttt{n} must execute before \texttt{n}
+can be redefined.
+
+\lstinputlisting[language=R, caption=Simple script, label=list:ab]{../experiments/ast/ab.R}
+
+\begin{figure}
+\centering
+\begin{subfigure}{.6\textwidth}
+    \centering
+    \includegraphics[width=.8\linewidth]{../experiments/ast/ast.pdf}
+    \caption{Parse tree}
+    \label{fig:ast}
+\end{subfigure}%
+\begin{subfigure}{.4\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{../experiments/ast/codegraph.pdf}
+  \caption{Expression dependency graph}
+  \label{fig:codegraph}
+\end{subfigure}
+\caption{Different representations of the script in Listing \ref{list:ab}}
+%\label{fig:test}
+\end{figure}
+
+The expression dependency graph is a 
+
+\subsection{Challenges}
+
+It would be quite ambitious to produce a complete system capable of
+producing optimal code on such different systems as multicore, GPU, and
+distributed. Some of the foundational capabilities aren't yet mature, i.e.
+compiling R code to an OpenCL kernel which runs on a GPU. Moreover, the
+semantics across the systems may differ. For example, a \texttt{matrix} from
+the \texttt{bigmemory} package has reference semantics,
+unlike an ordinary R matrix \cite{bigmemory}.
+
+Non standard evaluation and dynamic scoping rules make some of the
+static code analysis difficult. For example, to fit a linear model with
+\texttt{lm(y\textasciitilde x, data)}, it's possibe that $x$ is a global variable while
+$y$ is a column name in \texttt{data}. Generally this can't be known until
+run time, since one could have the following R code which randomly assigns
+$x$:
+
+\begin{verbatim}
+x = 1:10
+if(sample(c(TRUE, FALSE), 1)){
+    data$x = rnorm(10)
+}
+\end{verbatim}
+
+When identifying global variables to send to workers one can do the
+conservative thing and send both \texttt{x, data}.
+
+Another potential challenge is handling mutable or more complex objects
+such as environments, closures, and reference classes.  It's usually not
+possible to know the class of an object until runtime. But user and package
+code could be inspected to see if certain objects are used, for example by
+looking for calls to the function \texttt{setRefClass()}.  The code
+analysis will have to respect the implicit connections between these
+objects.
 
 \section{Conclusion}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Challenges}
 
-Non standard evaluation and dynamic scoping rules make some of the
-code analysis difficult. For example, to fit a linear model with
-\texttt{lm(y ~ x, data}, it's possible that $x$ is a global variable while
-$y$ is a column name in \texttt{data}.
-Dynamic variables can make static analysis difficult.
 
 \subsection{Related Technologies}
 
 Related technologies include Theano, tensorflow, dask, and arrayfire. With
 these packages the user explicitly builds computation graphs which are then executed in
 an efficient way based on the available architecture. They are more
-tailored to linear algebra / numerical computing, and are often used for
+tailored to linear algebra / numerical computing, and in particular are used for
 components of neural networks. One possible path to explore is the translation
 of R code into these systems. This might be difficult when processing non
 numeric data.

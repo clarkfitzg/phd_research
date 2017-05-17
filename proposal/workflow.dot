@@ -10,10 +10,12 @@ digraph workflow {
     3 [label="Multiple\nprocessors"];
     4 [label="GPU"];
     5 [label="Database"];
+    6 [label="..."];
 
     1 -> 2;
     0 -> 2;
     2 -> 3;
     2 -> 4;
     2 -> 5;
+    2 -> 6;
 }
