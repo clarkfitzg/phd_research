@@ -69,6 +69,24 @@
 \begin{document}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+Each platform has constraints which may include:
+
+\begin{itemize}
+    \item number of cores available
+    \item network bandwidth
+    \item disk IO speed
+    \item available memory
+\end{itemize}
+
+We can control:
+
+\begin{itemize}
+    \item number of processor cores to use
+    \item size of each chunk
+    \item which functions to combine in one processing step
+\end{itemize}
+
+
 \subsection{Reduce functions}
 
 \texttt{mean()} as used in \texttt{mean(rnorm(n))} reduces a vector to a

@@ -11,3 +11,4 @@ future
 CodeDepends
 foreach
 iterators
+biglm

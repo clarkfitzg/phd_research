@@ -110,13 +110,14 @@ memory-mapped file, a database, a parallel file system, etc.
 \textbf{Platform} is the computing setup, such as a laptop with 4 cores, a
 Spark cluster, or a server with 2 GPUs and a high bandwidth connection. The combination
 of (Code, Data, Platform) dictates what strategies should be used for
-efficient evaluation. Given these three components, our goal is to analyze the
-code, potentially reorganizing it for efficient execution on the data and
-platform. This doesn't mean that the system invents new algorithms on
-the fly. But it should be capable of tuning existing parameters to the
-system at hand. An example of a parameter to be tuned is the chunk size
-$n_j$ as described in \ref{section:sequential}.
+efficient evaluation. The goal is to take these components and potentially
+modify the code to efficiently run in parallel with a particular platform
+and data, while preserving the semantics of the input code.
 
+This doesn't mean that the system invents new algorithms on
+the fly. But it should be capable of tuning existing parameters to the
+system at hand.\footnote{An example of a parameter to be tuned is the chunk size
+$n_j$ as described in \ref{section:sequential}.}
 This project is in the spirit of compiling R, since it treats R code as
 a set of high level directions, and it potentially generates alternative
 code for execution \cite{lang2014enhancing}.
@@ -147,21 +148,20 @@ have been modeled for each station they can be used to understand how road
 characteristics and policy changes affect the flow of traffic.
 
 Robust regression can be used to fit the fundamental diagram, approximating
-the integer programming approach to minimize the L1 norm of the residuals as in
+the minimization of the L1 norm of the residuals as in
 \cite{li2011fundamental}.  From the R language this can be done easily and
 efficiently, for example with the \texttt{rlm} (robust linear model)
 function in the MASS package \cite{venables2013modern}:
 
 \begin{verbatim}
-fit1 = rlm(count ~ occupancy, data = station1)
+fit1 = rlm(count ~ occupancy, data = station1_high_occupancy)
 \end{verbatim}
 
 This analysis can be extended by grouping all of the data by station and
-applying a user defined function \texttt{fit\_fd()} to each
-group.
+applying a user defined function \texttt{fit\_fd()} to each group.
 Allowing user defined functions keeps this flexible, facilitating research
-and experimentation with different fundamental diagrams. R code expresses
-the extended analysis succintly and clearly:
+and experimentation. R code expresses the extended analysis succintly and
+clearly:
 
 \begin{verbatim}
 by(alldata, INDICES = station, FUN = fit_fd)
@@ -169,12 +169,12 @@ by(alldata, INDICES = station, FUN = fit_fd)
 
 However, the data won't fit into memory, so this approach will not work.
 Even if the data did fit in memory, it would be slow because \texttt{fit\_fd()} won't
-run in parallel across the 1000's of different stations\footnote{If 
-\texttt{fit\_fd()} is fast then it may be less efficient to run it
-in parallel depending on overhead.}.
+run in parallel across the 1000's of different stations\footnote{
+Depending on overhead it may be less efficient to run \texttt{fit\_fd()} in
+parallel.}.
 
 It would be easier to perform the regression if the data were
-organized in files for each sensor rather than in files for each day.  One
+organized in files for each station rather than in files for each day.  One
 approach is to reorganize the data on disk into this file structure. I
 did this using a simple single threaded R program, and it took 23 hours to
 run on 134 GB of data consisting of observations in the San Francisco Bay
@@ -182,12 +182,17 @@ Area for part of 2016.  Throughput for a conventional hard disk is around
 100 MB/s\footnote{Other technologies such as parallel filesystems can
 increase throughput.}, so a lower bound for reading then writing this
 reorganized data is approximately $2 * 134000 / 100$ seconds, or 45
-minutes. The simple code is 30 times slower than this. So small
+minutes. The simple code is 30 times slower than this. Small
 inefficiencies add up.
 
-Another drawback is that it requires very specific instructions to
-reorganize the data for computations grouped by station. Any parallel
-programming will make this even more specific to the data and platform. 
+Another drawback is that the programmer must write very specific
+instructions to reorganize the data for computations grouped by station.
+Any parallel programming will make this even more specific to the data and
+platform. Subsequent slight modifications of the analysis may warrant a
+completely different approach. For example, using least squares instead of
+robust regression allows the use of an updating algorithm such as provided
+by the \texttt{biglm} package \cite{R-biglm}, so there is no need to have
+all the data for one group in memory at once.
 
 What if we had a system that could inspect the idiomatic R code above that
 works on small data sets, and then automatically take steps to scale and to
@@ -271,7 +276,7 @@ supplied $n$, and it remained to choose $p$ and $n_j$.
 
 \subsection{SNOW Cluster}
 
-Clusters created by SNOW, a Simple Network Of Workstations,
+Clusters created by R's SNOW package, a Simple Network Of Workstations,
 consist of independent worker R processes created by a manager process. The
 processes communicate over network sockets, and they may be on one or many
 physical machines.  This is the type of cluster used by partools to
@@ -304,7 +309,7 @@ the following steps were taken:
 Given an existing cluster this plan is efficient, since it
 sends a few bytes of code over the network and then returns a single
 number. This parallel model is useful in statistics for independent
-simulations.
+simulations, among many other things.
 
 \section{Code Analysis}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -321,37 +326,6 @@ Steps:
     \item Determine if preprocessing of the data is required
     \item Generate code that will run in parallel on that platform
 \end{itemize}
-
-
-\subsection{Interfaces}
-
-Parallel programming in pure R (not at the C level) can be understood in
-terms of a layered architecture. The foundational \textbf{System Layer}
-provides the basic interfaces used by any programming language. The
-\textbf{R Layer} consists of packages which adapt the basic interfaces for
-use specifically in R. The packages in the \textbf{User Layer} are meant to
-simplify parallel programming, or they are for applications with specific
-use cases.  Here are a few examples of packages at each layer:
-
-\begin{itemize}
-\item User Layer: foreach, future, partools, ddR, biganalytics, RevoScaleR
-\item R layer: SNOW, multicore, parallel, bigmemory, Rmpi
-\item System Layer: processes, *NIX fork(), memory maps, network sockets,
-    MPI
-\end{itemize}
-
-Today users write code using packages from the User Layer or the R
-Layer. Modifying code programmatically can allow us to skip these layers,
-and instead write the same base R code which will run in serial as in
-parallel.  This is appealing for a few reasons. Base R is stable, so users
-can write the same working code without committing to a particular package
-or architecture. If the code runs on a different system or with a different
-data set then one can automatically generate code to run more efficiently
-on that system.
-
-Some of the work in this project may mean enhancing the capabilities of these
-intermediate layers. For example, a file based sort usable from R allows
-``group by'' and facilitiates streaming applications.
 
 \subsection{Overhead}
 
@@ -389,74 +363,10 @@ than the actual computation. However, if $x$ is of length 1500 then this
 overhead accounts for only 10 percent of the total execution time, so the
 fixed cost has been amortized.
 
-Each platform has constraints which may include:
-
-\begin{itemize}
-    \item number of cores available
-    \item network bandwidth
-    \item disk IO speed
-    \item available memory
-\end{itemize}
-
-We can control:
-
-\begin{itemize}
-    \item number of processor cores to use
-    \item size of each chunk
-    \item which functions to combine in one processing step
-\end{itemize}
-
-\subsection{Entry points for parallelism}
+\subsection{Expression Dependency Graphs}
 
 Static code analysis is integral to this approach, and we build on the 
 CodeDepends package \cite{R-CodeDepends}.
-Three types of functions in R are of special interest when doing parallel
-computation: apply functions, vectorized functions, and reduce functions.
-
-Apply functions are higher order functions which call the same function
-with potentially different arguments. They are equivalent to the ``map''
-step in the map reduce paradigm \cite{dean2008mapreduce}.  In base R these
-include \texttt{lapply, apply, sapply, vapply, Map, mapply, by, tapply,
-outer, replicate}. These should be the first target for parallelism because
-they are closest to the existing technologies, ie. \texttt{lapply()} has a
-corresponding function \texttt{mclapply()} in the parallel package.
-
-Vectorized functions apply functions elementwise, for example arithmetic
-operators \texttt{+, -, *, /}. A vectorized function $f$
-operating on an argument $x$ of length $n$ does:
-\begin{equation}
-\label{eq:vectorization}
-    f(x) = (f(x_1), \dots, f(x_n))
-\end{equation}
-Splitting $x$ into $p$ subvectors, 
-\[
-    x = \left[ (x_{11}, \dots, x_{1 n_1}), \dots, (x_{p 1}, \dots, x_{p
-n_p}) \right]
-\]
-allows us to parallelize $f(x)$ by evaluating $f$ on the subvectors as follows:
-\[
-    f(x) = \left[ f(x_{11}, \dots, x_{1 n_1}), \dots, f(x_{p 1}, \dots, x_{p
-n_p}) \right].
-\]
-If the subvectors are large enough then this can be efficient in R also.
-The problem with parallelization in this case is that the overhead of
-splitting $x$ into subvectors and recombining $f(x)$ may take more time
-than calling $f()$ itself.  It becomes more efficient if it's combined with
-a reduce function.
-
-The general form of the \texttt{Reduce()} function in R collapses elements
-into a single result by calling a function $f()$ repeatedly on the
-elements. For example \texttt{Reduce(`+`, 1:4)} is equivalent to
-\texttt{(((1 + 2) + 3) + 4)}. Common examples that can be written this way
-include \texttt{min, max, mean, sum, prod}. A more interesting example is
-to simultaneously join many data frames through \texttt{Reduce(merge,
-...)}.  Since we're computing on large data sets numerically stable
-algorithms should be used here, ie.  Kahan summation \cite{Robey2011217}.
-Reduce style functions can be used to reduce the size of the data in a
-worker before transferring to the manager.
-
-\subsection{Expression Dependency Graphs}
-
 The evaluation model for interpreted languages is simple. Each
 expression of code is evaluated in the order that it appears in a text file. Informally
 each expression is a line of code. This can be
@@ -513,7 +423,59 @@ can be redefined.
 %\label{fig:test}
 \end{figure}
 
-The expression dependency graph is a 
+The expression dependency graph provides a tool for going beyond
+embarrassingly parallel problems, since some subgraphs may potentially run
+in parallel. In practice, I could not find real examples in R code where
+the benefits of this type of parallelism outweigh the overhead, but with
+threads it may be possible. This graph is still useful for understanding
+the structure of the code.
+
+\subsection{Entry points for parallelism}
+
+Three types of functions in R are of special interest when doing parallel
+computation: apply functions, vectorized functions, and reduce functions.
+
+Apply functions are higher order functions which call the same function
+with potentially different arguments. They are equivalent to the ``map''
+step in the map reduce paradigm \cite{dean2008mapreduce}.  In base R these
+include \texttt{lapply, apply, sapply, vapply, Map, mapply, by, tapply,
+outer, replicate}. These should be the first target for parallelism because
+they are closest to the existing technologies, ie. \texttt{lapply()} has a
+corresponding function \texttt{mclapply()} in the parallel package.
+
+Vectorized functions apply functions elementwise, for example arithmetic
+operators \texttt{+, -, *, /}. A vectorized function $f$
+operating on an argument $x$ of length $n$ does:
+\begin{equation}
+\label{eq:vectorization}
+    f(x) = (f(x_1), \dots, f(x_n))
+\end{equation}
+Splitting $x$ into $p$ subvectors, 
+\[
+    x = \left[ (x_{11}, \dots, x_{1 n_1}), \dots, (x_{p 1}, \dots, x_{p
+n_p}) \right]
+\]
+allows us to parallelize $f(x)$ by evaluating $f$ on the subvectors as follows:
+\[
+    f(x) = \left[ f(x_{11}, \dots, x_{1 n_1}), \dots, f(x_{p 1}, \dots, x_{p
+n_p}) \right].
+\]
+If the subvectors are large enough then this can be efficient in R also.
+The problem with parallelization in this case is that the overhead of
+splitting $x$ into subvectors and recombining $f(x)$ may take more time
+than calling $f()$ itself. It becomes more efficient when combined with
+a reduce function.
+
+The general form of the \texttt{Reduce()} function in R collapses elements
+into a single result by calling a function $f()$ repeatedly on the
+elements. For example \texttt{Reduce(`+`, 1:4)} is equivalent to
+\texttt{(((1 + 2) + 3) + 4)}. Common examples that can be written this way
+include \texttt{min, max, mean, sum, prod}. A more interesting example is
+to simultaneously join many data frames through \texttt{Reduce(merge,
+...)}.  Since we're computing on large data sets numerically stable
+algorithms should be used here, ie.  Kahan summation \cite{Robey2011217}.
+Reduce style functions can be used to reduce the size of the data in a
+worker before transferring to the manager.
 
 \subsection{Challenges}
 
@@ -521,15 +483,15 @@ It would be quite ambitious to produce a complete system capable of
 producing optimal code on such different systems as multicore, GPU, and
 distributed. Some of the foundational capabilities aren't yet mature, i.e.
 compiling R code to an OpenCL kernel which runs on a GPU. Moreover, the
-semantics across the systems may differ. For example, a \texttt{matrix} from
-the \texttt{bigmemory} package has reference semantics,
-unlike an ordinary R matrix \cite{bigmemory}.
+semantics across the systems may differ. For example, a file backed
+\texttt{matrix} from the \texttt{bigmemory} package has reference
+semantics, unlike an ordinary R matrix \cite{bigmemory}.
 
 Non standard evaluation and dynamic scoping rules make some of the
 static code analysis difficult. For example, to fit a linear model with
 \texttt{lm(y\textasciitilde x, data)}, it's possibe that $x$ is a global variable while
 $y$ is a column name in \texttt{data}. Generally this can't be known until
-run time, since one could have the following R code which randomly assigns
+run time, since one could have the following code which randomly assigns
 $x$:
 
 \begin{verbatim}
@@ -542,39 +504,69 @@ if(sample(c(TRUE, FALSE), 1)){
 When identifying global variables to send to workers one can do the
 conservative thing and send both \texttt{x, data}.
 
-Another potential challenge is handling mutable or more complex objects
+Another challenge is handling mutable or more complex objects
 such as environments, closures, and reference classes.  It's usually not
 possible to know the class of an object until runtime. But user and package
 code could be inspected to see if certain objects are used, for example by
-looking for calls to the function \texttt{setRefClass()}.  The code
+looking for calls to the function \texttt{setRefClass()}. The code
 analysis will have to respect the implicit connections between these
 objects.
 
 \section{Conclusion}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\subsection{Interfaces}
 
+Parallel programming in pure R (not at the C level) can be understood in
+terms of a layered architecture. The foundational \textbf{System Layer}
+provides the basic interfaces used by any programming language. The
+\textbf{R Layer} consists of packages which adapt the basic interfaces for
+use specifically in R. The packages in the \textbf{User Layer} are meant to
+simplify parallel programming, or they are for applications with specific
+use cases.  Here are a few examples of packages at each layer:
+
+\begin{itemize}
+\item User Layer: foreach, future, partools, ddR, biganalytics, RevoScaleR
+\item R layer: SNOW, multicore, parallel, bigmemory, Rmpi
+\item System Layer: processes, *NIX fork(), memory maps, network sockets,
+    MPI
+\end{itemize}
+
+Today users write code using packages from the User Layer or the R Layer.
+Modifying code programmatically can allow us to skip these layers, and
+instead write the same base R code which will run in serial as in parallel.
+This is appealing for two reasons. Base R is stable, so users can write
+code that works locally as in parallel, and can expect it to continue to
+work in the future. Second, If the code runs on a different system or with
+a different data set then one can automatically generate code to run more
+efficiently on that system.
+
+Some of the work in this project may mean enhancing the capabilities of these
+intermediate layers. For example, a file based sort usable from R facilitiates
+``group by'' and streaming applications.
 
 \subsection{Related Technologies}
 
 Related technologies include Theano, tensorflow, dask, and arrayfire. With
-these packages the user explicitly builds computation graphs which are then executed in
-an efficient way based on the available architecture. They are more
-tailored to linear algebra / numerical computing, and in particular are used for
-components of neural networks. One possible path to explore is the translation
-of R code into these systems. This might be difficult when processing non
-numeric data.
+these packages the user explicitly builds computation graphs which are then
+executed in an efficient way based on the available architecture. They are
+more tailored to linear algebra / numerical computing, and in particular
+are used to implement neural networks. One possible path to explore is the
+translation of R code into these systems. This might be difficult when
+processing non numeric data.
 
 \subsection{Next Steps}
 
 My immediate plan is to build the infrastructure to analyze the highway
-sensor data. At a minimum this means preprocessing tools, profiling tools, and
-a parallel group by. The computational platform is the server, potentially
-exceeding memory.
+sensor data within this more general framework. I plan to see the analysis
+through to a stage where it can be shared with the transportation research
+community.  At a minimum this means preprocessing tools, profiling tools,
+and a parallel group by. The target \emph{platform} is a single server, and
+the \emph{data} consists of files which may exceed memory.
 
-The people who stand to benefit from this are individual researchers and
-domain scientists who may not have access to distributed systems or
-databases. 
+After this I plan to find another use case for parallel processing of data
+in a different format, either in a database or in a streaming system such
+as Apache Kafka.
 
 \bibliographystyle{plain}
 \bibliography{../citations,../Rpackages} 
