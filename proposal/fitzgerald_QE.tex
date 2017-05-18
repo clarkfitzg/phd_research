@@ -314,10 +314,11 @@ simulations, among many other things.
 \section{Code Analysis}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Steps:
+When performing the code analysis one might take the following steps:
 
 \begin{itemize}
     \item Parse the code, gathering dependency information
+    \item Fuse loops, combining vectorized operations where possible.
     \item Identify points to parallelize
     \item Speculatively evaluate some expressions (after checking for side
         effects) to estimate how long they'll

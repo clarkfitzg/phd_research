@@ -697,6 +697,25 @@ by(data, INDICES = station, FUN = piecewise_rlm)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
+    \frametitle{R in a database}
+
+    Suppose we want to call the vectorized function $f()$. If $f()$ is
+    available both in R and the database then we have two options:
+
+\begin{verbatim}
+    Option 1: Run f inside database, returning result
+    
+    dbGetQuery(con,"SELECT f(x) FROM mydata;")
+
+    Option 2: First fetch x, then call f within R
+
+    f(dbGetQuery(con,"SELECT x FROM mydata;"))
+\end{verbatim}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]
+
     \frametitle{By ``programming on the language'' we can modify existing
     code.}
 
