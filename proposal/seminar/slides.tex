@@ -695,6 +695,23 @@ by(data, INDICES = station, FUN = piecewise_rlm)
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{How do we detect if a function in R is vectorized, and in
+    which arguments?}
+
+    \texttt{rnorm()} is vectorized in the last two arguments, but
+    semantically different for a vector in the first argument.
+
+\begin{verbatim}
+    > rnorm(5, mean = c(1, 2), sd = c(2, 10, 200))
+    [1]   0.2134756  -4.1137221 256.0094734   0.4562226 -10.3855374
+\end{verbatim}
+
+
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
     \frametitle{R in a database}

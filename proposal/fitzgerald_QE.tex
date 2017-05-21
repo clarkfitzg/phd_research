@@ -103,24 +103,24 @@
 \label{fig:workflow}
 \end{figure}
 
-Figure \ref{fig:workflow} shows the high level goal.
 \textbf{Code} is a script to be executed.
 \textbf{Data} could be data in memory, single or multiple files, a
 memory-mapped file, a database, a parallel file system, etc.
 \textbf{Platform} is the computing setup, such as a laptop with 4 cores, a
-Spark cluster, or a server with 2 GPUs and a high bandwidth connection. The combination
-of (Code, Data, Platform) dictates what strategies should be used for
-efficient evaluation. The goal is to take these components and potentially
-modify the code to efficiently run in parallel with a particular platform
-and data, while preserving the semantics of the input code.
+Spark cluster, or a server with 2 GPUs and a high bandwidth connection. The
+combination of (Code, Data, Platform) dictates what strategies should be
+used for efficient computation. Figure \ref{fig:workflow} illustrates the
+high level goal of modifying the code to run efficiently in parallel with a
+particular platform and data, while preserving the semantics of the input
+code.
 
-This doesn't mean that the system invents new algorithms on
-the fly. But it should be capable of tuning existing parameters to the
-system at hand.\footnote{An example of a parameter to be tuned is the chunk size
-$n_j$ as described in \ref{section:sequential}.}
-This project is in the spirit of compiling R, since it treats R code as
-a set of high level directions, and it potentially generates alternative
-code for execution \cite{lang2014enhancing}.
+This doesn't mean that the system invents new algorithms on the fly. But it
+should be capable of tuning existing parameters to the system at
+hand.\footnote{An example of a parameter to be tuned is the chunk size
+$n_j$ as described in \ref{section:sequential}.} This project is in the
+spirit of compiling R, since it treats R code as a set of high level
+directions, and generates alternative code for execution
+\cite{lang2014enhancing}.
 
 \section{Motivating Example}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -180,10 +180,9 @@ did this using a simple single threaded R program, and it took 23 hours to
 run on 134 GB of data consisting of observations in the San Francisco Bay
 Area for part of 2016.  Throughput for a conventional hard disk is around
 100 MB/s\footnote{Other technologies such as parallel filesystems can
-increase throughput.}, so a lower bound for reading then writing this
-reorganized data is approximately $2 * 134000 / 100$ seconds, or 45
-minutes. The simple code is 30 times slower than this. Small
-inefficiencies add up.
+increase throughput.}, so an approximate lower bound for reading then
+writing this reorganized data is $2 * 134000 / 100$ seconds, or 45 minutes.
+The simple code is 30 times slower than this. Small inefficiencies add up.
 
 Another drawback is that the programmer must write very specific
 instructions to reorganize the data for computations grouped by station.
@@ -437,21 +436,21 @@ Three types of functions in R are of special interest when doing parallel
 computation: apply functions, vectorized functions, and reduce functions.
 
 Apply functions are higher order functions which call the same function
-with potentially different arguments. They are equivalent to the ``map''
+with potentially different arguments. Conceptually, they are variations to the ``map''
 step in the map reduce paradigm \cite{dean2008mapreduce}.  In base R these
 include \texttt{lapply, apply, sapply, vapply, Map, mapply, by, tapply,
 outer, replicate}. These should be the first target for parallelism because
 they are closest to the existing technologies, ie. \texttt{lapply()} has a
 corresponding function \texttt{mclapply()} in the parallel package.
 
-Vectorized functions apply functions elementwise, for example arithmetic
-operators \texttt{+, -, *, /}. A vectorized function $f$
-operating on an argument $x$ of length $n$ does:
+Vectorized functions apply functions elementwise. Basic math functions such
+as sin, log, and floor are simple examples of vectorized functions.  A
+vectorized function $f$ operating on an argument $x$ of length $n$ does:
 \begin{equation}
 \label{eq:vectorization}
     f(x) = (f(x_1), \dots, f(x_n))
 \end{equation}
-Splitting $x$ into $p$ subvectors, 
+Partitioning $x$ into $p$ subvectors, 
 \[
     x = \left[ (x_{11}, \dots, x_{1 n_1}), \dots, (x_{p 1}, \dots, x_{p
 n_p}) \right]
@@ -462,10 +461,10 @@ allows us to parallelize $f(x)$ by evaluating $f$ on the subvectors as follows:
 n_p}) \right].
 \]
 If the subvectors are large enough then this can be efficient in R also.
-The problem with parallelization in this case is that the overhead of
-splitting $x$ into subvectors and recombining $f(x)$ may take more time
-than calling $f()$ itself. It becomes more efficient when combined with
-a reduce function.
+However, the overhead of splitting $x$ into subvectors, evaluating in
+parallel, and recombining $f(x)$ may take more time than calling $f()$
+itself. It becomes more efficient when combined with a reduce function,
+since there's less data to recombine.
 
 The general form of the \texttt{Reduce()} function in R collapses elements
 into a single result by calling a function $f()$ repeatedly on the
@@ -538,7 +537,7 @@ Modifying code programmatically can allow us to skip these layers, and
 instead write the same base R code which will run in serial as in parallel.
 This is appealing for two reasons. Base R is stable, so users can write
 code that works locally as in parallel, and can expect it to continue to
-work in the future. Second, If the code runs on a different system or with
+work in the future. Second, if the code runs on a different system or with
 a different data set then one can automatically generate code to run more
 efficiently on that system.
 
@@ -551,9 +550,9 @@ intermediate layers. For example, a file based sort usable from R facilitiates
 Related technologies include Theano, tensorflow, dask, and arrayfire. With
 these packages the user explicitly builds computation graphs which are then
 executed in an efficient way based on the available architecture. They are
-more tailored to linear algebra / numerical computing, and in particular
-are used to implement neural networks. One possible path to explore is the
-translation of R code into these systems. This might be difficult when
+more tailored to linear algebra / numerical computing, and are particularly
+popular for implementing neural networks. One possible path to explore is
+the translation of R code into these systems. This might be difficult when
 processing non numeric data.
 
 \subsection{Next Steps}
