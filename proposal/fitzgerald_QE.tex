@@ -80,15 +80,15 @@
 %This is a proposal for the Statistics PhD Qualifying Exam in June 2017.
 
     Conventional systems for parallel programming require users to modify
-    existing code to take advantage of a platform's computational
-    capabilities, which may include multiprocessing or Graphical Processing
-    Units (GPU)s. In this proposal we consider code analysis methods to
-    detect the potential for parallel execution. The results of the
-    analysis can then be used to rewrite and execute semantically
-    equivalent parallel instructions, without requiring the user to modify
-    their original code.  We consider a motivating case study analyzing the
-    operating characteristics California's highway traffic sensor stations
-    on hundreds of gigabytes of traffic sensor data.
+    existing code to take full advantage of a platform's computational
+    capabilities. In this proposal we consider automated code analysis
+    methods to detect the potential for parallel execution in R code. The results of
+    the analysis can then be used to programmatically rewrite and execute
+    semantically equivalent parallel instructions, without requiring the
+    user to modify their original code.  We consider a motivating case
+    study analyzing the operating characteristics of California's highway
+    traffic sensor stations on hundreds of gigabytes of traffic sensor
+    data.
 
 \end{abstract}
 
@@ -103,49 +103,63 @@
 \label{fig:workflow}
 \end{figure}
 
-\textbf{Code} is a script to be executed.
-\textbf{Data} could be data in memory, single or multiple files, a
-memory-mapped file, a database, a parallel file system, etc.
+For our purposes in this document, \textbf{code} is a script to be
+executed.  \textbf{Data} could be data in memory, single or multiple files,
+a memory-mapped file, a database, a parallel file system, etc.
 \textbf{Platform} is the computing setup, such as a laptop with 4 cores, a
-Spark cluster, or a server with 2 GPUs and a high bandwidth connection. The
-combination of (Code, Data, Platform) dictates what strategies should be
-used for efficient computation. Figure \ref{fig:workflow} illustrates the
-high level goal of modifying the code to run efficiently in parallel with a
-particular platform and data, while preserving the semantics of the input
-code.
+cluster of machines communicating over a network, or a server with 2 GPUs
+and a high bandwidth connection. Knowing the combination of \{Code, Data,
+Platform\} allows one to select an appropriate strategy for efficient
+computation.  Figure \ref{fig:workflow} illustrates the high level goal of
+modifying the code to run efficiently with a particular platform and data,
+while preserving the semantics of the input code.
 
-This doesn't mean that the system invents new algorithms on the fly. But it
-should be capable of tuning existing parameters to the system at
-hand.\footnote{An example of a parameter to be tuned is the chunk size
-$n_j$ as described in \ref{section:sequential}.} This project is in the
-spirit of compiling R, since it treats R code as a set of high level
-directions, and generates alternative code for execution
-\cite{lang2014enhancing}.
+This project is in the spirit of compiling R, since it treats R code as a
+set of high level directions, and generates alternative code for execution
+\cite{lang2014enhancing}. In the future we hope to connect and extend this
+project using recent work on compilation. Note that the system does not
+invent new algorithms on the fly. However, it should be capable of tuning
+existing parameters to the problem at hand.\footnote{An example of a
+parameter to be tuned is the chunk size $n_j$ as described in
+\ref{section:sequential}.} 
 
 \section{Motivating Example}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \label{sec:pems}
 
-The following example is interesting because:
+The example in this section is interesting for the following reasons:
 \begin{enumerate}
-    \item It requires more memory than is available on a single server.
-    \item Parallel programming can greatly increase the speed.
+    \item The results are relevant to domain scientists in traffic engineering.
+    \item The size of the data exceeds the memory of a single server.
+    \item Parallel programming can increase the speed by 1-2 orders of
+        magnitude.
 \end{enumerate}
 
-The California Department of Transportation collects traffic data through
+The California Department of Transportation (CalTrans) collects traffic data through
 sensors embedded in highways. The sensors measure three quantities: count
 of passing vehicles (flow), time during which a vehicle is directly above the
 sensor (occupancy), and average velocity \cite{jia2001pems}.  Every thirty
 seconds they produce a new data point. $43,680$ sensors in California
-measuring 3 parameters multiplied by $(2 \times 60 \times 24)$ measurements
-per day results in 377 million new data points per day.  This raw data is
-organized into files grouped by (day, district), and is available for
-public download.  Traffic engineers model traffic flow as a function of
-occupancy for each sensor. This relationship is called the \emph{fundamental
-diagram} because it captures the operating characteristic of this section
-of road \cite{daganzo1997fundamentals}. Once fundamental diagrams
-have been modeled for each station they can be used to understand how road
-characteristics and policy changes affect the flow of traffic.
+measuring 3 parameters multiplied by $2 \times 60 \times 24$ measurements
+per day results in 377 million new data points per day.  CalTrans provides
+the raw data for public download. It's organized into files containing
+observations for one day for each of the 12 management districts in
+California.
+
+\begin{figure}
+\centering
+\includegraphics[width=.7\linewidth]{seminar/fundamental_diagram}
+\caption{The fundamental diagram in traffic engineering.}
+\label{fig:fundamental_diagram}
+\end{figure}
+
+Traffic engineers model traffic flow as a function of occupancy for each
+sensor as in figure \ref{fig:fundamental_diagram}. This relationship is
+called the \emph{fundamental diagram} because it captures the operating
+characteristic of this section of road \cite{daganzo1997fundamentals}. Once
+fundamental diagrams have been modeled for each station they can be used to
+understand how road characteristics and policy changes affect the flow of
+traffic.
 
 Robust regression can be used to fit the fundamental diagram, approximating
 the minimization of the L1 norm of the residuals as in

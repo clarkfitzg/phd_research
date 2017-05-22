@@ -695,7 +695,7 @@ by(data, INDICES = station, FUN = piecewise_rlm)
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
+\begin{frame}[fragile]
 
     \frametitle{How do we detect if a function in R is vectorized, and in
     which arguments?}
@@ -704,11 +704,17 @@ by(data, INDICES = station, FUN = piecewise_rlm)
     semantically different for a vector in the first argument.
 
 \begin{verbatim}
-    > rnorm(5, mean = c(1, 2), sd = c(2, 10, 200))
-    [1]   0.2134756  -4.1137221 256.0094734   0.4562226 -10.3855374
+> rnorm(5, mean = c(1, 2), sd = c(2, 10, 200))
+[1]   0.2134756  -4.1137221 256.0094734   0.4562226 -10.3855374
 \end{verbatim}
 
+It's all C Code.
 
+\begin{verbatim}
+> rnorm
+function (n, mean = 0, sd = 1)
+.Call(C_rnorm, n, mean, sd)
+\end{verbatim}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

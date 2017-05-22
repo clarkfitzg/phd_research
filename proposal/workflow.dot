@@ -6,16 +6,13 @@ digraph workflow {
 
     0 [label="Data\nDescription"];
     1 [label="Sequential\nR Code"];
-    2 [label="Code\nAnalysis"];
-    3 [label="Multiple\nprocessors"];
-    4 [label="GPU"];
-    5 [label="Database"];
-    6 [label="..."];
+    2 [label="Platform"];
 
-    1 -> 2;
-    0 -> 2;
-    2 -> 3;
-    2 -> 4;
-    2 -> 5;
+    6 [label="Code\nAnalysis"];
+    7 [label="Specialized\nCode"];
+
+    0 -> 6;
+    1 -> 6;
     2 -> 6;
+    6 -> 7;
 }
