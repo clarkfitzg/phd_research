@@ -1,7 +1,7 @@
 digraph workflow {
     rankdir=LR;
     //size="8,5"
-    node [shape = square]; 2;
+    node [shape = square]; 6;
     node [shape = none];
 
     0 [label="Data\nDescription"];

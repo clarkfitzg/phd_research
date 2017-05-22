@@ -128,12 +128,12 @@ parameter to be tuned is the chunk size $n_j$ as described in
 \label{sec:pems}
 
 The example in this section is interesting for the following reasons:
-\begin{enumerate}
+\begin{itemize}
     \item The results are relevant to domain scientists in traffic engineering.
     \item The size of the data exceeds the memory of a single server.
     \item Parallel programming can increase the speed by 1-2 orders of
         magnitude.
-\end{enumerate}
+\end{itemize}
 
 The California Department of Transportation (CalTrans) collects traffic data through
 sensors embedded in highways. The sensors measure three quantities: count
@@ -156,47 +156,43 @@ California.
 Traffic engineers model traffic flow as a function of occupancy for each
 sensor as in figure \ref{fig:fundamental_diagram}. This relationship is
 called the \emph{fundamental diagram} because it captures the operating
-characteristic of this section of road \cite{daganzo1997fundamentals}. Once
-fundamental diagrams have been modeled for each station they can be used to
-understand how road characteristics and policy changes affect the flow of
-traffic.
-
-Robust regression can be used to fit the fundamental diagram, approximating
-the minimization of the L1 norm of the residuals as in
-\cite{li2011fundamental}.  From the R language this can be done easily and
-efficiently, for example with the \texttt{rlm} (robust linear model)
-function in the MASS package \cite{venables2013modern}:
-
-\begin{verbatim}
-fit1 = rlm(count ~ occupancy, data = station1_high_occupancy)
-\end{verbatim}
-
-This analysis can be extended by grouping all of the data by station and
-applying a user defined function \texttt{fit\_fd()} to each group.
-Allowing user defined functions keeps this flexible, facilitating research
-and experimentation. R code expresses the extended analysis succintly and
-clearly:
+characteristic of this section of road \cite{daganzo1997fundamentals}. 
+Robust regression can be used to fit the fundamental diagram for one
+station, approximating the minimization of the L1 norm of the residuals as
+in \cite{li2011fundamental}.  From the R language this can be done easily
+and efficiently, for example with the \texttt{rlm} (robust linear model)
+function in the MASS package \cite{venables2013modern}. \texttt{rlm} can be
+used as a building block for a user defined \texttt{fit\_fd} function, and
+the fundamental diagram can be fit on a single station with
+\texttt{fit\_fd(station1)}. Then all stations can be fitted
+by grouping the data by station and
+applying \texttt{fit\_fd()} to each group.
+R code expresses this computation succintly:
+%Allowing user defined functions keeps this flexible, facilitating research
+%and experimentation. 
 
 \begin{verbatim}
 by(alldata, INDICES = station, FUN = fit_fd)
 \end{verbatim}
 
-However, the data won't fit into memory, so this approach will not work.
-Even if the data did fit in memory, it would be slow because \texttt{fit\_fd()} won't
-run in parallel across the 1000's of different stations\footnote{
-Depending on overhead it may be less efficient to run \texttt{fit\_fd()} in
-parallel.}.
+I would like to apply this code to a subset of the data consisting of
+observations in the San Francisco Bay Area for part of 2016.  This data is
+134 GB on disk. It won't fit into memory, so this code won't run.  Even
+if it did fit in memory, it would be slow because \texttt{by()} won't run
+\texttt{fit\_fd()} in parallel across the 1000's of different
+stations\footnote{ Depending on overhead it may be less efficient to run
+\texttt{fit\_fd()} in parallel.}.
 
-It would be easier to perform the regression if the data were
+It would be easier to perform this computation if the data were
 organized in files for each station rather than in files for each day.  One
 approach is to reorganize the data on disk into this file structure. I
 did this using a simple single threaded R program, and it took 23 hours to
-run on 134 GB of data consisting of observations in the San Francisco Bay
-Area for part of 2016.  Throughput for a conventional hard disk is around
+run on the 2016 Bay Area data.  Throughput for a conventional hard disk is around
 100 MB/s\footnote{Other technologies such as parallel filesystems can
 increase throughput.}, so an approximate lower bound for reading then
-writing this reorganized data is $2 * 134000 / 100$ seconds, or 45 minutes.
-The simple code is 30 times slower than this. Small inefficiencies add up.
+writing this reorganized data is $2 * 134000 / 100$ seconds, or 45 minutes
+for 134 GB.  The simple code is 30 times slower than this. Small
+inefficiencies add up.
 
 Another drawback is that the programmer must write very specific
 instructions to reorganize the data for computations grouped by station.
@@ -210,7 +206,7 @@ all the data for one group in memory at once.
 What if we had a system that could inspect the idiomatic R code above that
 works on small data sets, and then automatically take steps to scale and to
 parallelize the operations? It should also be capable of tuning for the
-specifics of the system and the data. This is what we're working towards.
+specifics of the platform and the data. This is the goal of the research.
 
 \section{Simple Example}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -222,7 +218,7 @@ specifics of the system and the data. This is what we're working towards.
 % you might identify these programmatically and what are some of the
 % challenges
 
-Now we use a simple example to see exactly what translating code might look
+We use an intentionally simple example to see exactly what translated code might look
 like.  Consider computing the mean,
 
 \begin{equation}
@@ -231,22 +227,22 @@ like.  Consider computing the mean,
 \end{equation}
 
 where the $x_i$'s are
-i.i.d. $\sim N(0, 1)$.  In R this code is written:
+i.i.d. $\sim t(d)$.  In R this code is written:
 
 \begin{verbatim}
-xbar = mean(rnorm(n))
+xbar = mean(rt(n, d))
 \end{verbatim}
 
-To evaluate this R will first build an intermediate vector $x = (x_1,
-\dots, x_n)$ and then compute the mean. Eventually that unreferenced
-intermediate vector will be garbage collected.
-Execution time increases
-linearly with $n$. Once $n$ becomes large
-enough this vector will no longer fit into available physical memory, so
-the operating system will use swap space. On a machine with 8 GB memory
-this happens when $O(n) = 10^9$, causing the execution time
-to increase by an order of magnitude, roughly from 1 minute to 15
-minutes. Once $n$ exceeds memory and swap space R will not be able to allocate a
+Ordinarily, to evaluate this R will first build an intermediate vector $x =
+(x_1, \dots, x_n)$ and then compute the mean. Eventually that unreferenced
+intermediate vector will be garbage collected.\footnote{Reducing the use of
+unnessary intermediate vectors would be helpful, but it's a second order
+consideration.} Execution time increases linearly with $n$. Once $n$
+becomes large enough this vector will no longer fit into available physical
+memory, so the operating system will use swap space. On a machine with 8 GB
+memory this happens when $O(n) = 10^9$, causing the execution time to
+increase by an order of magnitude, roughly from 1 minute to 15 minutes.
+Once $n$ exceeds memory and swap space R will not be able to allocate a
 large enough object, and the computation will fail with a memory error.
 
 Now we consider alternative ways to execute this code.  Most rely on
