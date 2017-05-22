@@ -245,9 +245,16 @@ increase by an order of magnitude, roughly from 1 minute to 15 minutes.
 Once $n$ exceeds memory and swap space R will not be able to allocate a
 large enough object, and the computation will fail with a memory error.
 
-Now we consider alternative ways to execute this code.  Most rely on
-splitting the sum into $p$ partial sums with $n_j$ terms each and then rewriting
-Equation \ref{eq:mean} as a weighted mean.
+\subsection{Sequential Execution}
+\label{section:sequential}
+
+The following example illustrates how single threaded R can be modified to
+work with a data set that does not fit into memory. I do this 
+by breaking the computation into chunks. The code below not run in parallel,
+but it does use the same functional programming patterns as parallel code. 
+
+Suppose $n = p n_j$ for integers $p, n_j$.  The mean can be
+expressed as 
 
 \begin{equation}
     \bar{x} = \frac{1}{n} \sum_{j = 1}^p \sum_{i = 1}^{n_j} x_{ij}
@@ -255,63 +262,63 @@ Equation \ref{eq:mean} as a weighted mean.
 \label{eq:mean_partial}
 \end{equation}
 
-It's important to correctly handle the cases when $n$ is not divisible by $p$
-and the computation / data cannot be evenly split. For simplicity in the
-examples below, suppose that they can be split evenly so $n_j$ is the same
-for all $j$.
-
-\subsection{Sequential Execution}
-\label{section:sequential}
-
-Equation \ref{eq:mean_partial} can be directly translated into R code as
-follows:
+Conceptually, $p$ is the number of chunks and $n_j$ is the size of each
+chunk. Equation \ref{eq:mean_partial} can be directly translated into R
+code as follows:
 
 \begin{verbatim}
-partial_means = replicate(p, mean(rnorm(n_j)))
+partial_means = replicate(p, mean(rt(n_j, d)))
 xbar = mean(partial_means)
 \end{verbatim}
 
-This code does not run in parallel, but it does use the same functional
-programming patterns as parallel code. If $M$ is the size of physical memory in
-bytes then this code is high performance in the sense
-that execution time will continue to be linear while $n < O(M^2)$, just
-as it was for small $n < O(M)$. It can also be modified to handle
-arbitrarily large $n$. This is because \texttt{replicate()} runs
-sequentially, so the memory footprint can be bounded since the intermediate
-vectors will be of length $n_j$. 
+In this code \texttt{replicate()} evaluates the expression
+\texttt{mean(rt(n\_j, d))} $p$ times sequentially, storing the intermediate
+results.  If $M$ is the size of physical memory in bytes then this code is
+high performance in the sense that execution time will continue to be
+linear while $n < O(M^2)$, just as it was for small $n < O(M)$. The memory
+footprint is bounded since the intermediate vectors will be of length
+$n_j$. So small chunk sizes use less memory. On the other hand, large chunk
+sizes improve speed when computing on vectors in R, since the overhead of
+the R interpreter is amortized. 
 
-What aspects of the code changed? In the initial code the user
-supplied $n$, and it remained to choose $p$ and $n_j$.
+% In practice, vectors with at least
+% 1000 elements are found to be large enough \cite{chambers2016extending}.
+% I think it's here, but can't find it.
+
+% TODO: Need more on the above?
 
 \subsection{SNOW Cluster}
 
-Clusters created by R's SNOW package, a Simple Network Of Workstations,
+A common way to write parallel R code is through the SNOW package, which
+stands for Simple Network Of Workstations.  Clusters created by SNOW
 consist of independent worker R processes created by a manager process. The
 processes communicate over network sockets, and they may be on one or many
 physical machines.  This is the type of cluster used by partools to
-implement Software Alchemy \cite{R-partools} \cite{matloff2014software}.  
+implement Software Alchemy \cite{R-partools} \cite{matloff2014software}.
+The following code implements equation \ref{eq:mean_partial} in SNOW:
 
 \begin{verbatim}
 library(parallel)
-p = detectCores()
+p = floor(detectCores() / 2)
 n_j = n / p
 cluster = makeCluster(p)
-clusterExport(cluster, "n_j")
+clusterExport(cluster, c("n_j", "d"))
 partial_means = unlist(
-    clusterEvalQ(cluster, mean(rnorm(n_j))))
+    clusterEvalQ(cluster, mean(rt(n_j, d))))
 xbar = mean(partial_means)
 \end{verbatim}
 
 This differs from the code in \ref{section:sequential} since
 the following steps were taken:
 \begin{enumerate}
-    \item $p$ was chosen in a principled way, to use all available
-        resources on a machine\footnote{For multi-user systems it's more
-        considerate to use fewer processors.}. 
+    \item $p$ was chosen in a principled way, to use half of the processors
+        available on the platform. This respects other programs and users
+        who may be on the system.
+
     \item The chunk size $n_j$ was computed from this.
     \item $n_j$ is a global variable that doesn't exist on
         the workers, and therefore it was exported.
-    \item The manager sends the code \texttt{mean(rnorm(n\_j))} to each
+    \item The manager sends the code \texttt{mean(rt(n\_j, d))} to each
         worker in the cluster to be evaluated in parallel. 
 \end{enumerate}
 
