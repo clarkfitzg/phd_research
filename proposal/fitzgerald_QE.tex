@@ -299,7 +299,7 @@ The following code implements equation \ref{eq:mean_partial} in SNOW:
 
 \begin{verbatim}
 library(parallel)
-p = floor(detectCores() / 2)
+p = floor(detectCores(logical = FALSE) / 2)
 n_j = n / p
 cluster = makeCluster(p)
 clusterExport(cluster, c("n_j", "d"))
@@ -308,24 +308,39 @@ partial_means = unlist(
 xbar = mean(partial_means)
 \end{verbatim}
 
-This differs from the code in \ref{section:sequential} since
-the following steps were taken:
-\begin{enumerate}
-    \item $p$ was chosen in a principled way, to use half of the processors
-        available on the platform. This respects other programs and users
-        who may be on the system.
+Here's what each line of code does:
 
-    \item The chunk size $n_j$ was computed from this.
-    \item $n_j$ is a global variable that doesn't exist on
-        the workers, and therefore it was exported.
-    \item The manager sends the code \texttt{mean(rt(n\_j, d))} to each
-        worker in the cluster to be evaluated in parallel. 
+\begin{enumerate}
+    \item \texttt{library(parallel)} loads the parallel package, which R
+        includes as a recommended package.
+    \item \texttt{p = floor(detectCores(logical = FALSE) / 2)}
+        chooses the number of chunks in a principled way, to use half of
+        the physical processors available on the platform. This respects
+        other programs and users who may be on the system.
+    \item \texttt{n\_j = n / p} chooses the chunk size based on $n$ and
+        $p$. 
+    \item \texttt{cluster = makeCluster(p)} makes a local cluster with $p$
+        workers. Given an existing cluster I would skip this step.
+    \item \texttt{clusterExport(cluster, c("n\_j", "d"))} sends the
+        variables $n_j, d$ to the workers, where they are subsequently
+        available. Using a system fork to create the cluster allows me to
+        skip this step, since forked processes have access to the variables
+        that existed when they were created.
+    \item \texttt{clusterEvalQ(cluster, mean(rt(n\_j, d)))} sends the code
+        \texttt{mean(rt(n\_j, d))} from the manager to be evaluated on each
+        worker.
+    \item \texttt{partial\_means = unlist(...)} converts the list data
+        structure to the intermediate numeric vector.
+    \item \texttt{xbar = mean(partial\_means)} finally computes the mean
+        from the intermediate result.
 \end{enumerate}
 
 Given an existing cluster this plan is efficient, since it
 sends a few bytes of code over the network and then returns a single
 number. This parallel model is useful in statistics for independent
 simulations, among many other things.
+
+If we wanted this to run in parallel and use a 
 
 \section{Code Analysis}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
