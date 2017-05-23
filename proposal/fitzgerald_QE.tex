@@ -121,7 +121,7 @@ project using recent work on compilation. Note that the system does not
 invent new algorithms on the fly. However, it should be capable of tuning
 existing parameters to the problem at hand.\footnote{An example of a
 parameter to be tuned is the chunk size $n_j$ as described in
-\ref{section:sequential}.} 
+\ref{sec:sequential}.} 
 
 \section{Motivating Example}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -246,7 +246,7 @@ Once $n$ exceeds memory and swap space R will not be able to allocate a
 large enough object, and the computation will fail with a memory error.
 
 \subsection{Sequential Execution}
-\label{section:sequential}
+\label{sec:sequential}
 
 The following example illustrates how single threaded R can be modified to
 work with a data set that does not fit into memory. I do this 
@@ -322,8 +322,9 @@ Here's what each line of code does:
     \item \texttt{cluster = makeCluster(p)} makes a local cluster with $p$
         workers. Given an existing cluster I would skip this step.
     \item \texttt{clusterExport(cluster, c("n\_j", "d"))} sends the
-        variables $n_j, d$ to the workers, where they are subsequently
-        available. Using a system fork to create the cluster allows me to
+        variables $n_j, d$ to the workers, so they will be available for
+        the local computations.
+        Using a system fork to create the cluster allows me to
         skip this step, since forked processes have access to the variables
         that existed when they were created.
     \item \texttt{clusterEvalQ(cluster, mean(rt(n\_j, d)))} sends the code
@@ -335,28 +336,44 @@ Here's what each line of code does:
         from the intermediate result.
 \end{enumerate}
 
-Given an existing cluster this plan is efficient, since it
-sends a few bytes of code over the network and then returns a single
-number. This parallel model is useful in statistics for independent
-simulations, among many other things.
+Given an existing cluster, this strategy is efficient, provided that the
+network latency is much less than the time required to evaluate the code.
+The manager sends only two numbers and the code \texttt{mean(rt(n\_j, d))}
+for evaluation. The workers each return a single number. Therefore the
+program avoids large data transfers.
 
-If we wanted this to run in parallel and use a 
+% This parallel model is useful in
+% statistics for independent simulations, cross validation, bootstrap, data
+% chunking
 
 \section{Code Analysis}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-When performing the code analysis one might take the following steps:
+Code analysis involves the following steps:
 
 \begin{itemize}
-    \item Parse the code, gathering dependency information
-    \item Fuse loops, combining vectorized operations where possible.
-    \item Identify points to parallelize
+    \item Parse the code, gathering dependency information as explained in
+        section \ref{sec:expression_dependency}.
+
+%    \item Fuse loops, combining vectorized operations where possible. For
+%        example, if the temporary variable \texttt{tmp} isn't used later
+%        then this code:
+%\begin{verbatim}
+%tmp = x + epsilon
+%xlog = log(tmp)
+%\end{verbatim}
+%        can be rewritten as \texttt{xlog = log(x + epsilon)}
+
+% What's the point?
+
+    \item Identify points to parallelize, see section
+        \ref{sec:parallel_points}.
     \item Speculatively evaluate some expressions (after checking for side
-        effects) to estimate how long they'll
-        take
-    \item Estimate total time required to run
-    \item Determine if preprocessing of the data is required
-    \item Generate code that will run in parallel on that platform
+        effects) to estimate how long they'll take.
+    \item Estimate time required to run the complete script.
+    \item Determine if preprocessing of the data is required, for example
+        reorganizing the files on disk as in section \ref{sec:pems}.
+    \item Generate code that will run efficiently on the specific platform.
 \end{itemize}
 
 \subsection{Overhead}
@@ -396,6 +413,8 @@ overhead accounts for only 10 percent of the total execution time, so the
 fixed cost has been amortized.
 
 \subsection{Expression Dependency Graphs}
+
+\label{sec:expression_dependency}
 
 Static code analysis is integral to this approach, and we build on the 
 CodeDepends package \cite{R-CodeDepends}.
@@ -463,6 +482,8 @@ threads it may be possible. This graph is still useful for understanding
 the structure of the code.
 
 \subsection{Entry points for parallelism}
+
+\label{sec:parallel_points}
 
 Three types of functions in R are of special interest when doing parallel
 computation: apply functions, vectorized functions, and reduce functions.
