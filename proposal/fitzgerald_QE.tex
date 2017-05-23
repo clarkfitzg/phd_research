@@ -379,26 +379,37 @@ Code analysis involves the following steps:
 \subsection{Overhead}
 
 Many of the performance characteristics of the different platforms can be
-understood in terms of the overhead to set them up, and then the latency
-and bandwidth for when data must be transferred.  If the data is ``small
-enough'' then performance will be acceptable regardless of how well the
-platform is utilized or how efficient the code is. Conversely, if the data
-is ``large enough'' then \emph{everything} matters, since small
-inefficiencies will be magnified when they occur millions of times, as in
-Section \ref{sec:pems}.  Therefore the focus here is on problems which take longer
-to run. A priori one doesn't even know if it's possible to run code more
-efficiently in parallel, due to the overhead.
+understood in terms of the overhead to set them up, the speed of each
+machine, and then the latency and bandwidth for when data must be
+transferred.  If the data is ``small enough'' then performance will be
+acceptable regardless of how well the platform is utilized or how efficient
+the code is. Conversely, if the data is ``large enough'' then
+\emph{everything} matters, since small inefficiencies will be magnified
+when they occur millions of times, as in section \ref{sec:pems}.  Therefore
+the focus here is on problems which take longer to run. A priori one
+doesn't even know if it's possible to run code more efficiently in
+parallel, because of the aforementioned overhead.
+Figure \ref{fig:overhead} compares the relative fixed sources of overhead
+associated with process based parallelism.
 
 \begin{figure}
 \centering
 \includegraphics[width=.8\linewidth]{compute_times/overhead}
-\caption{The baseline, simple function calls, take less than a microsecond. Starting up a
-    new R interpreter takes hundreds of milliseconds, which is relatively expensive.}
+
+    \caption{
+        This figure shows the overhead associated with various
+    operations by measuring the time to execute with small data. 
+    \emph{Baseline} calls \texttt{twox(10)} where \texttt{twox = function(x) 2*x}.
+    \emph{Serialize} sends and receive an object on a local network socket connection.
+    \emph{Fork} calls a system level fork of the process to evaluate a
+    function, returning the result to the current process.
+    \emph{Startup} starts a new independent instance of the R interpreter.
+    }
 \label{fig:overhead}
 \end{figure}
 
-Figure \ref{fig:overhead} compares the relative fixed sources of overhead to
-consider with parallel programming. The evaluation of the following simple
+% Maybe could take this out?
+The evaluation of the following simple
 function captures the basic overhead associated with an interpreted
 language like R:
 \begin{verbatim}
@@ -416,36 +427,39 @@ fixed cost has been amortized.
 
 \label{sec:expression_dependency}
 
-Static code analysis is integral to this approach, and we build on the 
-CodeDepends package \cite{R-CodeDepends}.
-The evaluation model for interpreted languages is simple. Each
-expression of code is evaluated in the order that it appears in a text file. Informally
-each expression is a line of code. This can be
-viewed as a set of constraints on the evaluation order of the expressions:
+We build on the CodeDepends package \cite{R-CodeDepends} for static code
+analysis.  The evaluation model for interpreted languages is simple. Each
+expression of code is evaluated in the order that it appears in a text
+file. Informally each expression is a line of code. This can be viewed as a
+set of constraints on the evaluation order of the expressions:
 
-\begin{enumerate}
+\begin{itemize}
     \item expression 1 executes before expression 2
     \item expression 2 executes before expression 3
     \item $\dots$
-\end{enumerate}
+\end{itemize}
 What if these constraints are relaxed? Suppose expression 1 defines the variable
 \texttt{x}, which is not used until expression 17. Then one has the
 constraint:
-\begin{enumerate}
+\begin{itemize}
     \item expression 1 executes before expression 17
-\end{enumerate}
+\end{itemize}
 This can be generalized into a directed graph which we'll refer to here as
 the \textbf{expression dependency graph} by considering expressions as
 nodes and constraints as edges. The edges are implicit based on the order
-of the statements in the code. Add an edge from $i \rightarrow k$ if
+of the statements in the code. There is an edge from $i \rightarrow k$ if
 expression $k$ depends on the execution of expression $i$.  It's safe to
 assume $i < k$, because expressions appearing later in a program can't
 affect expressions which have already run. Hence the expression graph is
-acyclic, i.e. a DAG.
+acyclic, i.e. a DAG. The expression graph differs from a control flow
+graph because it treats control flow constructs such as \texttt{for()}
+loops as top level expressions and functions, just like the R interpreter.
+It would be possible to go into the control flow, but this can be done more
+efficiently at the R compiler level.
 
-Figures \ref{fig:ast} and \ref{fig:codegraph} illustrate the 
-parse tree and expression dependency graph for the four lines of code in
-listing \ref{list:ab}.  Edges 1 and 3 in figure \ref{fig:codegraph} represent the
+Figure~\ref{fig:ast} and figure~\ref{fig:codegraph} illustrate the 
+parse tree and expression dependency graph for the simple script on
+page~\pageref{list:ab}.  Edges 1 and 3 in figure \ref{fig:codegraph} represent the
 respective uses of the variable \texttt{n} and \texttt{x}.  Edge 2 comes
 from the redefinition of \texttt{n}.  Edge 5 propagates the most recent
 definition of \texttt{n}.  The least obvious is edge 4, which is necessary
