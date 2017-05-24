@@ -340,7 +340,7 @@ Given an existing cluster, this strategy is efficient, provided that the
 network latency is much less than the time required to evaluate the code.
 The manager sends only two numbers and the code \texttt{mean(rt(n\_j, d))}
 for evaluation. The workers each return a single number. Therefore the
-program avoids large data transfers.
+program does parallel computing while avoiding large data transfers. 
 
 % This parallel model is useful in
 % statistics for independent simulations, cross validation, bootstrap, data
@@ -354,7 +354,6 @@ Code analysis involves the following steps:
 \begin{itemize}
     \item Parse the code, gathering dependency information as explained in
         section \ref{sec:expression_dependency}.
-
 %    \item Fuse loops, combining vectorized operations where possible. For
 %        example, if the temporary variable \texttt{tmp} isn't used later
 %        then this code:
@@ -365,14 +364,15 @@ Code analysis involves the following steps:
 %        can be rewritten as \texttt{xlog = log(x + epsilon)}
 
 % What's the point?
-
+    \item Use data description to determine if preprocessing of the data is required, for example
+        reorganizing the files on disk as in section \ref{sec:pems}.
     \item Identify points to parallelize, see section
         \ref{sec:parallel_points}.
-    \item Speculatively evaluate some expressions (after checking for side
+    \item Relate potential parallel points to data description to estimate
+        which will provide the largest speedup.
+    \item Potentially evaluate expressions to parallelize (after checking for side
         effects) to estimate how long they'll take.
     \item Estimate time required to run the complete script.
-    \item Determine if preprocessing of the data is required, for example
-        reorganizing the files on disk as in section \ref{sec:pems}.
     \item Generate code that will run efficiently on the specific platform.
 \end{itemize}
 
@@ -445,7 +445,7 @@ constraint:
     \item expression 1 executes before expression 17
 \end{itemize}
 This can be generalized into a directed graph which we'll refer to here as
-the \textbf{expression dependency graph} by considering expressions as
+the \textbf{expression graph} by considering expressions as
 nodes and constraints as edges. The edges are implicit based on the order
 of the statements in the code. There is an edge from $i \rightarrow k$ if
 expression $k$ depends on the execution of expression $i$.  It's safe to
@@ -462,19 +462,24 @@ efficiently at the R compiler level.
 \begin{figure}
   \centering
   \includegraphics[width=.8\linewidth]{codegraph.pdf}
-  \caption{Expression dependency graph for the script on
+  \caption{Expression graph for the script on
   page~\pageref{list:simple}. Nodes correspond to top level expressions.}
   \label{fig:codegraph}
 \end{figure}
 
-Figure~\ref{fig:codegraph} illustrates an expression dependency graph.
+Figure~\ref{fig:codegraph} illustrates an expression graph.
 Let $G_1$ be the single node \texttt{data = read.csv('data.csv')} and $G_2$ be the subgraph containing the lines:
 \begin{verbatim}
 params = read.csv('params.csv')
 sim = simulate(params, 1000000)
 \end{verbatim}
 $G_1$ and $G_2$ are only connected by the final node \texttt{joined =
-merge(data, sim)}, so the expressions in $G_1$ and $G_2$ can run simultaneously.
+merge(data, sim)}, so the expressions in $G_1$ and $G_2$ can run
+simultaneously.  We use the expression graph to determine which variables
+need to be available to run a particular computation in parallel. The
+CodeDepends package also provides other important information, such as if
+the call has any side effects, ie. drawing lines on the current plot. This
+should not be done in parallel.
 
 \subsection{Entry points for parallelism}
 
@@ -526,6 +531,43 @@ algorithms should be used here, ie.  Kahan summation \cite{Robey2011217}.
 Reduce style functions can be used to reduce the size of the data in a
 worker before transferring to the manager.
 
+\subsection{Data Description}
+
+The more we know about the structure and format of the data, the more
+efficiently we can write the code. For tabular data, we would like to know:
+
+\begin{itemize}
+    \item \textbf{dimensions}- the number of rows and columns. Then we can determine
+        whether there will be obvious memory issues and preallocate arrays.
+    \item \textbf{data types}- ie. boolean, float, character. Specifying this avoids errors
+        that can rise when inferring from text
+    \item \textbf{factor levels}- ie. possible values for categorical data.
+        Then we can preserve this information even if one value is rare and
+        doesn't always appear in the data.
+    \item \textbf{randomization}- has the data already been intentionally randomized?
+        If it's random then we can easily statistically sample by reading
+        the first rows.
+    \item \textbf{sorted}- is the data sorted on a column? This allows
+        streaming computations based on groups of this column.
+    \item \textbf{layout}- are multiple files used? If each file stores
+        data corresponding to some unit, ie. one file per day and we do a
+        computation for each day then parallelization is natural across
+        files.
+    \item \textbf{index}- does data come from a database with an index?
+        Then data elements can be efficiently acccessed by index.
+    \item \textbf{offsets}- ie. knowing a numeric array with $n$ rows and $p$
+        columns is stored in column major order potentially allows more
+        efficient reads of subsets of the data.
+\end{itemize}
+
+The metadata mentioned above should be stored and preserved for subsequent
+computations. Not all of it is strictly necessary; indeed, the workhorse
+\texttt{read.table()} in base R reads tables in without any of this
+knowledge. In practice the metadata should be stored along with data, and
+this can be done using existing mature technologies such as Apache Avro.
+
+% Mention things like feather, netCDF, HDF5?
+
 \subsection{Challenges}
 
 It would be quite ambitious to produce a complete system capable of
@@ -566,7 +608,7 @@ objects.
 
 Modifying code programmatically allows us to write the same base R code
 which will run in serial as in parallel. This provides several benefits.
-It's useful to have a working serial reference implementation.  A
+First, it's useful to have a working serial reference implementation.  A
 serial version written for clarity should be simpler than any subsequent
 versions that attempt to improve performance \cite{matloff2015parallel}.
 Base R is stable, so once the code works it should continue to work.
@@ -587,15 +629,12 @@ processing non numeric data.
 \subsection{Next Steps}
 
 My immediate plan is to build a prototype of the system targeting a single
-server, and \emph{data} consisting of files on disk which may exceed
-memory. I'll test this prototype on the problem described in
-section~\ref{sec:pems}. At a minimum this means preprocessing tools,
-profiling tools, and a parallel group by. 
-
-%TODO: explicitly describe two use cases
-After this I plan to find another use case for parallel processing of data
-in a different format, either in a database or in a streaming system such
-as Apache Kafka.
+server \emph{platform}, and \emph{data} consisting of files on disk which
+may exceed memory. I'll test this prototype on the problem described in
+section~\ref{sec:pems}. At a minimum this means preprocessing tools
+and a parallel tapply / group by.  Once the prototype is functional
+I plan to extend the data model to streaming data through systems such as
+Apache Kafka.
 
 \bibliographystyle{plain}
 \bibliography{../citations,../Rpackages} 
