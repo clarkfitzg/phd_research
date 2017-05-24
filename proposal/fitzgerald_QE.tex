@@ -457,43 +457,24 @@ loops as top level expressions and functions, just like the R interpreter.
 It would be possible to go into the control flow, but this can be done more
 efficiently at the R compiler level.
 
-Figure~\ref{fig:ast} and figure~\ref{fig:codegraph} illustrate the 
-parse tree and expression dependency graph for the simple script on
-page~\pageref{list:ab}.  Edges 1 and 3 in figure \ref{fig:codegraph} represent the
-respective uses of the variable \texttt{n} and \texttt{x}.  Edge 2 comes
-from the redefinition of \texttt{n}.  Edge 5 propagates the most recent
-definition of \texttt{n}.  The least obvious is edge 4, which is necessary
-to respect R's lexical scoping semantics since \texttt{x <- rnorm(n)} uses
-the first definition of \texttt{n}. The general rule here is that all
-statements using one version of the variable \texttt{n} must execute before \texttt{n}
-can be redefined.
-
-\lstinputlisting[language=R, caption=Simple script, label=list:ab]{../experiments/ast/ab.R}
+\lstinputlisting[language=R, caption=Simple script, label=list:simple]{simple.R}
 
 \begin{figure}
-\centering
-\begin{subfigure}{.6\textwidth}
-    \centering
-    \includegraphics[width=.8\linewidth]{../experiments/ast/ast.pdf}
-    \caption{Parse tree}
-    \label{fig:ast}
-\end{subfigure}%
-\begin{subfigure}{.4\textwidth}
   \centering
-  \includegraphics[width=.8\linewidth]{../experiments/ast/codegraph.pdf}
-  \caption{Expression dependency graph}
+  \includegraphics[width=.8\linewidth]{codegraph.pdf}
+  \caption{Expression dependency graph for the script on
+  page~\pageref{list:simple}. Nodes correspond to top level expressions.}
   \label{fig:codegraph}
-\end{subfigure}
-\caption{Different representations of the script in Listing \ref{list:ab}}
-%\label{fig:test}
 \end{figure}
 
-The expression dependency graph provides a tool for going beyond
-embarrassingly parallel problems, since some subgraphs may potentially run
-in parallel. In practice, I could not find real examples in R code where
-the benefits of this type of parallelism outweigh the overhead, but with
-threads it may be possible. This graph is still useful for understanding
-the structure of the code.
+Figure~\ref{fig:codegraph} illustrates an expression dependency graph.
+Let $G_1$ be the single node \texttt{data = read.csv('data.csv')} and $G_2$ be the subgraph containing the lines:
+\begin{verbatim}
+params = read.csv('params.csv')
+sim = simulate(params, 1000000)
+\end{verbatim}
+$G_1$ and $G_2$ are only connected by the final node \texttt{joined =
+merge(data, sim)}, so the expressions in $G_1$ and $G_2$ can run simultaneously.
 
 \subsection{Entry points for parallelism}
 
@@ -503,12 +484,13 @@ Three types of functions in R are of special interest when doing parallel
 computation: apply functions, vectorized functions, and reduce functions.
 
 Apply functions are higher order functions which call the same function
-with potentially different arguments. Conceptually, they are variations to the ``map''
-step in the map reduce paradigm \cite{dean2008mapreduce}.  In base R these
+with different arguments. Conceptually, they are variations on the ``map''
+step in the map reduce paradigm \cite{dean2008mapreduce}.  In base R, these
 include \texttt{lapply, apply, sapply, vapply, Map, mapply, by, tapply,
-outer, replicate}. These should be the first target for parallelism because
-they are closest to the existing technologies, ie. \texttt{lapply()} has a
-corresponding function \texttt{mclapply()} in the parallel package.
+outer, replicate}. These functions are essential to the idiomatic use of R
+as a functional language. They can all be parallelized. It remains to use
+the context provided by the data and the surrounding script to run
+them efficiently. 
 
 Vectorized functions apply functions elementwise. Basic math functions such
 as sin, log, and floor are simple examples of vectorized functions.  A
@@ -582,31 +564,16 @@ objects.
 \section{Conclusion}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Interfaces}
+Modifying code programmatically allows us write the same base R code
+which will run in serial as in parallel. 
+% TODO
+This is appealing for two
+reasons. Base R is stable, so code that works serially sh
+parallel, and can expect it to continue to work in the future. Second, if
+the code runs on a different platform or with a different data set then one
+can automatically generate code to run more efficiently on that platform.
 
-Parallel programming in pure R (not at the C level) can be understood in
-terms of a layered architecture. The foundational \textbf{System Layer}
-provides the basic interfaces used by any programming language. The
-\textbf{R Layer} consists of packages which adapt the basic interfaces for
-use specifically in R. The packages in the \textbf{User Layer} are meant to
-simplify parallel programming, or they are for applications with specific
-use cases.  Here are a few examples of packages at each layer:
-
-\begin{itemize}
-\item User Layer: foreach, future, partools, ddR, biganalytics, RevoScaleR
-\item R layer: SNOW, multicore, parallel, bigmemory, Rmpi
-\item System Layer: processes, *NIX fork(), memory maps, network sockets,
-    MPI
-\end{itemize}
-
-Today users write code using packages from the User Layer or the R Layer.
-Modifying code programmatically can allow us to skip these layers, and
-instead write the same base R code which will run in serial as in parallel.
-This is appealing for two reasons. Base R is stable, so users can write
-code that works locally as in parallel, and can expect it to continue to
-work in the future. Second, if the code runs on a different system or with
-a different data set then one can automatically generate code to run more
-efficiently on that system.
+Today R users write parallel code using built
 
 Some of the work in this project may mean enhancing the capabilities of these
 intermediate layers. For example, a file based sort usable from R facilitiates

@@ -1,15 +1,12 @@
 digraph G {
+#rankdir = LR;
 
 L1[label = "params = read.csv('params.csv')"];
-L2[label = "sim = simulate(params, 1000000)"];
-L3[label = "data = read.csv('data.csv')"];
+L2[label = "data = read.csv('data.csv')"];
+L3[label = "sim = simulate(params, 1000000)"];
 L4[label = "joined = merge(sim, data)"];
 
-# TODO: Come back here
-l1 -> l2 [label = " 1"];
-l1 -> l3 [style = "dashed", label = " 2"];
-l2 -> l4 [style = "dashed", label = " 3"];
-l2 -> l3 [label = " 4"];
-l3 -> l4 [label = " 5"];
-
+L1 -> L3 [label = " 1"];
+L2 -> L4 [label = " 2"];
+L3 -> L4 [label = " 3"];
 }

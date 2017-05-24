@@ -16,9 +16,11 @@ snow.pdf: snow.dot
 iterator.pdf: iterator.dot
 	dot -Tpdf $< -o $@
 
+codegraph.pdf: codegraph.dot
+	dot -Tpdf $< -o $@
 
 # $< references the first prerequisite
-$(TEXFILE).pdf: $(TEXFILE).tex ../citations.bib workflow.pdf
+$(TEXFILE).pdf: $(TEXFILE).tex ../citations.bib workflow.pdf codegraph.pdf
 	pdflatex $<
 	bibtex $(TEXFILE).aux
 	pdflatex $<
