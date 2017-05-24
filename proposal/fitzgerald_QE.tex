@@ -564,20 +564,15 @@ objects.
 \section{Conclusion}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Modifying code programmatically allows us write the same base R code
-which will run in serial as in parallel. 
-% TODO
-This is appealing for two
-reasons. Base R is stable, so code that works serially sh
-parallel, and can expect it to continue to work in the future. Second, if
-the code runs on a different platform or with a different data set then one
-can automatically generate code to run more efficiently on that platform.
-
-Today R users write parallel code using built
-
-Some of the work in this project may mean enhancing the capabilities of these
-intermediate layers. For example, a file based sort usable from R facilitiates
-``group by'' and streaming applications.
+Modifying code programmatically allows us to write the same base R code
+which will run in serial as in parallel. This provides several benefits.
+It's useful to have a working serial reference implementation.  A
+serial version written for clarity should be simpler than any subsequent
+versions that attempt to improve performance \cite{matloff2015parallel}.
+Base R is stable, so once the code works it should continue to work.
+Finally, if the code runs on a different platform or with a different data
+set then one can automatically generate code to run more efficiently on
+that platform.
 
 \subsection{Related Technologies}
 
@@ -591,13 +586,13 @@ processing non numeric data.
 
 \subsection{Next Steps}
 
-My immediate plan is to build the infrastructure to analyze the highway
-sensor data within this more general framework. I plan to see the analysis
-through to a stage where it can be shared with the transportation research
-community.  At a minimum this means preprocessing tools, profiling tools,
-and a parallel group by. The target \emph{platform} is a single server, and
-the \emph{data} consists of files which may exceed memory.
+My immediate plan is to build a prototype of the system targeting a single
+server, and \emph{data} consisting of files on disk which may exceed
+memory. I'll test this prototype on the problem described in
+section~\ref{sec:pems}. At a minimum this means preprocessing tools,
+profiling tools, and a parallel group by. 
 
+%TODO: explicitly describe two use cases
 After this I plan to find another use case for parallel processing of data
 in a different format, either in a database or in a streaming system such
 as Apache Kafka.
