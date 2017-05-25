@@ -250,7 +250,7 @@ large enough object, and the computation will fail with a memory error.
 \label{sec:sequential}
 
 The following example illustrates how single threaded R can be modified to
-work with a data set that does not fit into memory. I do this 
+work with a data set that does not fit into memory. We do this 
 by breaking the computation into chunks. The code below not run in parallel,
 but it does use the same functional programming patterns as parallel code. 
 
@@ -324,7 +324,7 @@ Here's what each line of code does:
     \item \texttt{n\_j = n / p} chooses the chunk size based on $n$ and
         $p$. 
     \item \texttt{cluster = makeCluster(p)} makes a local cluster with $p$
-        workers. Given an existing cluster I would skip this step.
+        workers. Given an existing cluster we would skip this step.
     \item \texttt{clusterExport(cluster, c("n\_j", "d"))} sends the
         variables $n_j, d$ to the workers, so they will be available for
         the local computations.
