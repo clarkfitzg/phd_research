@@ -218,7 +218,9 @@ specifics of the platform and the data. This is the goal of the research.
 % challenges
 
 We use an intentionally simple example to see exactly what translated code might look
-like.  Consider computing the mean,
+like, and to illustrate a common strategy for parallel computing. The
+reader familiar with parallel R can skip this section.  Consider computing
+the mean,
 
 \begin{equation}
     \bar{x} = \frac{1}{n} \sum_{i = 1}^n x_i
@@ -280,6 +282,8 @@ footprint is bounded since the intermediate vectors will be of length
 $n_j$. So small chunk sizes use less memory. On the other hand, large chunk
 sizes improve speed when computing on vectors in R, since the overhead of
 the R interpreter is amortized. 
+One goal of the system is to balance this tradeoff in chunk sizes. Preliminary results
+suggest using chunk sizes with $n_j \geq 1000$ elements.
 
 % In practice, vectors with at least
 % 1000 elements are found to be large enough~\cite{chambers2016extending}.
@@ -346,13 +350,20 @@ program does parallel computing while avoiding large data transfers.
 % statistics for independent simulations, cross validation, bootstrap, data
 % chunking
 
+The code \texttt{xbar = mean(rt(n, d))} calls directly into C code, which
+makes analysis difficult. A practical way around this is to provide a
+mechanism for the user to annotate the function \texttt{rt()} indicating
+that it produces vectors and can be split using \texttt{replicate(p,
+rt(n\_j, d))}. More ambitiously we could analyze the underlying C code after
+preprocessing to determine how it is vectorized.
+
 \section{Code Analysis}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Code analysis involves the following steps:
 
 \begin{itemize}
-    \item Parse the code, gathering dependency information as explained in
+    \item Parse code, gathering dependency information as explained in
         section \ref{sec:expression_dependency}.
 %    \item Fuse loops, combining vectorized operations where possible. For
 %        example, if the temporary variable \texttt{tmp} isn't used later
@@ -368,11 +379,11 @@ Code analysis involves the following steps:
         reorganizing the files on disk as in section \ref{sec:pems}.
     \item Identify points to parallelize, see section
         \ref{sec:parallel_points}.
-    \item Relate potential parallel points to data description to estimate
-        which will provide the largest speedup.
-    \item Potentially evaluate expressions to parallelize (after checking for side
+    \item May experimentally evaluate expressions (after checking for side
         effects) to estimate how long they'll take.
-    \item Estimate time required to run the complete script.
+    \item Relate potential parallel points to data description and timings
+        to determine a parallel or serial strategy.
+    %\item Estimate time required to run the complete script.
     \item Generate code that will run efficiently on the specific platform.
 \end{itemize}
 
@@ -628,7 +639,8 @@ processing non numeric data.
 
 \subsection{Next Steps}
 
-My immediate plan is to build a prototype of the system targeting a single
+My immediate plan is to build a prototype of the system targeting R's apply
+style functions on a single
 server \emph{platform}, and \emph{data} consisting of files on disk which
 may exceed memory. I'll test this prototype on the problem described in
 section~\ref{sec:pems}. At a minimum this means preprocessing tools

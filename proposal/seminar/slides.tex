@@ -117,7 +117,7 @@ This shows 1 day for 1 station.
     % Recommending state wide policy, then why not look at data for the
     % whole state?
 
-    We can fit lines in parallel among different stations.
+We can fit lines in parallel among different stations. Then study:
 
     \begin{itemize}
         \item Effect of policy such as speed limits and carpool lanes
@@ -306,6 +306,30 @@ partial_means = unlist(
     clusterEvalQ(cluster, mean(rnorm(n_j))))
 xbar = mean(partial_means)
 \end{verbatim}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]
+
+    \frametitle{This is difficult because R is implemented in C}
+
+\begin{verbatim}
+> rt
+function (n, df, ncp)
+{
+    if (missing(ncp))
+        .Call(C_rt, n, df)
+    else ...
+\end{verbatim}
+
+    Options:
+
+    \begin{itemize}
+        \item Start from \texttt{replicate(p, mean(rnorm(n\_j)))}
+        \item Allow users to indicate how \texttt{rt} is vectorized
+        \item Analyze the preprocessed C code
+        \item Rewrite the C code in R, then analyze the R code
+    \end{itemize}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
