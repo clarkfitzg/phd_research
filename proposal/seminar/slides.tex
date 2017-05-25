@@ -65,7 +65,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-    \frametitle{The purpose of this example is to motivate the proposed research}
+    \frametitle{The purpose of this example is to motivate the proposed
+    research.}
 
     \begin{itemize}
         \item Working with Professor Michael Zhang from Civil Engineering
@@ -77,7 +78,7 @@
 \begin{frame}
 
     \frametitle{Loop detectors count cars, measuring velocity and
-    occupancy}
+    occupancy.}
 
 \centerline{\includegraphics[height=2.5in]{loop_detector.jpg}}
 
@@ -85,8 +86,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-\frametitle{Caltrans Performance Measurement System (PeMS) records this
-data for the whole state}
+\frametitle{Caltrans Performance Measurement System (PeMS) records loop
+    detector
+data for the whole state.}
 
     \begin{itemize}
         \item Each sensor measures 3 quantities
@@ -100,7 +102,7 @@ data for the whole state}
 \begin{frame}
 
     \frametitle{Traffic engineers study the relationships between count and
-    occupancy}
+    occupancy.}
     %\cite{li2011fundamental}
 
 \centerline{\includegraphics[height=2.5in]{fundamental_diagram.png}}
@@ -111,7 +113,7 @@ This shows 1 day for 1 station.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-    \frametitle{Using more data allows new types of analyses}
+    \frametitle{Using more data allows new types of analyses.}
 
     % Policy is especially interesting, because that can potentially be changed
     % Recommending state wide policy, then why not look at data for the
@@ -130,7 +132,7 @@ We can fit lines in parallel among different stations. Then study:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
-    \frametitle{R expresses statistical computation well}
+    \frametitle{R expresses statistical computation well.}
 
 % This is a good reason to stay with R
 
@@ -154,8 +156,8 @@ by(data=single_day, INDICES = station, FUN = my_rlm)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
-    \frametitle{But small changes can totally change the
-    computation}
+    \frametitle{Small changes can totally change the
+    computation.}
 
     If we compute on one year then this will exceed memory.
 
@@ -202,7 +204,7 @@ by(data=one_year, INDICES = list(station, weather),
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
-\frametitle{This example shows how one might transform code.}
+\frametitle{This simple example shows how to write parallel code in R.}
 
 Consider computing the mean,
 
@@ -211,12 +213,12 @@ Consider computing the mean,
 \label{eq:mean}
 \end{equation}
 
-where the $x_i$'s are i.i.d. $\sim N(0, 1)$. 
+where the $x_i$'s are i.i.d. $\sim t(d)$. 
     
 In R this code is written:
 
 \begin{verbatim}
-xbar = mean(rnorm(n))
+xbar = mean(rt(n, d))
 \end{verbatim}
 
 % Explain what this does and how it fails.
@@ -225,26 +227,27 @@ xbar = mean(rnorm(n))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-    \frametitle{This can also be expressed as a weighted mean}
+    \frametitle{We can express the mean as a weighted mean.}
+
+Suppose $n = n_j p$, where $n_j$ is the chunk size and $p$ is the number of
+chunks.
 
 \begin{equation}
     \bar{x} = \frac{1}{n} \sum_{j = 1}^p \sum_{i = 1}^{n_j} x_{ij}
-    = \sum_{j = 1}^p \frac{n_j}{n} \bar{x}_j
+    = \frac{1}{p} \sum_{j = 1}^p \frac{1}{n_j} \sum_{i = 1}^{n_j} x_{ij}
+    = \frac{1}{p} \sum_{j = 1}^p \bar{x}_{\cdot j}
 \label{eq:mean_partial}
 \end{equation}
-
-Suppose that all $n_j$'s are the same for the following examples, so $n =
-    n_j p$ and the equation becomes $\frac{1}{p} \sum_{j = 1}^p \bar{x}_j$
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
-    \frametitle{The weighted mean can be directly translated into R code}
+    \frametitle{The weighted mean can be directly translated into R code.}
 
 \begin{verbatim}
 
-partial_means = replicate(p, mean(rnorm(n_j)))
+partial_means = replicate(p, mean(rt(n_j, d)))
 xbar = mean(partial_means)
 
 \end{verbatim}
@@ -261,7 +264,7 @@ xbar = mean(partial_means)
 \begin{frame}
 
     \frametitle{The same computation can be evaluated on many workers
-    simultaneously}
+    simultaneously.}
 
 \centerline{\includegraphics[height=2in]{../snow.pdf}}
 
@@ -269,16 +272,16 @@ xbar = mean(partial_means)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
-    \frametitle{Here is one way to parallelize this code}
+    \frametitle{Here is one way to parallelize this code.}
 
 \begin{verbatim}
 library(parallel)
 p = detectCores()
 n_j = n / p
 cluster = makeCluster(p)
-clusterExport(cluster, "n_j")
+clusterExport(cluster, c("n_j", "p"))
 partial_means = unlist(
-    clusterEvalQ(cluster, mean(rnorm(n_j))))
+    clusterEvalQ(cluster, mean(rt(n_j, p))))
 xbar = mean(partial_means)
 \end{verbatim}
 
@@ -286,12 +289,12 @@ xbar = mean(partial_means)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
-    \frametitle{We're considering a system that transforms expressions}
+    \frametitle{We're considering a system that transforms expressions.}
 
     Input:
 
 \begin{verbatim}
-xbar = mean(rnorm(n))
+xbar = mean(rt(n, d))
 \end{verbatim}
 
     Output:
@@ -303,7 +306,7 @@ n_j = n / p
 cluster = makeCluster(p)
 clusterExport(cluster, "n_j")
 partial_means = unlist(
-    clusterEvalQ(cluster, mean(rnorm(n_j))))
+    clusterEvalQ(cluster, mean(rt(n_j, p))))
 xbar = mean(partial_means)
 \end{verbatim}
 
@@ -311,7 +314,7 @@ xbar = mean(partial_means)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
-    \frametitle{This is difficult because R is implemented in C}
+    \frametitle{This can be difficult because R is implemented in C.}
 
 \begin{verbatim}
 > rt
@@ -337,8 +340,8 @@ function (n, df, ncp)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-    \frametitle{(Code, Data, Platform) together determine the execution
-    strategy}
+    \frametitle{\{Code, Data, Platform\} together determine the execution
+    strategy.}
 
 \begin{figure}
             \includegraphics[width=1.4in]{code_screen.png}
@@ -362,22 +365,23 @@ function (n, df, ncp)
     \frametitle{CodeDepends is a tool for analyzing code as a data
     structure.}
 
-    % One should know how 
+    Consider the following script:
 
 \begin{verbatim}
-n <- 10
-x <- rnorm(n)
-n <- 100
-print(x + n)
+params = read.csv('params.csv')
+data = read.csv('data.csv')
+sim = simulate(params, 1000000)
+joined = merge(data, sim)
 \end{verbatim}
 
-\begin{figure}
-            %\hfill
-    \includegraphics[width=2in]{../../experiments/ast/ast.pdf}
-            %\hfill
-    \includegraphics[width=1.3in]{../../experiments/ast/codegraph.pdf}
-            \hfill
-\end{figure}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{The expression graph represents the dependencies between
+    expressions.}
+
+    \centerline{\includegraphics[height=2.5in]{../codegraph.pdf}}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -399,7 +403,6 @@ print(x + n)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-
     \frametitle{Factors to consider}
 
 \textbf{Parameters}
@@ -417,24 +420,24 @@ print(x + n)
     \item available memory
 \end{itemize}
 
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
-
-    \frametitle{Estimating time required for the map reduce paradigm with many workers}
-
-    % TODO: Get Duncan's feedback
-\begin{itemize}
-    \item $w_i$ worker startup time
-    \item $c(x_i)$ communication time to send $x_i$ and receive $f(x_i)$.
-    \item $e(x_i)$ time to evaluate $f(x_i)$ on a worker.
-\end{itemize}
-
-Then we minimize
-\[
-    \max_{x_i} \left( w_i + c(x_i) + e(x_i) \right)
-\]
-for $x = (x_1, \dots, x_m)$, a partition of $x$ into chunks.
+%\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{frame}
+%
+%    \frametitle{Estimating time required for the map reduce paradigm with many workers}
+%
+%    % TODO: Get Duncan's feedback
+%\begin{itemize}
+%    \item $w_i$ worker startup time
+%    \item $c(x_i)$ communication time to send $x_i$ and receive $f(x_i)$.
+%    \item $e(x_i)$ time to evaluate $f(x_i)$ on a worker.
+%\end{itemize}
+%
+%Then we minimize
+%\[
+%    \max_{x_i} \left( w_i + c(x_i) + e(x_i) \right)
+%\]
+%for $x = (x_1, \dots, x_m)$, a partition of $x$ into chunks.
 
 %\end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -482,7 +485,7 @@ by(data, INDICES = station, FUN = piecewise_rlm)
 \begin{frame}
 
     \frametitle{Layers mark ways for users to write parallel code for one
-    platform}
+    platform.}
 
 \begin{itemize}
     \item \textbf{User Layer}: foreach, future, partools, ddR, biganalytics, RevoScaleR
@@ -528,7 +531,8 @@ by(data, INDICES = station, FUN = piecewise_rlm)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-    \frametitle{Knowledge of the data allows us to generate more specialized code}
+    \frametitle{Knowledge of the data allows us to generate more
+    specialized code.}
 
     \begin{itemize}
 
@@ -548,7 +552,7 @@ by(data, INDICES = station, FUN = piecewise_rlm)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
-    \frametitle{One challenge is how to properly abstract ``data''}
+    \frametitle{One challenge is how to properly abstract ``data''.}
 
     Some options:
 
@@ -565,28 +569,6 @@ by(data, INDICES = station, FUN = piecewise_rlm)
         \item Maintain custom metadata objects?
         \item Only focus on data frames / tables?
     \end{itemize}
-
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
-
-    \frametitle{An iterator produces data on demand}
-
-    \centerline{\includegraphics[height=1.6in]{../iterator.pdf}}
-
-    \begin{itemize}
-        \item Most flexible of the above options
-        \item Natural in pipeline parallel model
-        \item Operate well with high performance IO libraries
-    \end{itemize}
-
-    \pause
-
-    \begin{itemize}
-        \item Unfamiliar to R programmers
-        \item Not ideal if you need the whole data set
-    \end{itemize}
-
 
 %\end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -614,7 +596,7 @@ by(data, INDICES = station, FUN = piecewise_rlm)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-    \frametitle{Compiled R code provides even more efficiency}
+    \frametitle{Compiled R code provides even more efficiency.}
 
 \begin{enumerate}
     \item Parallelization will complement efforts to compile R
@@ -643,7 +625,7 @@ by(data, INDICES = station, FUN = piecewise_rlm)
 %\begin{frame}
 
     \frametitle{We propose using (Code, Data, Platform) to determine a
-    parallel execution strategy}
+    parallel execution strategy.}
 
 \begin{figure}
             \includegraphics[width=1.4in]{code_screen.png}
@@ -657,24 +639,42 @@ by(data, INDICES = station, FUN = piecewise_rlm)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-    \frametitle{Some support infrastructure is necessary}
+    \frametitle{The next step is to build a prototype of the system.}
+
+    Specifically beginning with:
 
 \begin{itemize}
-\item Profiling and microbenchmark to measure overhead
-\item File sort from R
+    \item \emph{code}: Apply family of functions
+    \item \emph{data}: Files on disk exceeding main memory
+    \item \emph{platform}: Single server
 \end{itemize}
+
+Then test it with the traffic sensor data.
+
+% My immediate plan is to build a prototype of the system targeting R's apply
+% style functions on a single
+% server \emph{platform}, and \emph{data} consisting of files on disk which
+% may exceed memory. I'll test this prototype on the problem described in
+% section~\ref{sec:pems}. At a minimum this means preprocessing tools
+% and a parallel tapply / group by.  Once the prototype is functional
+% I plan to extend the data model to streaming data through big data systems
+% such as Apache Kafka. Running R along with a streaming system is
+% interesting and relevant because it allows one to bring the statistical
+% power of R beyond the offline analysis of static data and into large real
+% time systems. 
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-    \frametitle{Next Steps}
+\frametitle{Longer term I'd like to extend this to streaming data.}
 
-\begin{itemize}
-    \item Build and prove an actual system
-\item Large data sets are only interesting if they provide fresh insight
-\item Combining statistical results with computational capabilities
-\end{itemize}
+% TODO
+
+Running R along with a streaming system is
+interesting and relevant because it allows one to bring the statistical
+power of R beyond the offline analysis of static data and into large real
+time systems. 
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -683,10 +683,10 @@ by(data, INDICES = station, FUN = piecewise_rlm)
     \frametitle{Acknowledgements}
 
 \begin{itemize}
-    \item Feedback from Professor Duncan Temple Lang, Henrik Bengsston, and Nick Ulle
-    \item Professor Michael Zhang from Civil Engineering
+    \item Faculty members
     \item Data Science Institute Affiliates and statistics students for
-        applications
+        applications and feedback
+    \item Special thanks to Professors Duncan Temple Lang and Michael Zhang
 \end{itemize}
 
 \end{frame}
@@ -739,6 +739,27 @@ It's all C Code.
 function (n, mean = 0, sd = 1)
 .Call(C_rnorm, n, mean, sd)
 \end{verbatim}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{An iterator produces data on demand}
+
+    \centerline{\includegraphics[height=1.6in]{../iterator.pdf}}
+
+    \begin{itemize}
+        \item Most flexible of the above options
+        \item Natural in pipeline parallel model
+        \item Operate well with high performance IO libraries
+    \end{itemize}
+
+    \pause
+
+    \begin{itemize}
+        \item Unfamiliar to R programmers
+        \item Not ideal if you need the whole data set
+    \end{itemize}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
