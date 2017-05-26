@@ -11,6 +11,8 @@ overhead = list("Baseline" = 300 * 1e-9
                , "Startup" = 150 * 1e-3
                )
 
+overhead = unlist(overhead)
+
 #overhead = list("Baseline" = quote(twox(10))
 #               , "Serialize" = quote(serialize(10, NULL))
 #               #, "Fork" = expression(

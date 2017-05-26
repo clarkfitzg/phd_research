@@ -34,7 +34,7 @@
 \date{\today}
 \date{10 May 2017}
 \author{Clark Fitzgerald}
-\institute{UC Davis - Statistics Student Seminar}
+\institute{UC Davis - Statistics PhD Qualifying Exam}
 \titlegraphic{\includegraphics[height=.5\textheight]{../workflow.pdf}}
 
 \frame{\titlepage}
@@ -78,7 +78,7 @@
 \begin{frame}
 
     \frametitle{Loop detectors count cars, measuring velocity and
-    occupancy.}
+    occupancy (time sensor is activated).}
 
 \centerline{\includegraphics[height=2.5in]{loop_detector.jpg}}
 
@@ -266,7 +266,7 @@ xbar = mean(partial_means)
     \frametitle{The same computation can be evaluated on many workers
     simultaneously.}
 
-\centerline{\includegraphics[height=2in]{../snow.pdf}}
+\centerline{\includegraphics[height=3in]{../snow.pdf}}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -276,7 +276,7 @@ xbar = mean(partial_means)
 
 \begin{verbatim}
 library(parallel)
-p = detectCores()
+p = floor(detectCores(logical = FALSE) / 2)
 n_j = n / p
 cluster = makeCluster(p)
 clusterExport(cluster, c("n_j", "p"))
@@ -324,6 +324,8 @@ function (n, df, ncp)
         .Call(C_rt, n, df)
     else ...
 \end{verbatim}
+
+\pause
 
     Options:
 
@@ -398,6 +400,16 @@ joined = merge(data, sim)
     % everything.
 
 % If you start up a process, you want to keep it around
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]
+
+\frametitle{TODO: Fix plot}
+
+Time required to run \texttt{mean(rt(n, p))}
+
+\centerline{\includegraphics[height=2.5in]{../compute_times/ser_vs_par.pdf}}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -477,8 +489,10 @@ partialmeans = lapply(x, mean)
 by(data, INDICES = station, FUN = piecewise_rlm)
 \end{verbatim}
 
-%    Specifically: apply, lapply, sapply, tapply, by, mapply, Map, vapply,
-%    replicate, outer
+Also
+\begin{verbatim}
+apply, sapply, tapply, by, mapply, Map, vapply, outer
+\end{verbatim}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

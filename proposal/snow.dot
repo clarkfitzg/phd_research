@@ -12,7 +12,7 @@ digraph {
 
     0 -> 1;
     0 -> 2;
-    0 -> 3 [label="(meanrnorm, n_i)"];
+    0 -> 3 [label="mean(rt(n_j, d))"];
     1 -> 4;
     2 -> 4;
     3 -> 4 [label="evaluated"];
