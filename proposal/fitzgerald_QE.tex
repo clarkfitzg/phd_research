@@ -85,7 +85,7 @@
     methods to detect the potential for parallel execution in R code. The results of
     the analysis can then be used to programmatically rewrite and execute
     semantically equivalent parallel instructions, without requiring the
-    user to modify their original code.  We consider a motivating case
+    user to modify their original code. We consider a motivating case
     study analyzing the operating characteristics of California's highway
     traffic sensor stations on hundreds of gigabytes of traffic sensor
     data.
@@ -109,18 +109,19 @@ a memory-mapped file, a database, a parallel file system, etc.
 \textbf{Platform} is the computing setup, such as a laptop with 4 cores, a
 cluster of machines communicating over a network, or a server with 2 GPUs
 and a high bandwidth connection. Knowing the combination of \{Code, Data,
-Platform\} allows one to select an appropriate strategy for efficient
-computation.  Figure \ref{fig:workflow} illustrates the high level goal of
+Platform\} allows one to select an appropriate holistic strategy for efficient
+computation. Figure \ref{fig:workflow} illustrates the high level goal of
 modifying the code to run efficiently with a particular platform and data,
 while preserving the semantics of the input code.
 
 This project is in the spirit of compiling R, since it treats R code as a
-set of high level directions, and generates alternative code for execution~\cite{lang2014enhancing}. In the future we hope to connect and extend this
-project using recent work on compilation. Note that the system does not
-invent new algorithms on the fly. However, it should be capable of tuning
-existing parameters to the problem at hand.\footnote{An example of a
+set of high level directions, and generates alternative code for
+execution~\cite{lang2014enhancing}. In the future we hope to connect and
+extend this project using recent work on compilation. Note that the system
+does not invent new algorithms on the fly. However, it should be capable of
+tuning existing parameters to the problem at hand.\footnote{An example of a
 parameter to be tuned is the chunk size $n_j$ as described in
-\ref{sec:sequential}.} 
+section~\ref{sec:sequential}.} 
 
 \section{Motivating Example}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -345,6 +346,16 @@ network latency is much less than the time required to evaluate the code.
 The manager sends only two numbers and the code \texttt{mean(rt(n\_j, d))}
 for evaluation. The workers each return a single number. Therefore the
 program does parallel computing while avoiding large data transfers. 
+Figure~\ref{fig:ser_vs_par} compares timings for the SNOW version with the
+serial version.
+
+\begin{figure}
+\centering
+\includegraphics[width=.7\linewidth]{compute_times/ser_vs_par.pdf}
+\caption{The parallel code begins to outperform the serial code when $n =
+    4000$. Timings came from a 3.4 GHz Intel i3-4130 CPU.}
+\label{fig:ser_vs_par}
+\end{figure}
 
 % This parallel model is useful in
 % statistics for independent simulations, cross validation, bootstrap, data
@@ -377,11 +388,11 @@ Code analysis involves the following steps:
 % What's the point?
     \item Use data description to determine if preprocessing of the data is required, for example
         reorganizing the files on disk as in section \ref{sec:pems}.
-    \item Identify points to parallelize, see section
+    \item Identify expressions to parallelize, see section
         \ref{sec:parallel_points}.
     \item May experimentally evaluate expressions (after checking for side
         effects) to estimate how long they'll take.
-    \item Relate potential parallel points to data description and timings
+    \item Relate potentially parallel expressions to data description and timings
         to determine a parallel or serial strategy.
     %\item Estimate time required to run the complete script.
     \item Generate code that will run efficiently on the specific platform.
@@ -545,7 +556,14 @@ worker before transferring to the manager.
 \subsection{Data Description}
 
 The more we know about the structure and format of the data, the more
-efficiently we can write the code. For tabular data, we would like to know:
+efficiently we can write the code. For example, suppose the data is
+ASCII text data in fixed width format with $w$ characters and it's sorted on a
+subject column with $n$ observations per subject. Then we can efficiently
+sample the subjects from a large file or stream by skipping directly to byte $wnj$
+for nonnegative integer $j$. This is far faster than first reading all the data and
+then sampling.
+
+For tabular data, we would like to know:
 
 \begin{itemize}
     \item \textbf{dimensions}- the number of rows and columns. Then we can determine
@@ -627,29 +645,33 @@ Finally, if the code runs on a different platform or with a different data
 set then one can automatically generate code to run more efficiently on
 that platform.
 
-\subsection{Related Technologies}
+\subsection{Related Work}
 
-Related technologies include Theano, tensorflow, dask, and arrayfire. With
-these packages the user explicitly builds computation graphs which are then
-executed in an efficient way based on the available architecture. They are
-more tailored to linear algebra / numerical computing, and are particularly
-popular for implementing neural networks. One possible path to explore is
-the translation of R code into these systems. This might be difficult when
-processing non numeric data.
+Researchers in computer science have been investigating automatically
+generated parallel program for many years \cite{girkar1992automatic}
+\cite{sarkar1991automatic} \cite{adve2004parallel}. This project differs
+from prior work in two ways. First, we explicitly take into account
+data locality and the structure of the data. Second, R is a high level functional
+language, which simplifies many of the complexities that arise in parallel
+programming such as race conditions.
+
+Popular related technologies include Theano, tensorflow, dask, and
+arrayfire. With these packages the user explicitly builds computation
+graphs which are then executed in an efficient way based on the available
+architecture. They are more tailored to linear algebra / numerical
+computing, and are particularly popular for implementing neural networks.
+One possible path to explore is the translation of R code into these
+systems. This might be difficult when processing non numeric data.
 
 \subsection{Next Steps}
 
 My immediate plan is to build a prototype of the system targeting R's apply
-style functions on a single
-server \emph{platform}, and \emph{data} consisting of files on disk which
-may exceed memory. I'll test this prototype on the problem described in
-section~\ref{sec:pems}. At a minimum this means preprocessing tools
-and a parallel tapply / group by.  Once the prototype is functional
-I plan to extend the data model to streaming data through big data systems
-such as Apache Kafka. Running R along with a streaming system is
-interesting and relevant because it allows one to bring the statistical
-power of R beyond the offline analysis of static data and into large real
-time systems. 
+style functions on a single server \emph{platform}, and \emph{data}
+consisting of files on disk which may exceed memory. I'll test the
+prototype on the problem described in section~\ref{sec:pems}. At a minimum
+this means preprocessing tools and a parallel tapply / group by.  Once the
+prototype is functional I plan to extend the data model to data stored
+in a distributed database.
 
 \bibliographystyle{plain}
 \bibliography{../citations,../Rpackages} 

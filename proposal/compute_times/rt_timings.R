@@ -1,10 +1,10 @@
 library(microbenchmark)
 library(parallel)
 
-workers = 4
+workers = 2
 cls = makeCluster(workers)
 
-n = 400 * 1:10
+n = seq(from = 2, by = 1000, length.out = 11)
 d = 5
 
 clusterExport(cls, "d")
@@ -23,10 +23,11 @@ time_rt = function(n){
 time_rt(1000)
 
 times = lapply(n, time_rt)
+t2 = do.call(rbind, times) / 1e6
 
-t2 = do.call(rbind, times)
-
-pdf("ser_vs_par.pdf")
-plot(n, t2[, 1])
-points(n, t2[, 2], pch = 2)
+pdf("ser_vs_par.pdf", height = 4)
+plot(n, t2[, 1], ylim = c(0, max(t2)), xlab = "n", ylab = "time (ms)", type = "l"
+     , main = "Time to evaluate mean(rt(n, d))")
+lines(n, t2[, 2], lty = 2)
+legend("topleft", legend = c("serial", "parallel, 2 workers"), lty = c(1, 2))
 dev.off()

@@ -31,7 +31,7 @@ barplot(overhead
         , log = "y"
         #, cex.names = 0.7
         , main = "fixed sources of overhead"
-        , ylab = "seconds"
+        , ylab = "seconds (log scale)"
         , ylim = c(1e-7, 1)
         )
 dev.off()
