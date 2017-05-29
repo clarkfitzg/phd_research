@@ -341,7 +341,7 @@ library(parallel)
 p = detectCores()
 n_j = n / p
 cluster = makeCluster(p)
-clusterExport(cluster, "n_j")
+clusterExport(cluster, c("n_j", "p"))
 partial_means = unlist(
     clusterEvalQ(cluster, mean(rt(n_j, p))))
 xbar = mean(partial_means)
@@ -539,10 +539,9 @@ apply, sapply, tapply, by, mapply, Map, vapply, outer
     platform.}
 
 \begin{itemize}
-    \item \textbf{User Layer}: foreach, future, partools, ddR, biganalytics, RevoScaleR
-    \item \textbf{R layer}: SNOW, parallel, bigmemory, Rmpi
-    \item \textbf{System Layer}: processes, *NIX fork(), memory maps, network sockets,
-    MPI
+    \item \textbf{User R Packages}: foreach, future, partools, ddR, biganalytics, RevoScaleR
+    \item \textbf{R Layer}: SNOW, parallel, bigmemory, Rmpi, RCUDA
+    \item \textbf{Operating System}: threads, processes, *NIX fork(), memory maps, network sockets, MPI
 \end{itemize}
 
 \end{frame}
@@ -551,15 +550,9 @@ apply, sapply, tapply, by, mapply, Map, vapply, outer
 
     \frametitle{How can we transform R code into a lower layer?}
 
-\begin{itemize}
-    \item \textbf{Plain old R code: \texttt{lapply(), sapply(), for(), \dots}}
-\item User Layer: foreach, future, partools, ddR, biganalytics, RevoScaleR
-\item R layer: SNOW, parallel, bigmemory, Rmpi
-\item System Layer: processes, *NIX fork(), memory maps, network sockets,
-    MPI
-\end{itemize}
-
 % Potentially we can transform to any of these layers
+
+\centerline{\includegraphics[height=.8\textheight]{../layers.pdf}}
 
 %\end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
