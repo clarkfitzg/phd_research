@@ -4,7 +4,8 @@
 %   $ pdflatex beamer.tex 
 
 \documentclass{beamer}
-\usetheme{Singapore}
+%\usetheme{Singapore}
+\usetheme{Boadilla}
 
 % Bibliography
 %\usepackage{cite}
@@ -47,17 +48,38 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-    \frametitle{Given sequential code and a description of data, the goal is to
-    produce code which runs in parallel.}
+\frametitle{Modern platforms provide incredible computing power.}
+
+% I'm showing Hadoop, but it could be any cluster.
+
+\begin{figure}
+            \hfill
+            \includegraphics[width=1.3in]{macbook.jpg}
+            \hfill
+            \includegraphics[width=1.3in]{gpu.jpg}
+            \hfill
+            \includegraphics[width=1.3in]{hadoop.png}
+            \hfill
+\end{figure}
+
+\pause 
+
+But they require significant expertise.
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{The broader goal is to create}
 
 \centerline{\includegraphics[width=.8\textwidth]{../workflow.pdf}}
 
 \pause 
 
     \begin{itemize}
-        \item R's user base consists of data analysts, domain scientists 
-        \item Software engineering skill varies
+        \item Big picture:
     \end{itemize}
+
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -105,6 +127,9 @@ data for the whole state.}
     occupancy.}
     %\cite{li2011fundamental}
 
+    Blue points: free flow traffic
+    Red crosses: congested traffic
+
 \centerline{\includegraphics[height=2.5in]{fundamental_diagram.png}}
 
 This shows 1 day for 1 station.
@@ -136,8 +161,6 @@ We can fit lines in parallel among different stations. Then study:
 
 % This is a good reason to stay with R
 
-    % Fork() avoids having to 
-
 \centerline{\includegraphics[height=1in]{fundamental_diagram.png}}
 
 \begin{verbatim}
@@ -158,6 +181,8 @@ by(data=single_day, INDICES = station, FUN = my_rlm)
 
     \frametitle{Small changes can totally change the
     computation.}
+
+% The following code doesn't run
 
     If we compute on one year then this will exceed memory.
 
@@ -730,6 +755,23 @@ time systems.
     \item Forest greenness satellite imagery (Andrew Latimer)
     \item Simulating spread of disease (Nistara Randhawa)
 \end{itemize}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{Last summer I worked on the Distributed Data Structures in
+R (DDR) project}
+
+% Expert users had some valid critiques and suggestions
+% Bryan Lewis- Maybe R is all the API we need?
+
+\begin{itemize}
+    \item Relevant experience
+    \item Idea: an abstraction layer for distributed and parallel data structures
+    \item Created R lists and apply type functions to run on Spark
+\end{itemize}
+
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
