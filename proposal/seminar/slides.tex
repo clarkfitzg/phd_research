@@ -52,34 +52,43 @@
 
 % I'm showing Hadoop, but it could be any cluster.
 
+% 
+
 \begin{figure}
             \hfill
             \includegraphics[width=1.3in]{macbook.jpg}
             \hfill
             \includegraphics[width=1.3in]{gpu.jpg}
             \hfill
-            \includegraphics[width=1.3in]{hadoop.png}
+            \includegraphics[width=1.3in]{spark.png}
             \hfill
 \end{figure}
 
 \pause 
 
-But they require significant expertise.
+But they require expertise.
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-    \frametitle{The broader goal is to create}
+    \frametitle{The broader goal is to enable new types of computation on
+    new sources of data.}
+
+    \begin{itemize}
+        \item Compilation is one way
+        \item Parallel computation is another
+    \end{itemize}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{Holistic approach to computation}
 
 \centerline{\includegraphics[width=.8\textwidth]{../workflow.pdf}}
 
-\pause 
-
-    \begin{itemize}
-        \item Big picture:
-    \end{itemize}
-
+Compilation can only take in the code.
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -99,8 +108,8 @@ But they require significant expertise.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-    \frametitle{Loop detectors count cars, measuring velocity and
-    occupancy (time sensor is activated).}
+    \frametitle{Loop detectors count vehicle flow, measuring velocity and
+    density (time sensor is activated).}
 
 \centerline{\includegraphics[height=2.5in]{loop_detector.jpg}}
 
@@ -123,16 +132,21 @@ data for the whole state.}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-    \frametitle{Traffic engineers study the relationships between count and
-    occupancy.}
-    %\cite{li2011fundamental}
+    \frametitle{The \emph{fundamental diagram} in traffic engineering shows
+        the relationship between flow and density.}
 
-    Blue points: free flow traffic
-    Red crosses: congested traffic
+    \centerline{\includegraphics[height=2.5in]{../../analysis/pems/occ_flow_with_sample.pdf}}
 
-\centerline{\includegraphics[height=2.5in]{fundamental_diagram.png}}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
 
-This shows 1 day for 1 station.
+    \frametitle{Each station has a fundamental diagram, which can be fit in
+    parallel.}
+
+\centerline{\includegraphics[height=2.5in]{many_fundamental_diagram.png}}
+
+Source: Li, Zhang 2011
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -143,8 +157,6 @@ This shows 1 day for 1 station.
     % Policy is especially interesting, because that can potentially be changed
     % Recommending state wide policy, then why not look at data for the
     % whole state?
-
-We can fit lines in parallel among different stations. Then study:
 
     \begin{itemize}
         \item Effect of policy such as speed limits and carpool lanes
@@ -161,7 +173,7 @@ We can fit lines in parallel among different stations. Then study:
 
 % This is a good reason to stay with R
 
-\centerline{\includegraphics[height=1in]{fundamental_diagram.png}}
+    \centerline{\includegraphics[height=1in]{../../analysis/pems/occ_flow_with_sample.pdf}}
 
 \begin{verbatim}
 by(data=single_day, INDICES = station, FUN = my_rlm)
@@ -182,7 +194,7 @@ by(data=single_day, INDICES = station, FUN = my_rlm)
     \frametitle{Small changes can totally change the
     computation.}
 
-% The following code doesn't run
+% The following code is for illustrative purposes only, it doesn't run
 
     If we compute on one year then this will exceed memory.
 
@@ -883,7 +895,7 @@ partial_means[i] = mean(x_chunk)
 \begin{frame}
 
     \frametitle{Simple row based sampling misses the important areas of high
-    occupancy.}
+    density.}
 
     \centerline{\includegraphics[height=2.5in]{../../analysis/pems/occ_flow_with_sample.pdf}}
 
