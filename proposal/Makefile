@@ -4,6 +4,9 @@ TEXFILE = fitzgerald_QE
 
 all: $(TEXFILE).pdf
 
+layers.pdf: layers.dot
+	dot -Tpdf $< -o $@
+
 workflow.pdf: workflow.dot
 	dot -Tpdf $< -o $@
 

@@ -13,12 +13,23 @@ picks = sample(seq(nrow(s1)), size = 300)
 
 s1_sample = s1[picks, ]
 
+low = s1_sample$occupancy2 < 0.15
+fitlow = lm(flow2 ~ occupancy2 -1, s1_sample[low, ])
+fithigh = lm(flow2 ~ occupancy2, s1_sample[!low, ])
+
 pdf("occ_flow_with_sample.pdf")
 with(s1_sample, plot(occupancy2, flow2
-                     , main = "300 randomly sampled points"
-                     , xlab = "occupancy"
-                     , ylab = "flow"))
+                     , main = "Fundamental diagram"
+                     , xlab = "Density"
+                     , ylab = "Flow (vehicles per 30 sec)"
+                     #, cex = 1
+                     , cex.axis=1.5
+                     , cex.lab=1.5
+                     ))
+lines(s1_sample[low, "occupancy2"], predict(fitlow), col = "red")
+lines(s1_sample[!low, "occupancy2"], predict(fithigh), col = "red")
 dev.off()
+
 
 
 # Only 5% of observations high occupancy
@@ -52,3 +63,6 @@ fit_small = rlm(flow2 ~ occupancy2, data = s_high)
 fit_lm = lm(flow2 ~ occupancy2, data = s1[highocc, ])
 
 # This shows that the lm and rlm estimates differ.
+
+
+
