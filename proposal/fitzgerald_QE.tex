@@ -135,13 +135,13 @@ The example in this section is interesting for the following reasons:
         magnitude.
 \end{itemize}
 
-The California Department of Transportation (CalTrans) collects traffic data through
+The California Department of Transportation collects traffic data through
 sensors embedded in highways. The sensors measure three quantities: count
 of passing vehicles (flow), time during which a vehicle is directly above the
 sensor (occupancy), and average velocity~\cite{jia2001pems}.  Every thirty
 seconds they produce a new data point. $43,680$ sensors in California
 measuring 3 parameters multiplied by $2 \times 60 \times 24$ measurements
-per day results in 377 million new data points per day.  CalTrans provides
+per day results in 377 million new data points per day. The state provides
 the raw data for public download. It's organized into files containing
 observations for one day for each of 12 management districts in
 California.
@@ -329,7 +329,7 @@ Here's what each line of code does:
     \item \texttt{clusterExport(cluster, c("n\_j", "d"))} sends the
         variables $n_j, d$ to the workers, so they will be available for
         the local computations.
-        Using a system fork to create the cluster allows me to
+        Using a system fork to create the cluster allows us to
         skip this step, since forked processes have access to the variables
         that existed when they were created.
     \item \texttt{clusterEvalQ(cluster, mean(rt(n\_j, d)))} sends the code
@@ -489,8 +489,13 @@ efficiently at the R compiler level.
   \label{fig:codegraph}
 \end{figure}
 
-Figure~\ref{fig:codegraph} illustrates an expression graph.
-Let $G_1$ be the single node \texttt{data = read.csv('data.csv')} and $G_2$ be the subgraph containing the lines:
+Figure~\ref{fig:codegraph} illustrates an expression graph for the above
+code.
+Let $G_1$ be the single node 
+\begin{verbatim}
+data = read.csv('data.csv')
+\end{verbatim}
+and $G_2$ be the subgraph containing the lines:
 \begin{verbatim}
 params = read.csv('params.csv')
 sim = simulate(params, 1000000)
@@ -653,13 +658,13 @@ generated parallel program for many years \cite{girkar1992automatic}
 from prior work in two ways. First, we explicitly take into account
 data locality and the structure of the data. Second, R is a high level functional
 language, which simplifies many of the complexities that arise in parallel
-programming such as race conditions.
+programming.
 
 Popular related technologies include Theano, tensorflow, dask, and
 arrayfire. With these packages the user explicitly builds computation
 graphs which are then executed in an efficient way based on the available
 architecture. They are more tailored to linear algebra / numerical
-computing, and are particularly popular for implementing neural networks.
+computing, and are particularly useful for implementing neural networks.
 One possible path to explore is the translation of R code into these
 systems. This might be difficult when processing non numeric data.
 
