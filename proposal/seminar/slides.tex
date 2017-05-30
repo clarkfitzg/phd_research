@@ -11,7 +11,6 @@
 %\usepackage{cite}
 \usepackage{biblatex}
 
-
 \hypersetup{colorlinks=true}
 
 % Show table of contents between sections
@@ -35,7 +34,7 @@
 \date{\today}
 \date{10 May 2017}
 \author{Clark Fitzgerald}
-\institute{UC Davis - Statistics PhD Qualifying Exam}
+\institute{UC Davis}
 \titlegraphic{\includegraphics[height=.5\textheight]{../workflow.pdf}}
 
 \frame{\titlepage}
@@ -46,22 +45,27 @@
 %\end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
 \frametitle{Modern platforms provide incredible computing power.}
 
 % I'm showing Hadoop, but it could be any cluster.
 
-% 
-
 \begin{figure}
-            \hfill
+            %\hfill
             \includegraphics[width=1.3in]{macbook.jpg}
-            \hfill
+            %\hfill
             \includegraphics[width=1.3in]{gpu.jpg}
-            \hfill
+            %\hfill
+\end{figure}
+\begin{figure}
+            %\hfill
             \includegraphics[width=1.3in]{spark.png}
-            \hfill
+            %\hfill
+            \includegraphics[width=1.3in]{aws.png}
+            %\hfill
 \end{figure}
 
 \pause 
@@ -72,23 +76,39 @@ But they require expertise.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-    \frametitle{The broader goal is to enable new types of computation on
-    new sources of data.}
+    \frametitle{The broader goal is for users to write higher level code
+    that also performs better.}
 
     \begin{itemize}
-        \item Compilation is one way
-        \item Parallel computation is another
+        \item Parallel programming is a means to this end
+        \item Compilation is another way
     \end{itemize}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-    \frametitle{Holistic approach to computation}
+    % TODO: better title
+    \frametitle{We take a holistic approach to the computation.}
 
 \centerline{\includegraphics[width=.8\textwidth]{../workflow.pdf}}
 
-Compilation can only take in the code.
+%In contrast, compilation can only examine the code.
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{The R language offers several benefits.}
+
+\centerline{\includegraphics[height=1in]{Rlogo.png}}
+
+    \begin{itemize}
+        \item Functional languages simplify parallel computing
+        \item R is widely used for statistics and data analysis
+        \item R supports metaprogramming aka ``programming on the
+            language''
+    \end{itemize}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -211,15 +231,17 @@ by(data=one_year, INDICES = station, FUN = my_rlm)
 by(data=one_year, INDICES = station, FUN = my_lm)
 \end{verbatim}
 
-\pause 
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]
 
-    Adding in another variable, say weather condition, changes everything
-    once again.
+    \frametitle{Access to the underlying database may allow us to run code directly inside the
+    database.}
 
 \begin{verbatim}
-by(data=one_year, INDICES = list(station, weather),
-    FUN = my_rlm)
+SELECT station, my_rlm(...) FROM data GROUP BY station
 \end{verbatim}
+
 
 %\end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -243,6 +265,9 @@ by(data=one_year, INDICES = list(station, weather),
 
 \frametitle{This simple example shows how to write parallel code in R.}
 
+% This creates an intermediate vector of length n.
+% Fails when n approaches limits of memory.
+
 Consider computing the mean,
 
 \begin{equation}
@@ -257,8 +282,6 @@ In R this code is written:
 \begin{verbatim}
 xbar = mean(rt(n, d))
 \end{verbatim}
-
-% Explain what this does and how it fails.
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -334,16 +357,11 @@ xbar = mean(partial_means)
 xbar = mean(rt(n, d))
 \end{verbatim}
 
-    Output:
+    Output (omitting boilerplate):
 
 \begin{verbatim}
-library(parallel)
-p = detectCores()
-n_j = n / p
-cluster = makeCluster(p)
-clusterExport(cluster, c("n_j", "p"))
-partial_means = unlist(
-    clusterEvalQ(cluster, mean(rt(n_j, p))))
+p = floor(detectCores(logical = FALSE) / 2)
+partial_means = clusterEvalQ(cluster, mean(rt(n_j, p)))
 xbar = mean(partial_means)
 \end{verbatim}
 
@@ -434,19 +452,20 @@ joined = merge(data, sim)
 % This has to be answered for every piece of code, every time
 
 % If there wasn't any overhead, we would use it all the time for
-    % everything.
+% everything.
 
 % If you start up a process, you want to keep it around
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]
+\begin{frame}
 
-\frametitle{TODO: Fix plot}
-
-Time required to run \texttt{mean(rt(n, p))}
+\frametitle{Given an existing SNOW cluster with 2 workers we see benefits
+    from parallelization when $n > 4000$.}
 
 \centerline{\includegraphics[height=2.5in]{../compute_times/ser_vs_par.pdf}}
+
+Timings on a 3.4 GHz Intel i3 CPU
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -591,29 +610,56 @@ apply, sapply, tapply, by, mapply, Map, vapply, outer
 
     \end{itemize}
 
-
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
-    \frametitle{One challenge is how to properly abstract ``data''.}
+    \frametitle{Example: a data format that facilitates sampling.}
 
-    Some options:
+    % File seeking takes microseconds
+
+station, flow, occupancy, time
+\begin{verbatim}
+1       12      0.087    09:57:00
+1       14      0.092    14:29:30
+
+...
+
+7       14      0.088    16:32:30
+7       11      0.090    17:12:00
+\end{verbatim}
 
     \begin{itemize}
-        \item Iterators of chunks as in R's \texttt{iterators} package
-        \item ``file-like'' objects from *NIX
-        \item Pick one serialization format, ie. CSV, feather
-        \item Abstract parallel data structures
+
+        \item fixed width format, $c$ characters (bytes) per row
+        \item sorted on station, then occupancy
+        \item $r$ rows per station
+        \item $\implies$ new stations begin at byte $i \times c \times r$
+
     \end{itemize}
 
-    \pause
-
-    \begin{itemize}
-        \item Maintain custom metadata objects?
-        \item Only focus on data frames / tables?
-    \end{itemize}
-
+%\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{frame}[fragile]
+%
+%    \frametitle{One challenge is how to properly abstract ``data''.}
+%
+%    Some options:
+%
+%    \begin{itemize}
+%        \item Iterators of chunks as in R's \texttt{iterators} package
+%        \item ``file-like'' objects from *NIX
+%        \item Pick one serialization format, ie. CSV, feather
+%        \item Abstract parallel data structures
+%    \end{itemize}
+%
+%    \pause
+%
+%    \begin{itemize}
+%        \item Maintain custom metadata objects?
+%        \item Only focus on data frames / tables?
+%    \end{itemize}
+%
 %\end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\begin{frame}
