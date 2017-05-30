@@ -51,7 +51,8 @@
 
 \frametitle{Modern platforms provide incredible computing power.}
 
-% I'm showing Hadoop, but it could be any cluster.
+% Showing Hadoop, but it could be any cluster
+% I've worked on all these platforms
 
 \begin{figure}
             %\hfill
@@ -79,9 +80,18 @@ But they require expertise.
     \frametitle{The broader goal is for users to write higher level code
     that also performs better.}
 
+% Why make someone learn all these systems? Domain scientists don't care.
+% Conventional wisdom says that for performance you need to go to a lower
+% level. Ie. R, Rcpp, C, OpenCL, CUDA
+% Extreme example: Ethan approached by student to design circuits specific
+% to one computation.
+
+% Who should have the expert knowledge, and in what?
+
     \begin{itemize}
         \item Parallel programming is a means to this end
         \item Compilation is another way
+        \item Expertise in end user vs. in system
     \end{itemize}
 
 \end{frame}
@@ -168,22 +178,24 @@ data for the whole state.}
 
 Source: Li, Zhang 2011
 
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
+Using more data allows new types of analysis.
 
-    \frametitle{Using more data allows new types of analyses.}
-
-    % Policy is especially interesting, because that can potentially be changed
-    % Recommending state wide policy, then why not look at data for the
-    % whole state?
-
-    \begin{itemize}
-        \item Effect of policy such as speed limits and carpool lanes
-        \item Impact of road features such as on/off ramps
-        \item Effect of weather
-        \item Clustering detectors
-    \end{itemize}
+%\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{frame}
+%
+%    \frametitle{Using more data allows new types of analyses.}
+%
+%    % Policy is especially interesting, because that can potentially be changed
+%    % Recommending state wide policy, then why not look at data for the
+%    % whole state?
+%
+%    \begin{itemize}
+%        \item Effect of policy such as speed limits and carpool lanes
+%        \item Impact of road features such as on/off ramps
+%        \item Effect of weather
+%        \item Clustering detectors
+%    \end{itemize}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -198,6 +210,8 @@ Source: Li, Zhang 2011
 \begin{verbatim}
 by(data=single_day, INDICES = station, FUN = my_rlm)
 \end{verbatim}
+
+    \pause
 
     \begin{itemize}
         \item For a single day with 377 million observations this can be
@@ -339,9 +353,13 @@ library(parallel)
 p = floor(detectCores(logical = FALSE) / 2)
 n_j = n / p
 cluster = makeCluster(p)
-clusterExport(cluster, c("n_j", "p"))
+
+expr = substitute(mean(rt(n_j, d)),
+	list(d = d, n_j = n_j))
+
 partial_means = unlist(
-    clusterEvalQ(cluster, mean(rt(n_j, p))))
+    clusterCall(cluster, eval, expr))
+
 xbar = mean(partial_means)
 \end{verbatim}
 
@@ -361,7 +379,11 @@ xbar = mean(rt(n, d))
 
 \begin{verbatim}
 p = floor(detectCores(logical = FALSE) / 2)
-partial_means = clusterEvalQ(cluster, mean(rt(n_j, p)))
+
+expr = substitute(mean(rt(n_j, d)),
+    list(d = d, n_j = n_j))
+
+partial_means = clusterCall(cluster, eval, expr)
 xbar = mean(partial_means)
 \end{verbatim}
 
@@ -372,12 +394,12 @@ xbar = mean(partial_means)
     \frametitle{This can be difficult because R is implemented in C.}
 
 \begin{verbatim}
-> rt
-function (n, df, ncp)
-{
-    if (missing(ncp))
-        .Call(C_rt, n, df)
-    else ...
+> head(rt, 4)
+
+1 function (n, df, ncp)
+2 {
+3     if (missing(ncp))
+4         .Call(C_rt, n, df)
 \end{verbatim}
 
 \pause
@@ -385,7 +407,7 @@ function (n, df, ncp)
     Options:
 
     \begin{itemize}
-        \item Start from \texttt{replicate(p, mean(rnorm(n\_j)))}
+        \item Start from \texttt{replicate(p, mean(rt(n\_j, d)))}
         \item Allow users to indicate how \texttt{rt} is vectorized
         \item Analyze the preprocessed C code
         \item Rewrite the C code in R, then analyze the R code
@@ -422,7 +444,10 @@ function (n, df, ncp)
     \frametitle{CodeDepends is a tool for analyzing code as a data
     structure.}
 
-    Consider the following script:
+    % Written by Duncan, Gabe Becker, Deb Nolan
+    % Motivated by DSI
+
+    Consider this script:
 
 \begin{verbatim}
 params = read.csv('params.csv')
@@ -714,7 +739,7 @@ station, flow, occupancy, time
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\begin{frame}
 
-    \frametitle{We propose using (Code, Data, Platform) to determine a
+    \frametitle{We propose using \{Code, Data, Platform\} to determine a
     parallel execution strategy.}
 
 \begin{figure}
@@ -741,30 +766,22 @@ station, flow, occupancy, time
 
 Then test it with the traffic sensor data.
 
-% My immediate plan is to build a prototype of the system targeting R's apply
-% style functions on a single
-% server \emph{platform}, and \emph{data} consisting of files on disk which
-% may exceed memory. I'll test this prototype on the problem described in
-% section~\ref{sec:pems}. At a minimum this means preprocessing tools
-% and a parallel tapply / group by.  Once the prototype is functional
-% I plan to extend the data model to streaming data through big data systems
-% such as Apache Kafka. Running R along with a streaming system is
-% interesting and relevant because it allows one to bring the statistical
-% power of R beyond the offline analysis of static data and into large real
-% time systems. 
-
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
+\begin{frame}[fragile]
 
-\frametitle{Longer term I'd like to extend this to streaming data.}
+\frametitle{Next I'd like to extend this to platforms that store data}
 
-% TODO
+\begin{verbatim}
+SELECT station, my_rlm(...) FROM data GROUP BY station
+\end{verbatim}
 
-Running R along with a streaming system is
-interesting and relevant because it allows one to bring the statistical
-power of R beyond the offline analysis of static data and into large real
-time systems. 
+
+\begin{itemize}
+    \item Better data locality
+    \item Many use cases
+    \item Connection to compilation
+\end{itemize}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
