@@ -39,6 +39,10 @@
 
 \frame{\titlepage}
 
+%C Introduce myself
+%C Thanks for coming
+%C
+
 %\begin{frame}
 %    \frametitle{Outline}
 %    \tableofcontents
@@ -51,8 +55,10 @@
 
 \frametitle{Modern platforms provide incredible computing power.}
 
-% Showing Hadoop, but it could be any cluster
-% I've worked on all these platforms
+%C Showing Hadoop, but it could be any cluster
+%C I've worked on all these platforms
+%C Why make someone learn all these systems? Domain scientists don't care.
+%C
 
 \begin{figure}
             %\hfill
@@ -80,18 +86,16 @@ But they require expertise.
     \frametitle{The broader goal is for users to write higher level code
     that also performs better.}
 
-% Why make someone learn all these systems? Domain scientists don't care.
-% Conventional wisdom says that for performance you need to go to a lower
-% level. Ie. R, Rcpp, C, OpenCL, CUDA
-% Extreme example: Ethan approached by student to design circuits specific
-% to one computation.
-
-% Who should have the expert knowledge, and in what?
+%C Conventional wisdom says that for performance you need to go to a lower
+%C level. Ie. from R, Rcpp, C, OpenCL, CUDA
+%C Extreme example: Ethan approached to design circuits specific
+%C to one computation.
+%C
 
     \begin{itemize}
         \item Parallel programming is a means to this end
         \item Compilation is another way
-        \item Expertise in end user vs. in system
+        \item Expertise in system rather than end user
     \end{itemize}
 
 \end{frame}
@@ -101,9 +105,11 @@ But they require expertise.
     % TODO: better title
     \frametitle{We take a holistic approach to the computation.}
 
+%C In contrast, compilation only examines code.
+%C
+
 \centerline{\includegraphics[width=.8\textwidth]{../workflow.pdf}}
 
-%In contrast, compilation can only examine the code.
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -129,6 +135,10 @@ But they require expertise.
     \frametitle{The purpose of this example is to motivate the proposed
     research.}
 
+%C I'm interested in it, and I'd like to see it through
+%C NOT the end goal of the project
+%C
+
     \begin{itemize}
         \item Working with Professor Michael Zhang from Civil Engineering
         \item Illustrates complexity when computing with larger data sets
@@ -141,15 +151,22 @@ But they require expertise.
     \frametitle{Loop detectors count vehicle flow, measuring velocity and
     density (time sensor is activated).}
 
+%C Collected in 30 sec intervals
+%C Data Exceedingly noisy and dirty
+%C 
+
 \centerline{\includegraphics[height=2.5in]{loop_detector.jpg}}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
+%C CalTrans uses this to study congestion patterns and inform policy
+%C Available for public download
+%C 
+
 \frametitle{Caltrans Performance Measurement System (PeMS) records loop
-    detector
-data for the whole state.}
+    detector data for the whole state.}
 
     \begin{itemize}
         \item Each sensor measures 3 quantities
@@ -165,6 +182,14 @@ data for the whole state.}
     \frametitle{The \emph{fundamental diagram} in traffic engineering shows
         the relationship between flow and density.}
 
+%C Fundamental diagram allows modeling change in congestion patterns
+%C and individual trip times
+%C It's a curve fitting problem
+%C Research traffic engineers experiment with many possible curves
+%C Note that observations are sparse in interesting areas of high density.
+%C Maybe 5%
+%C 
+
     \centerline{\includegraphics[height=2.5in]{../../analysis/pems/occ_flow_with_sample.pdf}}
 
 \end{frame}
@@ -173,6 +198,14 @@ data for the whole state.}
 
     \frametitle{Each station has a fundamental diagram, which can be fit in
     parallel.}
+
+%C Paper fit multiple lines minimizing the L1 norm of the residuals
+%C Can approximate this with robust linear models- 
+%C standard errors get much better if use them for a year
+%C They used a handful of stations for 1 day
+%C Can do qualitatively different analysis with more data
+%C clustering, assessing effect of traffic
+%C 
 
 \centerline{\includegraphics[height=2.5in]{many_fundamental_diagram.png}}
 
@@ -203,12 +236,13 @@ Using more data allows new types of analysis.
 
     \frametitle{R expresses statistical computation well.}
 
-% This is a good reason to stay with R
+%C I appreciate R's succintness
+%C 
 
     \centerline{\includegraphics[height=1in]{../../analysis/pems/occ_flow_with_sample.pdf}}
 
 \begin{verbatim}
-by(data=single_day, INDICES = station, FUN = my_rlm)
+by(data=single_day, INDICES = station, FUN = my_curve_fitter)
 \end{verbatim}
 
     \pause
@@ -233,7 +267,7 @@ by(data=single_day, INDICES = station, FUN = my_rlm)
     If we compute on one year then this will exceed memory.
 
 \begin{verbatim}
-by(data=one_year, INDICES = station, FUN = my_rlm)
+by(data=one_year, INDICES = station, FUN = my_curve_fitter)
 \end{verbatim}
 
 \pause 
@@ -253,7 +287,7 @@ by(data=one_year, INDICES = station, FUN = my_lm)
     database.}
 
 \begin{verbatim}
-SELECT station, my_rlm(...) FROM data GROUP BY station
+SELECT station, my_curve_fitter(...) FROM data GROUP BY station
 \end{verbatim}
 
 
@@ -369,13 +403,17 @@ xbar = mean(partial_means)
 
     \frametitle{We're considering a system that transforms expressions.}
 
-    Input:
+\hfill
+
+    \textbf{Input:}
 
 \begin{verbatim}
 xbar = mean(rt(n, d))
 \end{verbatim}
 
-    Output (omitting boilerplate):
+\hfill
+
+    \textbf{Output:} (omitting boilerplate)
 
 \begin{verbatim}
 p = floor(detectCores(logical = FALSE) / 2)
@@ -386,6 +424,8 @@ expr = substitute(mean(rt(n_j, d)),
 partial_means = clusterCall(cluster, eval, expr)
 xbar = mean(partial_means)
 \end{verbatim}
+
+\hfill
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -656,7 +696,7 @@ station, flow, occupancy, time
 
     \begin{itemize}
 
-        \item fixed width format, $c$ characters (bytes) per row
+        \item ASCII fixed width format, $c$ characters (bytes) per row
         \item sorted on station, then occupancy
         \item $r$ rows per station
         \item $\implies$ new stations begin at byte $i \times c \times r$
@@ -707,17 +747,17 @@ station, flow, occupancy, time
 %    \end{itemize}
 
 
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
-
-    \frametitle{Compiled R code provides even more efficiency.}
-
-\begin{enumerate}
-    \item Parallelization will complement efforts to compile R
-    \item Compiled code potentially allows the use of shared memory threads
-    \item May follow the OpenCL kernel model
-\end{enumerate}
+%\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{frame}
+%
+%    \frametitle{Compiled R code provides even more efficiency.}
+%
+%\begin{enumerate}
+%    \item Parallelization will complement efforts to compile R
+%    \item Compiled code potentially allows the use of shared memory threads
+%    \item May follow the OpenCL kernel model
+%\end{enumerate}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -749,6 +789,23 @@ station, flow, occupancy, time
             \hfill
             \includegraphics[width=1.4in]{gpu.jpg}
 \end{figure}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{Related Work}
+
+%C I like my data dirty
+%C 
+
+\begin{itemize}
+    \item Related CS literature mostly focused on algorithmic applications
+        and lower level languages
+    \item Software such as Dask, Theano, Tensorflow require the user to build
+        computation graphs
+    \item Primarily focused on numeric arrays
+\end{itemize}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

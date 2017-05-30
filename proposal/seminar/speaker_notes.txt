@@ -1,0 +1,47 @@
+ Introduce myself
+ Thanks for coming
+
+
+============================================================
+
+
+ Showing Hadoop, but it could be any cluster
+ I've worked on all these platforms
+ Why make someone learn all these systems? Domain scientists don't care.
+
+
+============================================================
+
+
+ Conventional wisdom says that for performance you need to go to a lower
+ level. Ie. from R, Rcpp, C, OpenCL, CUDA
+ Extreme example: Ethan approached to design circuits specific
+ to one computation.
+
+
+============================================================
+
+
+ In contrast, compilation only examines code.
+
+
+============================================================
+
+
+ I'm interested in it, and I'd like to see it through
+ NOT the end goal of the project
+
+
+============================================================
+
+
+
+
+============================================================
+
+
+
+
+============================================================
+
+
