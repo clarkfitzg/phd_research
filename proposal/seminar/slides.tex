@@ -348,8 +348,8 @@ xbar = mean(rt(n, d))
 
     \frametitle{We can express the mean as a weighted mean.}
 
-%C Assume that n can be split evenly, then we can take the mean of the
-%C means.
+%C Assume that n can be split evenly
+%C so we can take the mean of the means.
 %C 
 
 Suppose $n = n_j p$, where $n_j$ is the chunk size and $p$ is the number of
@@ -368,6 +368,10 @@ chunks.
 
     \frametitle{The weighted mean can be directly translated into R code.}
 
+%C Explain code
+%C The 2nd mean is a reduction, it can be generalized
+%C 
+
 \begin{verbatim}
 
 partial_means = replicate(p, mean(rt(n_j, d)))
@@ -379,7 +383,7 @@ xbar = mean(partial_means)
 
     \begin{itemize}
         \item While not parallel, this effectively removes the memory limits.
-        \item How to choose the $n_j$ and $p$?
+        \item How to choose $n_j$ and $p$?
     \end{itemize}
 
 \end{frame}
@@ -388,6 +392,10 @@ xbar = mean(partial_means)
 
     \frametitle{The same computation can be evaluated on many workers
     simultaneously.}
+
+%C Sending small things: one expression of code, then one number back from
+%C each worker.
+%C 
 
 \centerline{\includegraphics[height=3in]{../snow.pdf}}
 

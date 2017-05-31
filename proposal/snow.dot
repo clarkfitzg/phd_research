@@ -9,6 +9,7 @@ digraph {
     2 [label="Worker 2"];
     3 [label="..."];
     4 [label="Manager"];
+    5 [label="Worker p"];
 
     0 -> 1;
     0 -> 2;
@@ -16,4 +17,5 @@ digraph {
     1 -> 4;
     2 -> 4;
     3 -> 4 [label="evaluated"];
+    5 -> 4;
 }
