@@ -121,8 +121,8 @@ But they require expertise.
 
     \begin{itemize}
         \item Functional languages simplify parallel computing
-        \item R is widely used for statistics and data analysis
-        \item R supports metaprogramming aka ``programming on the
+        \item Widely used for statistics and data analysis
+        \item Supports metaprogramming aka ``programming on the
             language''
     \end{itemize}
 
@@ -237,12 +237,13 @@ Using more data allows new types of analysis.
     \frametitle{R expresses statistical computation well.}
 
 %C I appreciate R's succintness
+%C It's a fair amount of work to make this run
 %C 
 
     \centerline{\includegraphics[height=1in]{../../analysis/pems/occ_flow_with_sample.pdf}}
 
 \begin{verbatim}
-by(data=single_day, INDICES = station, FUN = my_curve_fitter)
+by(data=single_day, INDICES = station, FUN = my_fd)
 \end{verbatim}
 
     \pause
@@ -259,15 +260,18 @@ by(data=single_day, INDICES = station, FUN = my_curve_fitter)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
-    \frametitle{Small changes can totally change the
-    computation.}
+    \frametitle{Small changes can require totally different
+    computations.}
 
-% The following code is for illustrative purposes only, it doesn't run
+%C Small perturbation of the code / analysis
+%C produce large changes in the required computation.
+%C It would be much better if a system could figure this out
+%C 
 
     If we compute on one year then this will exceed memory.
 
 \begin{verbatim}
-by(data=one_year, INDICES = station, FUN = my_curve_fitter)
+by(data=one_year, INDICES = station, FUN = my_fd)
 \end{verbatim}
 
 \pause 
@@ -276,18 +280,23 @@ by(data=one_year, INDICES = station, FUN = my_curve_fitter)
     data as a stream.
 
 \begin{verbatim}
-by(data=one_year, INDICES = station, FUN = my_lm)
+by(data=one_year, INDICES = station, FUN = my_lm_fd)
 \end{verbatim}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
+%C Ideal case: Everything I'm doing requires moving the data from their
+%C servers, so it's necessarily inefficient.
+%C General principle: avoiding data movement
+%C
+
     \frametitle{Access to the underlying database may allow us to run code directly inside the
     database.}
 
 \begin{verbatim}
-SELECT station, my_curve_fitter(...) FROM data GROUP BY station
+SELECT station, my_fd(...) FROM data GROUP BY station
 \end{verbatim}
 
 
@@ -313,8 +322,10 @@ SELECT station, my_curve_fitter(...) FROM data GROUP BY station
 
 \frametitle{This simple example shows how to write parallel code in R.}
 
-% This creates an intermediate vector of length n.
-% Fails when n approaches limits of memory.
+%C Intentionally simple, but we'll see some complexity
+%C This creates an intermediate vector of length n.
+%C Fails when n approaches limits of memory.
+%C 
 
 Consider computing the mean,
 
