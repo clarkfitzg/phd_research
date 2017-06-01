@@ -5,7 +5,8 @@
 ============================================================
 
 
- Showing Hadoop, but it could be any cluster
+ The way going forward is through parallel software
+ Showing Spark, but it could be any cluster
  I've worked on all these platforms
  Why make someone learn all these systems? Domain scientists don't care.
 
@@ -15,14 +16,26 @@
 
  Conventional wisdom says that for performance you need to go to a lower
  level. Ie. from R, Rcpp, C, OpenCL, CUDA
+ Norm's book on parallel programming: trading code readability for
+ performance. (Originally Knuth?)
  Extreme example: Ethan approached to design circuits specific
- to one computation.
+ to a particular computation.
 
 
 ============================================================
 
 
+ Sequential R code: just a script
+ Data: text files, database, data in memory
+ Platform: Laptop, cluster, GPU
  In contrast, compilation only examines code.
+
+
+============================================================
+
+
+ It stays high level, close to the problem domain of statistics / data
+ analysis
 
 
 ============================================================
@@ -37,12 +50,6 @@
 
  Collected in 30 sec intervals
  Data Exceedingly noisy and dirty
-
-
-============================================================
-
-
- CalTrans uses this to study congestion patterns and inform policy
  Available for public download
 
 
@@ -51,10 +58,10 @@
 
  Fundamental diagram allows modeling change in congestion patterns
  and individual trip times
- It's a curve fitting problem
+ It's statistics- a curve fitting problem
  Research traffic engineers experiment with many possible curves
  Note that observations are sparse in interesting areas of high density.
- Maybe 5%
+ Maybe 5% => sampling works poorly
 
 
 ============================================================
@@ -65,14 +72,14 @@
  standard errors get much better if use them for a year
  They used a handful of stations for 1 day
  Can do qualitatively different analysis with more data
- clustering, assessing effect of traffic
+ clustering, assessing policy effects
 
 
 ============================================================
 
 
  I appreciate R's succintness
- It's a fair amount of work to make this run
+ It's a fair amount of expert knowledge to make this run efficiently
 
 
 ============================================================
@@ -89,6 +96,7 @@
  Ideal case: Everything I'm doing requires moving the data from their
  servers, so it's necessarily inefficient.
  General principle: avoiding data movement
+ As independent researchers we are less likely to deal with databases.
 
 
 ============================================================
@@ -117,13 +125,15 @@
 
 
  Sending small things: one expression of code, then one number back from
- each worker.
+ each worker. Keeps data local.
 
 
 ============================================================
 
 
+ This uses SNOW, maybe most common way in R. Many other ways!
  Explain code
+ Choose p in principled way
  substitute manipulates the expressions
  then we evaluate it on the cluster
 
@@ -131,7 +141,12 @@
 ============================================================
 
 
- The point is that the system should express the parallel code
+
+
+============================================================
+
+
+ The point is that the system should create the parallel code for us
 
 
 ============================================================
@@ -147,13 +162,14 @@
 
 
  Thanks to Duncan, Gabe Becker, Deb Nolan, Roger Peng
- Motivated by DSI use case
+ Gabe Becker put on CRAN this week, worked on during his PhD
+ Following motivated by DSI use case
 
 
 ============================================================
 
 
- Tells us when variables are used
+ Tells us when variables are used => need to be available on workers
  Can run the first two threads in parallel
 
 
@@ -161,14 +177,9 @@
 
 
  This has to be answered for every piece of code, every time
+ Explain each fig
  If there wasn't any overhead, parallel would always be better choice
  If you start up a process, you want to keep it around
-
-
-============================================================
-
-
- Parameters- things that can be controlled
 
 
 ============================================================
@@ -188,6 +199,8 @@
 ============================================================
 
 
+ Point of this project is not to build another tool-
+ Rather to use analysis of the code itself as the mechanism.
  I want to reuse as much infrastructure as possible
 
 
@@ -208,7 +221,43 @@
 ============================================================
 
 
+ Given sequential code, some data source, and a platform we try to create
+ reasonably efficient parallel code.
+
+
+============================================================
+
+
  I like my data dirty
+ The computation graphs target different platforms, mostly numeric data
+ An issue with larger systems is that they require you to express your
+ computation in their own particular regime.
+
+
+============================================================
+
+
+ Starting with this because it's feasible.
+ Certainly plan to go beyond.
+
+
+============================================================
+
+
+ As I mentioned above, this is where data actually lives, so lets think
+ hard about how to move the computation there.
+
+
+============================================================
+
+
+ CalTrans uses this to study congestion patterns and inform policy
+
+
+============================================================
+
+
+ Parameters- things that can be controlled
 
 
 ============================================================

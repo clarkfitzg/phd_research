@@ -32,8 +32,8 @@
 \begin{document}
 
 \title{Parallel Computing Through Code Analysis}
-\date{\today}
-\date{10 May 2017}
+%\date{\today}
+\date{2 June 2017}
 \author{Clark Fitzgerald}
 \institute{UC Davis}
 \titlegraphic{\includegraphics[height=.5\textheight]{../workflow.pdf}}
@@ -56,7 +56,8 @@
 
 \frametitle{Modern platforms provide incredible computing power.}
 
-%C Showing Hadoop, but it could be any cluster
+%C The way going forward is through parallel software
+%C Showing Spark, but it could be any cluster
 %C I've worked on all these platforms
 %C Why make someone learn all these systems? Domain scientists don't care.
 %C
@@ -88,9 +89,11 @@ But they require expertise.
     that also performs better.}
 
 %C Conventional wisdom says that for performance you need to go to a lower
-%C level. Ie. from R, Rcpp, C, OpenCL, CUDA
+%C level. Ie. from R, Rcpp, C, OpenCL, CUDA 
+%C Norm's book on parallel programming: trading code readability for
+%C performance. (Originally Knuth?)
 %C Extreme example: Ethan approached to design circuits specific
-%C to one computation.
+%C to a particular computation.
 %C
 
     \begin{itemize}
@@ -103,20 +106,25 @@ But they require expertise.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-    % TODO: better title
     \frametitle{We take a holistic approach to the computation.}
 
+%C Sequential R code: just a script
+%C Data: text files, database, data in memory
+%C Platform: Laptop, cluster, GPU
 %C In contrast, compilation only examines code.
 %C
 
 \centerline{\includegraphics[width=.8\textwidth]{../workflow.pdf}}
-
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
     \frametitle{The R language offers several benefits.}
+
+%C It stays high level, close to the problem domain of statistics / data
+%C analysis
+%C
 
 \centerline{\includegraphics[height=1in]{Rlogo.png}}
 
@@ -154,27 +162,12 @@ But they require expertise.
 
 %C Collected in 30 sec intervals
 %C Data Exceedingly noisy and dirty
+%C Available for public download
 %C 
 
 \centerline{\includegraphics[height=2.5in]{loop_detector.jpg}}
 
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
-
-%C CalTrans uses this to study congestion patterns and inform policy
-%C Available for public download
-%C 
-
-\frametitle{Caltrans Performance Measurement System (PeMS) records loop
-    detector data for the whole state.}
-
-    \begin{itemize}
-        \item Each sensor measures 3 quantities
-        \item Data point every 30 seconds
-        \item $43,680$ sensors in California
-        \item $\implies$  377 million data points per day
-    \end{itemize}
+Around 400 million data points per day recorded in California.
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -185,10 +178,10 @@ But they require expertise.
 
 %C Fundamental diagram allows modeling change in congestion patterns
 %C and individual trip times
-%C It's a curve fitting problem
+%C It's statistics- a curve fitting problem
 %C Research traffic engineers experiment with many possible curves
 %C Note that observations are sparse in interesting areas of high density.
-%C Maybe 5%
+%C Maybe 5% => sampling works poorly
 %C 
 
     \centerline{\includegraphics[height=2.5in]{../../analysis/pems/occ_flow_with_sample.pdf}}
@@ -205,7 +198,7 @@ But they require expertise.
 %C standard errors get much better if use them for a year
 %C They used a handful of stations for 1 day
 %C Can do qualitatively different analysis with more data
-%C clustering, assessing effect of traffic
+%C clustering, assessing policy effects
 %C 
 
 \centerline{\includegraphics[height=2.5in]{many_fundamental_diagram.png}}
@@ -214,23 +207,6 @@ Source: Li, Zhang 2011
 
 Using more data allows new types of analysis.
 
-%\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\begin{frame}
-%
-%    \frametitle{Using more data allows new types of analyses.}
-%
-%    % Policy is especially interesting, because that can potentially be changed
-%    % Recommending state wide policy, then why not look at data for the
-%    % whole state?
-%
-%    \begin{itemize}
-%        \item Effect of policy such as speed limits and carpool lanes
-%        \item Impact of road features such as on/off ramps
-%        \item Effect of weather
-%        \item Clustering detectors
-%    \end{itemize}
-
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
@@ -238,7 +214,7 @@ Using more data allows new types of analysis.
     \frametitle{R expresses statistical computation well.}
 
 %C I appreciate R's succintness
-%C It's a fair amount of work to make this run
+%C It's a fair amount of expert knowledge to make this run efficiently
 %C 
 
     \centerline{\includegraphics[height=1in]{../../analysis/pems/occ_flow_with_sample.pdf}}
@@ -291,29 +267,17 @@ by(data=one_year, INDICES = station, FUN = my_lm_fd)
 %C Ideal case: Everything I'm doing requires moving the data from their
 %C servers, so it's necessarily inefficient.
 %C General principle: avoiding data movement
+%C As independent researchers we are less likely to deal with databases.
 %C
 
     \frametitle{Access to the underlying database may allow us to run code directly inside the
     database.}
 
+    \centerline{\includegraphics[width=1in]{database.png}}
+
 \begin{verbatim}
 SELECT station, my_fd(...) FROM data GROUP BY station
 \end{verbatim}
-
-
-%\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\begin{frame}
-%
-%    \frametitle{Lets scale up the computations with parallel programming}
-%
-%    \begin{itemize}
-%        \item Several parallel strategies exist to improve performance
-%        \item Which is best depends on the platform and data
-%        \item Each one requires deeper knowledge of that particular technology
-%        \item Therefore techniques to programmatically identify and use the parallel
-%  patterns implicit in code would be valuable
-%    \end{itemize}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -395,7 +359,7 @@ xbar = mean(partial_means)
     simultaneously.}
 
 %C Sending small things: one expression of code, then one number back from
-%C each worker.
+%C each worker. Keeps data local.
 %C 
 
 \centerline{\includegraphics[width=\textwidth]{../snow.pdf}}
@@ -406,9 +370,12 @@ xbar = mean(partial_means)
 
     \frametitle{Here is one way to parallelize this code.}
 
+%C This uses SNOW, maybe most common way in R. Many other ways!
 %C Explain code
+%C Choose p in principled way
 %C substitute manipulates the expressions
 %C then we evaluate it on the cluster
+%C 
 %C 
 
 \begin{verbatim}
@@ -432,7 +399,7 @@ xbar = mean(partial_means)
 
     \frametitle{We're considering a system that transforms expressions.}
 
-%C The point is that the system should express the parallel code
+%C The point is that the system should create the parallel code for us
 %C 
 
 \hfill
@@ -501,7 +468,8 @@ xbar = mean(partial_means)
     structure.}
 
 %C Thanks to Duncan, Gabe Becker, Deb Nolan, Roger Peng
-%C Motivated by DSI use case
+%C Gabe Becker put on CRAN this week, worked on during his PhD
+%C Following motivated by DSI use case
 %C 
 
     Consider this script:
@@ -520,7 +488,7 @@ joined = merge(data, sim)
     \frametitle{The expression graph represents the dependencies between
     expressions.}
 
-%C Tells us when variables are used
+%C Tells us when variables are used => need to be available on workers
 %C Can run the first two threads in parallel
 %C 
 
@@ -534,6 +502,7 @@ joined = merge(data, sim)
 \frametitle{Is it worth it to go parallel?}
 
 %C This has to be answered for every piece of code, every time
+%C Explain each fig
 %C If there wasn't any overhead, parallel would always be better choice
 %C If you start up a process, you want to keep it around
 %C
@@ -642,6 +611,8 @@ apply, sapply, tapply, by, mapply, Map, vapply, outer
 
     \frametitle{How can we transform R code into a lower layer?}
 
+%C Point of this project is not to build another tool-
+%C Rather to use analysis of the code itself as the mechanism.
 %C I want to reuse as much infrastructure as possible
 %C 
 
@@ -694,7 +665,7 @@ station, flow, occupancy, time
 
     \begin{itemize}
 
-        \item ASCII fixed width format, $c$ characters (bytes) per row
+        \item ASCII fixed width format file, $c$ characters (bytes) per row
         \item sorted on station, then occupancy
         \item $r$ rows per station
         \item $\implies$ new stations begin at byte $i \times c \times r$
@@ -754,6 +725,10 @@ station, flow, occupancy, time
     \frametitle{We propose using \{Code, Data, Platform\} to determine a
     parallel execution strategy.}
 
+%C Given sequential code, some data source, and a platform we try to create
+%C reasonably efficient parallel code.
+%C
+
 \begin{figure}
             \includegraphics[width=1.4in]{code_screen.png}
             \hfill
@@ -771,13 +746,14 @@ station, flow, occupancy, time
 %C I like my data dirty
 %C The computation graphs target different platforms, mostly numeric data
 %C An issue with larger systems is that they require you to express your
-%C computation in a totally different way.
+%C computation in their own particular regime.
+%C
 
 \begin{itemize}
     \item CS literature on automatic parallelization mostly focused on algorithmic applications
         and lower level languages
     \item Dask, Theano, Tensorflow: User builds computation / data flow graphs
-    \item Hadoop, Spark, Databases: Powerful, but less flexible
+    \item Hadoop, Spark, Databases: Powerful, but less flexible than R
 \end{itemize}
 
 \end{frame}
@@ -785,6 +761,10 @@ station, flow, occupancy, time
 \begin{frame}
 
     \frametitle{The next step is to build a prototype of the system.}
+
+%C Starting with this because it's feasible.
+%C Certainly plan to go beyond.
+%C
 
     Specifically beginning with:
 
@@ -801,6 +781,10 @@ Then test it with the traffic sensor data.
 \begin{frame}[fragile]
 
 \frametitle{Next I'd like to extend this to platforms that store data}
+
+%C As I mentioned above, this is where data actually lives, so lets think
+%C hard about how to move the computation there.
+%C
 
 \begin{verbatim}
 SELECT station, my_rlm(...) FROM data GROUP BY station
@@ -856,6 +840,41 @@ SELECT station, my_rlm(...) FROM data GROUP BY station
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
+%C CalTrans uses this to study congestion patterns and inform policy
+%C 
+
+\frametitle{Caltrans Performance Measurement System (PeMS) records loop
+    detector data for the whole state.}
+
+    \begin{itemize}
+        \item Each sensor measures 3 quantities
+        \item Data point every 30 seconds
+        \item $43,680$ sensors in California
+        \item $\implies$  377 million data points per day
+    \end{itemize}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{Using more data allows new types of analyses.}
+
+    % Policy is especially interesting, because that can potentially be changed
+    % Recommending state wide policy, then why not look at data for the
+    % whole state?
+
+    \begin{itemize}
+        \item Effect of policy such as speed limits and carpool lanes
+        \item Impact of road features such as on/off ramps
+        \item Effect of weather
+        \item Clustering detectors
+    \end{itemize}
+
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
     \frametitle{Factors to consider when switching to parallel programs}
 
 %C Parameters- things that can be controlled
@@ -893,6 +912,23 @@ SELECT station, my_rlm(...) FROM data GROUP BY station
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{Steps in Code Analysis}
+
+\begin{itemize}
+    \item Parse code, gathering dependency information as explained in
+        section \ref{sec:expression_dependency}.
+    \item Use data description to determine if preprocessing of the data is
+        required
+    \item Identify expressions to parallelize
+    \item May experimentally evaluate expressions 
+    \item Relate potentially parallel expressions to data description and timings
+    \item Generate code that will run efficiently on the specific platform.
+\end{itemize}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
    \frametitle{Preserving language semantics can be challenging.}
@@ -907,6 +943,8 @@ SELECT station, my_rlm(...) FROM data GROUP BY station
     g()                     # Returns 11!
 
 \end{verbatim}
+
+The CodeDepends package provides tools for detecting this.
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -937,7 +975,6 @@ R (DDR) project}
     \item Created R lists and apply type functions to run on Spark
 \end{itemize}
 
-
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
@@ -960,27 +997,6 @@ It's all C Code.
 function (n, mean = 0, sd = 1)
 .Call(C_rnorm, n, mean, sd)
 \end{verbatim}
-
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
-
-    \frametitle{An iterator produces data on demand}
-
-    \centerline{\includegraphics[height=1.6in]{../iterator.pdf}}
-
-    \begin{itemize}
-        \item Most flexible of the above options
-        \item Natural in pipeline parallel model
-        \item Operate well with high performance IO libraries
-    \end{itemize}
-
-    \pause
-
-    \begin{itemize}
-        \item Unfamiliar to R programmers
-        \item Not ideal if you need the whole data set
-    \end{itemize}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1042,6 +1058,27 @@ serialize(x_chunk, worker2)
 x_chunk = unserialize(worker1)
 partial_means[i] = mean(x_chunk)
 \end{verbatim}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{An iterator produces data on demand}
+
+    \centerline{\includegraphics[height=1.6in]{../iterator.pdf}}
+
+    \begin{itemize}
+        \item Most flexible of the above options
+        \item Natural in pipeline parallel model
+        \item Operate well with high performance IO libraries
+    \end{itemize}
+
+
+    \begin{itemize}
+        \item Unfamiliar to R programmers
+        \item Not ideal if you need the whole data set
+    \end{itemize}
+
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
