@@ -3,7 +3,8 @@
 % To produce pdf run:
 %   $ pdflatex beamer.tex 
 
-\documentclass{beamer}
+%\documentclass{beamer}
+\documentclass[handout]{beamer}
 %\usetheme{Singapore}
 \usetheme{Boadilla}
 
@@ -397,13 +398,18 @@ xbar = mean(partial_means)
 %C each worker.
 %C 
 
-\centerline{\includegraphics[height=3in]{../snow.pdf}}
+\centerline{\includegraphics[width=\textwidth]{../snow.pdf}}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
     \frametitle{Here is one way to parallelize this code.}
+
+%C Explain code
+%C substitute manipulates the expressions
+%C then we evaluate it on the cluster
+%C 
 
 \begin{verbatim}
 library(parallel)
@@ -425,6 +431,9 @@ xbar = mean(partial_means)
 \begin{frame}[fragile]
 
     \frametitle{We're considering a system that transforms expressions.}
+
+%C The point is that the system should express the parallel code
+%C 
 
 \hfill
 
@@ -456,6 +465,12 @@ xbar = mean(partial_means)
 
     \frametitle{This can be difficult because R is implemented in C.}
 
+%C Looking at the first part of the function, it calls right into C
+%C So we can't do it directly
+%C Options in order of ambition
+%C `indicate how vectorized' - meaning it's vectorized in multiple args
+%C 
+
 \begin{verbatim}
 > head(rt, 4)
 
@@ -480,35 +495,14 @@ xbar = mean(partial_means)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Code Analysis}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
-
-    \frametitle{\{Code, Data, Platform\} together determine the execution
-    strategy.}
-
-\begin{figure}
-            \includegraphics[width=1.4in]{code_screen.png}
-            \hfill
-            \includegraphics[width=1in]{database.png}
-            \hfill
-            \includegraphics[width=1.4in]{gpu.jpg}
-\end{figure}
-
-%    \begin{itemize}
-%    \item \textbf{Code} script to be executed
-%    \item \textbf{Data} in-memory, files, database, etc
-%    \item \textbf{Platform} 4 core laptop, server with GPU, Spark cluster,
-%        etc
-%    \end{itemize}
-
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
     \frametitle{CodeDepends is a tool for analyzing code as a data
     structure.}
 
-    % Written by Duncan, Gabe Becker, Deb Nolan
-    % Motivated by DSI
+%C Thanks to Duncan, Gabe Becker, Deb Nolan, Roger Peng
+%C Motivated by DSI use case
+%C 
 
     Consider this script:
 
@@ -526,6 +520,10 @@ joined = merge(data, sim)
     \frametitle{The expression graph represents the dependencies between
     expressions.}
 
+%C Tells us when variables are used
+%C Can run the first two threads in parallel
+%C 
+
     \centerline{\includegraphics[height=2.5in]{../codegraph.pdf}}
 
 \end{frame}
@@ -535,14 +533,12 @@ joined = merge(data, sim)
 
 \frametitle{Is it worth it to go parallel?}
 
+%C This has to be answered for every piece of code, every time
+%C If there wasn't any overhead, parallel would always be better choice
+%C If you start up a process, you want to keep it around
+%C
+
     \centerline{\includegraphics[height=2.5in]{../compute_times/overhead}}
-
-% This has to be answered for every piece of code, every time
-
-% If there wasn't any overhead, we would use it all the time for
-% everything.
-
-% If you start up a process, you want to keep it around
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -560,6 +556,9 @@ Timings on a 3.4 GHz Intel i3 CPU
 \begin{frame}
 
     \frametitle{Factors to consider}
+
+%C Parameters- things that can be controlled
+%C 
 
 \textbf{Parameters}
 \begin{itemize}
@@ -625,6 +624,10 @@ Timings on a 3.4 GHz Intel i3 CPU
     \frametitle{Idiomatic R already expresses computation in a natural
     parallel way through ``apply'' functions.}
 
+%C This is one reason that it's more appealing to do this in R
+%C These are all essentially variants of `Map' in mapreduce
+%C 
+
 \begin{verbatim}
 x = replicate(5, rnorm(n_j), simplify = FALSE)
 
@@ -632,6 +635,8 @@ partialmeans = lapply(x, mean)
 
 by(data, INDICES = station, FUN = piecewise_rlm)
 \end{verbatim}
+
+\pause
 
 Also
 \begin{verbatim}
@@ -645,6 +650,10 @@ apply, sapply, tapply, by, mapply, Map, vapply, outer
     \frametitle{Layers mark ways for users to write parallel code for one
     platform.}
 
+%C These are excellent tools
+%C But the problem is that one is tied to particular package / architecture
+%C 
+
 \begin{itemize}
     \item \textbf{User R Packages}: foreach, future, partools, ddR, biganalytics, RevoScaleR
     \item \textbf{R Layer}: SNOW, parallel, bigmemory, Rmpi, RCUDA
@@ -657,26 +666,10 @@ apply, sapply, tapply, by, mapply, Map, vapply, outer
 
     \frametitle{How can we transform R code into a lower layer?}
 
-% Potentially we can transform to any of these layers
+%C I want to reuse as much infrastructure as possible
+%C 
 
 \centerline{\includegraphics[height=.8\textheight]{../layers.pdf}}
-
-%\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\begin{frame}
-%
-%   \frametitle{Preserving language semantics can be challenging.}
-%
-%    For example, R's dynamic lookups 
-%
-%\begin{verbatim}
-%
-%    f = function() 0
-%    g = function() f() + 1
-%    f = function() 10
-%    g()                     # Returns 11!
-%
-%\end{verbatim}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -684,6 +677,11 @@ apply, sapply, tapply, by, mapply, Map, vapply, outer
 
     \frametitle{Knowledge of the data allows us to generate more
     specialized code.}
+
+%C Dimensions, types allow preallocation
+%C Randomization lets us do software alchemy
+%C Index in a database allows us to select some groups faster
+%C
 
     \begin{itemize}
 
@@ -704,7 +702,8 @@ apply, sapply, tapply, by, mapply, Map, vapply, outer
 
     \frametitle{Example: a data format that facilitates sampling.}
 
-    % File seeking takes microseconds
+%C File seeking takes microseconds
+%C 
 
 station, flow, occupancy, time
 \begin{verbatim}
@@ -770,37 +769,11 @@ station, flow, occupancy, time
 %    \end{itemize}
 
 
-%\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\begin{frame}
-%
-%    \frametitle{Compiled R code provides even more efficiency.}
-%
-%\begin{enumerate}
-%    \item Parallelization will complement efforts to compile R
-%    \item Compiled code potentially allows the use of shared memory threads
-%    \item May follow the OpenCL kernel model
-%\end{enumerate}
-
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusion}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
-
-%    \frametitle{Follow up on the sensor example}
-%
-%    Program should:
-%
-%\begin{enumerate}
-%    \item Remove any observations it can
-%    \item Reorganize files on disk based on station ID
-%    \item Apply function to each station ID file
-%\end{enumerate}
-%
-%\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\begin{frame}
 
     \frametitle{We propose using \{Code, Data, Platform\} to determine a
     parallel execution strategy.}
@@ -893,6 +866,20 @@ SELECT station, my_rlm(...) FROM data GROUP BY station
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
+    \frametitle{Follow up on the sensor example}
+
+    The transformed program should:
+
+\begin{enumerate}
+    \item Remove any observations it can
+    \item Reorganize files on disk based on station ID
+    \item Apply function to each station ID file
+\end{enumerate}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
     \frametitle{More Applications}
 
     % TODO: Expand on each of these
@@ -903,6 +890,36 @@ SELECT station, my_rlm(...) FROM data GROUP BY station
     \item Forest greenness satellite imagery (Andrew Latimer)
     \item Simulating spread of disease (Nistara Randhawa)
 \end{itemize}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]
+
+   \frametitle{Preserving language semantics can be challenging.}
+
+    For example, R's dynamic lookups 
+
+\begin{verbatim}
+
+    f = function() 0
+    g = function() f() + 1
+    f = function() 10
+    g()                     # Returns 11!
+
+\end{verbatim}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{Compiled R code provides even more efficiency.}
+
+\begin{enumerate}
+    \item Parallelization will complement efforts to compile R
+    \item Compiled code potentially allows the use of shared memory threads
+    \item May follow the OpenCL kernel model
+\end{enumerate}
+
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

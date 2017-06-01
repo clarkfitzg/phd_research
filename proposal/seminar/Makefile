@@ -8,5 +8,5 @@ slides.pdf : slides.tex
 	pdflatex $<
 	pdflatex $<
 
-speaker_notes.txt: speaker_notes.py
+speaker_notes.txt: speaker_notes.py slides.tex
 	python $< > $@

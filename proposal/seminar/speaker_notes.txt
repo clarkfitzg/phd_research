@@ -35,11 +35,180 @@
 ============================================================
 
 
+ Collected in 30 sec intervals
+ Data Exceedingly noisy and dirty
 
 
 ============================================================
 
 
+ CalTrans uses this to study congestion patterns and inform policy
+ Available for public download
+
+
+============================================================
+
+
+ Fundamental diagram allows modeling change in congestion patterns
+ and individual trip times
+ It's a curve fitting problem
+ Research traffic engineers experiment with many possible curves
+ Note that observations are sparse in interesting areas of high density.
+ Maybe 5%
+
+
+============================================================
+
+
+ Paper fit multiple lines minimizing the L1 norm of the residuals
+ Can approximate this with robust linear models-
+ standard errors get much better if use them for a year
+ They used a handful of stations for 1 day
+ Can do qualitatively different analysis with more data
+ clustering, assessing effect of traffic
+
+
+============================================================
+
+
+ I appreciate R's succintness
+ It's a fair amount of work to make this run
+
+
+============================================================
+
+
+ Small perturbation of the code / analysis
+ produce large changes in the required computation.
+ It would be much better if a system could figure this out
+
+
+============================================================
+
+
+ Ideal case: Everything I'm doing requires moving the data from their
+ servers, so it's necessarily inefficient.
+ General principle: avoiding data movement
+
+
+============================================================
+
+
+ Intentionally simple, but we'll see some complexity
+ This creates an intermediate vector of length n.
+ Fails when n approaches limits of memory.
+
+
+============================================================
+
+
+ Assume that n can be split evenly
+ so we can take the mean of the means.
+
+
+============================================================
+
+
+ Explain code
+ The 2nd mean is a reduction, it can be generalized
+
+
+============================================================
+
+
+ Sending small things: one expression of code, then one number back from
+ each worker.
+
+
+============================================================
+
+
+ Explain code
+ substitute manipulates the expressions
+ then we evaluate it on the cluster
+
+
+============================================================
+
+
+ The point is that the system should express the parallel code
+
+
+============================================================
+
+
+ Looking at the first part of the function, it calls right into C
+ So we can't do it directly
+ Options in order of ambition
+ `indicate how vectorized' - meaning it's vectorized in multiple args
+
+
+============================================================
+
+
+ Thanks to Duncan, Gabe Becker, Deb Nolan, Roger Peng
+ Motivated by DSI use case
+
+
+============================================================
+
+
+ Tells us when variables are used
+ Can run the first two threads in parallel
+
+
+============================================================
+
+
+ This has to be answered for every piece of code, every time
+ If there wasn't any overhead, parallel would always be better choice
+ If you start up a process, you want to keep it around
+
+
+============================================================
+
+
+ Parameters- things that can be controlled
+
+
+============================================================
+
+
+ This is one reason that it's more appealing to do this in R
+ These are all essentially variants of `Map' in mapreduce
+
+
+============================================================
+
+
+ These are excellent tools
+ But the problem is that one is tied to particular package / architecture
+
+
+============================================================
+
+
+ I want to reuse as much infrastructure as possible
+
+
+============================================================
+
+
+ Dimensions, types allow preallocation
+ Randomization lets us do software alchemy
+ Index in a database allows us to select some groups faster
+
+
+============================================================
+
+
+ File seeking takes microseconds
+
+
+============================================================
+
+
+ I like my data dirty
 
 
 ============================================================

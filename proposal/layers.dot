@@ -1,10 +1,10 @@
 digraph {
     //rankdir=LR;
     //size="8,5"
-    //node [shape = square]; 6;
+    //node [shape = square]; 0;
     //node [shape = none];
 
-    0 [label="Sequential R"];
+    0 [label="Code Analysis"];
     1 [label="User R Packages"];
     2 [label="R Layer"];
     3 [label="Operating System"];
@@ -13,6 +13,6 @@ digraph {
     0 -> 1 [style="dashed"];
     0 -> 3 [style="dashed"];
 
-    1 -> 2;
-    2 -> 3;
+    1 -> 2 [dir=none];
+    2 -> 3 [dir=none];
 }

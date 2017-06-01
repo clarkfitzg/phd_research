@@ -1,8 +1,9 @@
 digraph {
     rankdir=LR;
     //size="8,5"
-    node [shape = square]; 1, 2, 3;
-    //node [shape = none];
+    //node [shape = square]; 1, 2, 5;
+    //node [shape = none]; 3;
+    //node [shape = oval]; 0, 4;
 
     0 [label="Manager"];
     1 [label="Worker 1"];
@@ -14,6 +15,7 @@ digraph {
     0 -> 1;
     0 -> 2;
     0 -> 3 [label="mean(rt(n_j, d))"];
+    0 -> 5;
     1 -> 4;
     2 -> 4;
     3 -> 4 [label="evaluated"];
