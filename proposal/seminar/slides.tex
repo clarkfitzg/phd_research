@@ -3,8 +3,8 @@
 % To produce pdf run:
 %   $ pdflatex beamer.tex 
 
-%\documentclass{beamer}
-\documentclass[handout]{beamer}
+\documentclass{beamer}
+%\documentclass[handout]{beamer}
 %\usetheme{Singapore}
 \usetheme{Boadilla}
 
@@ -418,7 +418,7 @@ n_j = n / p
 cluster = makeCluster(p)
 
 expr = substitute(mean(rt(n_j, d)),
-	list(d = d, n_j = n_j))
+    list(d = d, n_j = n_j))
 
 partial_means = unlist(
     clusterCall(cluster, eval, expr))
@@ -551,30 +551,6 @@ joined = merge(data, sim)
 
 Timings on a 3.4 GHz Intel i3 CPU
 
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
-
-    \frametitle{Factors to consider}
-
-%C Parameters- things that can be controlled
-%C 
-
-\textbf{Parameters}
-\begin{itemize}
-    \item number of processor cores to use
-    \item size of each chunk
-    \item which functions to combine in one processing step
-\end{itemize}
-
-\textbf{Constraints}
-\begin{itemize}
-    \item number of cores available
-    \item network bandwidth
-    \item disk IO speed
-    \item available memory
-\end{itemize}
-
 %\end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\begin{frame}
@@ -629,11 +605,11 @@ Timings on a 3.4 GHz Intel i3 CPU
 %C 
 
 \begin{verbatim}
-x = replicate(5, rnorm(n_j), simplify = FALSE)
+x = replicate(p, mean(rt(n_j, d)), simplify = FALSE)
 
 partialmeans = lapply(x, mean)
 
-by(data, INDICES = station, FUN = piecewise_rlm)
+by(data, INDICES = station, FUN = my_fd)
 \end{verbatim}
 
 \pause
@@ -793,14 +769,15 @@ station, flow, occupancy, time
     \frametitle{Related Work}
 
 %C I like my data dirty
-%C 
+%C The computation graphs target different platforms, mostly numeric data
+%C An issue with larger systems is that they require you to express your
+%C computation in a totally different way.
 
 \begin{itemize}
-    \item Related CS literature mostly focused on algorithmic applications
+    \item CS literature on automatic parallelization mostly focused on algorithmic applications
         and lower level languages
-    \item Software such as Dask, Theano, Tensorflow require the user to build
-        computation graphs
-    \item Primarily focused on numeric arrays
+    \item Dask, Theano, Tensorflow: User builds computation / data flow graphs
+    \item Hadoop, Spark, Databases: Powerful, but less flexible
 \end{itemize}
 
 \end{frame}
@@ -829,10 +806,9 @@ Then test it with the traffic sensor data.
 SELECT station, my_rlm(...) FROM data GROUP BY station
 \end{verbatim}
 
-
 \begin{itemize}
     \item Better data locality
-    \item Many use cases
+    \item Many practical use cases
     \item Connection to compilation
 \end{itemize}
 
@@ -875,6 +851,30 @@ SELECT station, my_rlm(...) FROM data GROUP BY station
     \item Reorganize files on disk based on station ID
     \item Apply function to each station ID file
 \end{enumerate}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{Factors to consider when switching to parallel programs}
+
+%C Parameters- things that can be controlled
+%C 
+
+\textbf{Parameters}
+\begin{itemize}
+    \item number of processor cores to use
+    \item size of each chunk
+    \item which functions to combine in one processing step
+\end{itemize}
+
+\textbf{Constraints}
+\begin{itemize}
+    \item number of cores available
+    \item network bandwidth
+    \item disk IO speed
+    \item available memory
+\end{itemize}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
