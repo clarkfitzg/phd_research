@@ -5,7 +5,10 @@ L1[label = "params = read.csv('params.csv')"];
 L2[label = "data = read.csv('data.csv')"];
 L3[label = "sim = simulate(params, 1000000)"];
 L4[label = "joined = merge(sim, data)"];
+X[style = invis ];
 
+L2 -> X[style = invis];
+X -> L4[style = invis];
 L1 -> L3 [label = " 1"];
 L2 -> L4 [label = " 2"];
 L3 -> L4 [label = " 3"];

@@ -161,6 +161,13 @@
 ============================================================
 
 
+ This is one reason that it's more appealing to do this in R
+ These are all essentially variants of `Map' in mapreduce
+
+
+============================================================
+
+
  Thanks to Duncan, Gabe Becker, Deb Nolan, Roger Peng
  Gabe Becker put on CRAN this week, worked on during his PhD
  Following motivated by DSI use case
@@ -180,13 +187,6 @@
  Explain each fig
  If there wasn't any overhead, parallel would always be better choice
  If you start up a process, you want to keep it around
-
-
-============================================================
-
-
- This is one reason that it's more appealing to do this in R
- These are all essentially variants of `Map' in mapreduce
 
 
 ============================================================

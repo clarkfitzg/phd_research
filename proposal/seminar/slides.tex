@@ -3,8 +3,8 @@
 % To produce pdf run:
 %   $ pdflatex beamer.tex 
 
-\documentclass{beamer}
-%\documentclass[handout]{beamer}
+%\documentclass{beamer}
+\documentclass[handout]{beamer}
 %\usetheme{Singapore}
 \usetheme{Boadilla}
 
@@ -226,7 +226,7 @@ by(data=single_day, INDICES = station, FUN = my_fd)
     \pause
 
     \begin{itemize}
-        \item For a single day with 377 million observations this can be
+        \item For a single day with 400 million observations this can be
             done on a single machine.
         \item A sensible way to run this in parallel is to \texttt{fork()}
             the process after reading in the data.
@@ -462,6 +462,33 @@ xbar = mean(partial_means)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Code Analysis}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]
+
+    \frametitle{Idiomatic R already expresses computation in a natural
+    parallel way through ``apply'' functions.}
+
+%C This is one reason that it's more appealing to do this in R
+%C These are all essentially variants of `Map' in mapreduce
+%C 
+
+\begin{verbatim}
+x = replicate(p, mean(rt(n_j, d)), simplify = FALSE)
+
+partialmeans = lapply(x, mean)
+
+by(data, INDICES = station, FUN = my_fd)
+\end{verbatim}
+
+\pause
+
+Also
+\begin{verbatim}
+apply, sapply, tapply, by, mapply, Map, vapply, outer
+\end{verbatim}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[fragile]
 
     \frametitle{CodeDepends is a tool for analyzing code as a data
@@ -562,31 +589,6 @@ Timings on a 3.4 GHz Intel i3 CPU
 %    \item $\sum n_j = n$ total data points
 %\end{itemize}
 %
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]
-
-    \frametitle{Idiomatic R already expresses computation in a natural
-    parallel way through ``apply'' functions.}
-
-%C This is one reason that it's more appealing to do this in R
-%C These are all essentially variants of `Map' in mapreduce
-%C 
-
-\begin{verbatim}
-x = replicate(p, mean(rt(n_j, d)), simplify = FALSE)
-
-partialmeans = lapply(x, mean)
-
-by(data, INDICES = station, FUN = my_fd)
-\end{verbatim}
-
-\pause
-
-Also
-\begin{verbatim}
-apply, sapply, tapply, by, mapply, Map, vapply, outer
-\end{verbatim}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
