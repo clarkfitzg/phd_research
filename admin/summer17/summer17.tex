@@ -111,12 +111,22 @@ Quantifying the gains and overhead associated with various forms of
 parallelism is important for identifying when and where it makes a
 difference in the final performance as measured by program run time.
 
-The following code:
+The initial program should be capable of automatically tuning the
+parallelism of a 
 
+will perform benchmarks using the microbenchmark
+package to determine 
+
+
+As an example, the below code calculates column medians for a random matrix
+of size $n \times p$. Fix $n$ and we can empirically show that
+parallelism with 2 cores based on process forking becomes more efficient
+than the serial version for $p < P$.
 \begin{verbatim}
+x = matrix(rnorm(n * p), nrow = n)
 
-apply(x, 1, 
-
+# Calculating the column medians is 
+column_medians = apply(x, 2, median)
 \end{verbatim}
 
 \bibliographystyle{plain}
