@@ -4,7 +4,7 @@ TEXFILE = summer17
 
 all: $(TEXFILE).pdf
 # $< references the first prerequisite
-$(TEXFILE).pdf: $(TEXFILE).tex ../citations.bib
+$(TEXFILE).pdf: $(TEXFILE).tex
 	pdflatex $<
 	bibtex $(TEXFILE).aux
 	pdflatex $<
