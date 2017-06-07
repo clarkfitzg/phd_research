@@ -14,7 +14,6 @@
 # every column as it's own file. Will this help at all?
 
 
-
 # This script is how I'd like to do my traffic data analysis preprocessing:
 
 alldata = read.csv("abstract_file_containing_all_data.csv")
