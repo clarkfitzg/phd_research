@@ -74,61 +74,69 @@
 \begin{document}
 
 \begin{center}
-    \large Automatic Parallelism Through Code Analysis 
+    \large Automatic Parallelism Through R Code Analysis 
 
     \normalsize Clark Fitzgerald
 \end{center}
 
 \vspace{3\baselineskip}
 
-For the 2017 Summer Research Application I plan to develop experimental software capable
-of transforming serial R programs into parallel. This software will take
-serial code and a description of the data to be analyzed in as an input,
-and output parallel code which uses multiprocessing. The resulting software
-will be made publicly available in a package called \texttt{autoparallel}.
+For Summer 2017 Research I plan to develop experimental software capable of
+converting serial R programs into parallel programs using multiprocessing.
+This automatic program tranformation differs from current parallel
+technologies which require the user to explicitly write code for a given
+parallel programming model. The software will have two major components:
+performance profiling, and programmatic transformation of the code into a
+parallel version.
 
-This is useful because it allows R programs to scale up and use more
-parallel computational resources available on modern machines. Since the
-program conversion happens automatically this allows us to build more
-intelligence into the system, freeing the user to think about the specifics
-of the problem and write higher level code, knowing that the system will do
-the best it can to find a way to parallelize the operation.
+% This is useful because it allows R programs to scale up and use the
+% computational resources available on modern machines. 
+% Since the
+% program conversion happens automatically this allows us to build more
+% intelligence into the system, freeing the user to think about the specifics
+% of the problem and write higher level code, knowing that the system will do
+% the best it can to find a way to parallelize the operation.
 
-Parallel opportunities can be found through analysis of base R's apply family of functions,
-which include \texttt{lapply, apply, sapply, tapply, by, mapply, Map, vapply, outer
-by, replicate}. These are all variants of the map reduce computational model which
-has been successful for implementing large scale parallel systems
+Opportunities for parallelism can be found through analysis of base R's
+apply family of functions, which include \texttt{lapply, apply, sapply,
+tapply, by, mapply, Map, vapply, outer, by, replicate}. These are all
+variants of the map step of the map reduce computational model which has
+been successful for implementing large scale parallel systems
 \cite{dean2008mapreduce}.
 
-I will apply the code analysis to several test cases including:
+Performance profiling measures how long the program spends executing each
+part of the code. The profiling together with estimates of the overhead
+associated with multiprocessing on the particular machine allow us to
+determine if it's actually worth it to parallelize a given R expression.
+
+I will apply the software to several test cases including:
 \begin{enumerate}
-    \item Basic algorithms
-    \item Statistical simulation
-    \item Analysis of grouped data
+    \item Basic algorithms operating on $n \times p$ matrices
+    \item Statistical simulations using \texttt{replicate()}
+    \item Practical data analysis on 100's of GB of traffic sensor data 
 \end{enumerate}
+To pass the tests the software should be capable of generating a parallel
+program that rivals the speed of a hand written parallel version. The
+practical data analysis use case will be the most challenging, because it's
+more difficult to profile and the physical organization of data on disk
+imposes additional constraints on how efficient the parallel version can
+be. Another general challenge is handling nested parallelism and complex
+control flow.
 
-Quantifying the gains and overhead associated with various forms of
-parallelism is important for identifying when and where it makes a
-difference in the final performance as measured by program run time.
+I expect to produce a working prototype of the system by the end of the
+summer.
 
-The initial program should be capable of automatically tuning the
-parallelism of a 
-
-will perform benchmarks using the microbenchmark
-package to determine 
-
-
-As an example, the below code calculates column medians for a random matrix
-of size $n \times p$. Fix $n$ and we can empirically show that
-parallelism with 2 cores based on process forking becomes more efficient
-than the serial version for $p < P$.
-\begin{verbatim}
-x = matrix(rnorm(n * p), nrow = n)
-
-# Calculating the column medians is 
-column_medians = apply(x, 2, median)
-\end{verbatim}
-
+% As an example, the below code calculates column medians for a random matrix
+% of size $n \times p$. Fix $n$ and we can empirically show that
+% parallelism with 2 cores based on process forking becomes more efficient
+% than the serial version for $p < P$.
+% \begin{verbatim}
+% x = matrix(rnorm(n * p), nrow = n)
+% 
+% # Calculating the column medians is 
+% column_medians = apply(x, 2, median)
+% \end{verbatim}
+% 
 \bibliographystyle{plain}
 \bibliography{../../citations,../../Rpackages} 
 
