@@ -85,7 +85,7 @@
 %\vspace{3\baselineskip}
 \hfill
 
-For Summer 2017 Research I plan to develop experimental software capable of
+For the summer of 2017 I plan to develop experimental software capable of
 converting serial R programs into parallel programs using multiprocessing.
 This automatic program tranformation differs from current parallel
 technologies which require the user to explicitly write code for a given
@@ -105,7 +105,7 @@ Opportunities for parallelism can be found through analysis of base R's
 apply family of functions using the CodeDepends package
 \cite{R-CodeDepends}. The apply family includes \texttt{lapply, apply, sapply,
 tapply, by, mapply, Map, vapply, outer, by, replicate}. These are all
-variants of the map step of the map reduce computational model which has
+variants of the map reduce computational model which has
 been successful for implementing large scale parallel systems
 \cite{dean2008mapreduce}. 
 
@@ -113,7 +113,7 @@ Performance profiling measures how long the program spends executing each
 part of the code. The profiling together with estimates of the overhead
 associated with multiprocessing on the particular machine allow us to
 determine if it's actually worth it to parallelize a given R expression.
-If the overhead is larger than the speed gain then that expression should
+If the parallel version is slower then the expression should
 be left in serial form.
 
 I will apply the software to several test cases including:
@@ -130,11 +130,11 @@ imposes additional constraints.
 Other general challenges include respecting R's dynamic scoping rules,
 avoiding nested parallelism, and handling complex control flow.
 
-I expect to produce a working prototype of the system that can handle basic
-algorithms and simulations by the end of the summer. This incorporates more
-intelligence into the system, freeing the user to write higher level code
-that addresses the specifics of their problem rather than the specifics of
-a particular parallel interface.
+By the end of the summer I expect to produce a working prototype of the
+system that can handle basic algorithms and simulations. The broader goal
+is to incorporate more intelligence into the system, freeing the user to
+write higher level code focused on their question rather than the specifics
+of a particular parallel interface.
 
 % As an example, the below code calculates column medians for a random matrix
 % of size $n \times p$. Fix $n$ and we can empirically show that
