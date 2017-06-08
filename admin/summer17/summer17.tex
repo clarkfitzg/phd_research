@@ -69,6 +69,9 @@
 \usepackage{etoolbox}
 \patchcmd{\thebibliography}{\section*{\refname}}{}{}{}
 
+% No page numbers
+\pagenumbering{gobble}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{document}
@@ -79,7 +82,8 @@
     \normalsize Clark Fitzgerald
 \end{center}
 
-\vspace{3\baselineskip}
+%\vspace{3\baselineskip}
+\hfill
 
 For Summer 2017 Research I plan to develop experimental software capable of
 converting serial R programs into parallel programs using multiprocessing.
@@ -98,16 +102,19 @@ parallel version.
 % the best it can to find a way to parallelize the operation.
 
 Opportunities for parallelism can be found through analysis of base R's
-apply family of functions, which include \texttt{lapply, apply, sapply,
+apply family of functions using the CodeDepends package
+\cite{R-CodeDepends}. The apply family includes \texttt{lapply, apply, sapply,
 tapply, by, mapply, Map, vapply, outer, by, replicate}. These are all
 variants of the map step of the map reduce computational model which has
 been successful for implementing large scale parallel systems
-\cite{dean2008mapreduce}.
+\cite{dean2008mapreduce}. 
 
 Performance profiling measures how long the program spends executing each
 part of the code. The profiling together with estimates of the overhead
 associated with multiprocessing on the particular machine allow us to
 determine if it's actually worth it to parallelize a given R expression.
+If the overhead is larger than the speed gain then that expression should
+be left in serial form.
 
 I will apply the software to several test cases including:
 \begin{enumerate}
@@ -118,13 +125,16 @@ I will apply the software to several test cases including:
 To pass the tests the software should be capable of generating a parallel
 program that rivals the speed of a hand written parallel version. The
 practical data analysis use case will be the most challenging, because it's
-more difficult to profile and the physical organization of data on disk
-imposes additional constraints on how efficient the parallel version can
-be. Another general challenge is handling nested parallelism and complex
-control flow.
+more difficult to profile, and the physical organization of data on disk
+imposes additional constraints.
+Other general challenges include respecting R's dynamic scoping rules,
+avoiding nested parallelism, and handling complex control flow.
 
-I expect to produce a working prototype of the system by the end of the
-summer.
+I expect to produce a working prototype of the system that can handle basic
+algorithms and simulations by the end of the summer. This incorporates more
+intelligence into the system, freeing the user to write higher level code
+that addresses the specifics of their problem rather than the specifics of
+a particular parallel interface.
 
 % As an example, the below code calculates column medians for a random matrix
 % of size $n \times p$. Fix $n$ and we can empirically show that
@@ -137,6 +147,9 @@ summer.
 % column_medians = apply(x, 2, median)
 % \end{verbatim}
 % 
+
+\hfill
+
 \bibliographystyle{plain}
 \bibliography{../../citations,../../Rpackages} 
 
