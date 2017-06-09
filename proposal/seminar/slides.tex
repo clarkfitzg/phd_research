@@ -3,8 +3,8 @@
 % To produce pdf run:
 %   $ pdflatex beamer.tex 
 
-%\documentclass{beamer}
-\documentclass[handout]{beamer}
+\documentclass{beamer}
+%\documentclass[handout]{beamer}
 %\usetheme{Singapore}
 \usetheme{Boadilla}
 
@@ -828,6 +828,42 @@ SELECT station, my_rlm(...) FROM data GROUP BY station
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
+    \frametitle{More Applications}
+
+    % TODO: Expand on each of these
+
+\begin{itemize}
+    \item Benford test on election campaign contribution data
+        %\cite{tam2007breaking}
+    \item Forest greenness satellite imagery (Andrew Latimer)
+    \item Simulating spread of disease (Nistara Randhawa)
+\end{itemize}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
+    \frametitle{Last summer I worked on the Distributed Data Structures in
+R (DDR) project}
+
+% Expert users had some valid critiques and suggestions
+% Bryan Lewis- Maybe R is all the API we need?
+
+\begin{itemize}
+    \item DDR Idea: an abstraction layer for distributed and parallel data structures
+    \item Bryan Lewis- Maybe R is all the API we need?
+    \item Patched Spark's R evaluator to handle binary data
+    \item Wrote a Spark / R interface representing an R list as a Spark
+        RDD
+    \item Capable of doing map type computations
+    \item created package: rddlist
+\end{itemize}
+
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+
     \frametitle{Follow up on the sensor example}
 
     The transformed program should:
@@ -901,21 +937,6 @@ SELECT station, my_rlm(...) FROM data GROUP BY station
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
 
-    \frametitle{More Applications}
-
-    % TODO: Expand on each of these
-
-\begin{itemize}
-    \item Benford test on election campaign contribution data
-        %\cite{tam2007breaking}
-    \item Forest greenness satellite imagery (Andrew Latimer)
-    \item Simulating spread of disease (Nistara Randhawa)
-\end{itemize}
-
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
-
     \frametitle{Steps in Code Analysis}
 
 \begin{itemize}
@@ -959,23 +980,6 @@ The CodeDepends package provides tools for detecting this.
     \item Compiled code potentially allows the use of shared memory threads
     \item May follow the OpenCL kernel model
 \end{enumerate}
-
-
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
-
-    \frametitle{Last summer I worked on the Distributed Data Structures in
-R (DDR) project}
-
-% Expert users had some valid critiques and suggestions
-% Bryan Lewis- Maybe R is all the API we need?
-
-\begin{itemize}
-    \item Relevant experience
-    \item Idea: an abstraction layer for distributed and parallel data structures
-    \item Created R lists and apply type functions to run on Spark
-\end{itemize}
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
