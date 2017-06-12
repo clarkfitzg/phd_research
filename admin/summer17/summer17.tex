@@ -77,15 +77,36 @@
 \begin{document}
 
 \begin{center}
-    \large Automatic Parallelism Through R Code Analysis 
+    \large Summer 2017 Research Application
 
     \normalsize Clark Fitzgerald
 \end{center}
 
-%\vspace{3\baselineskip}
+\emph{Indicate the dates when you will be here at UC Davis during the summer of
+2017.}
+
+I will be at UC Davis the entire summer.
+   
+\emph{Indicate whether you have other summer employment (TA / GSR  / Reader / Internship).
+If so, please indicate dates:}
+
+I will be a TA for STA 13 for the first summer session, June 26 - August 4.
+I will also be on active NSF fellowship status.
+   
+\emph{Please list one faculty member who can endorse your
+research activities (pertaining to point 1) during the summer of 2017.}
+
+Professor Duncan Temple Lang
+
+\newpage
+
+\begin{center}
+    \large Automatic Parallelism Through R Code Analysis 
+\end{center}
+
 \hfill
 
-For the summer of 2017 I plan to develop experimental software capable of
+In summer of 2017 I plan to develop experimental software capable of
 converting serial R programs into parallel programs using multiprocessing.
 This automatic program tranformation differs from current parallel
 technologies which require the user to explicitly write code for a given
@@ -118,7 +139,8 @@ be left in serial form.
 
 I will apply the software to several test cases including:
 \begin{enumerate}
-    \item Basic algorithms operating on $n \times p$ matrices
+    \item Basic algorithms operating on $n \times p$ matrices, such as
+        covariance calculations and nearest neighbors
     \item Statistical simulations using \texttt{replicate()}
     \item Practical data analysis on 100's of GB of traffic sensor data 
 \end{enumerate}
@@ -133,8 +155,7 @@ avoiding nested parallelism, and handling complex control flow.
 By the end of the summer I expect to produce a working prototype of the
 system that can handle basic algorithms and simulations. The broader goal
 is to incorporate more intelligence into the system, freeing the user to
-write higher level code focused on their question rather than the specifics
-of a particular parallel interface.
+write higher level code that also performs better.
 
 % As an example, the below code calculates column medians for a random matrix
 % of size $n \times p$. Fix $n$ and we can empirically show that
