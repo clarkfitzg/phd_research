@@ -37,7 +37,7 @@ nnpar = function(z, x)
     # I know I'm on a machine that can fork(), so I only pass the indices
     # in as arguments. This beats passing the entire matrix around.
     indices = parallel::splitIndices(nrow(z), 2)
-    force(x)
+    #force(x)
 
     # Translate the apply into mclapply
     dl = parallel::mclapply(indices, function(idx){
