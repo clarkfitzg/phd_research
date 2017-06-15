@@ -2,6 +2,9 @@
 
 Notes as I learn _programming on the language_.
 
+The definitive reference is the [R language
+reference](https://cran.r-project.org/doc/manuals/r-release/R-lang.html).
+
 ## Creating language objects
 
 ```{R}
@@ -49,6 +52,10 @@ e = expression(
 
 ```
 
+statements are "one line" in an R script, while expressions may contain
+multiple statements. Expressions act like lists. My general thought is to
+write most functions to operate on the statements, since they are 
+simpler. 
 
 ## `call` objects
 
@@ -86,3 +93,13 @@ doesn't make much sense in this context. Duncan claims that people rarely
 bother to manipulate these code objects, so it's not something that the R
 developers worry much about. In this case we need to index into the
 underlying object using `[[`.
+
+## Testing for Equality
+
+Use `identical`.
+
+```{R}
+> a = `<-`
+> identical(a, `<-`)
+[1] TRUE
+```
