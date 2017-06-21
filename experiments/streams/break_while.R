@@ -1,5 +1,7 @@
 # I'd like to process a file in chunks. This requires reading the file
 # until no more data is available.
+#
+# QUESTION: What is a better way of breaking out of this while loop?
 
 
 # Generate some example data
@@ -18,7 +20,8 @@ moreinput_env = environment()
 while(moreinput){
 
     tryCatch(chunk <- read.table(infile, nrows = rows_per_chunk),
-        error = function(e) assign("moreinput", FALSE, envir = moreinput_env)
+        #error = function(e) assign("moreinput", FALSE, envir = moreinput_env)
+        error = function(e) moreinput <<- FALSE
         )
 
     # Data processing code goes here
