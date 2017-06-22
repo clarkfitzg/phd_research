@@ -1,19 +1,12 @@
-LOAD DATA LOCAL INPATH 'tiny.txt' INTO TABLE pems;
+-- Debugging with a single table
+--LOAD DATA INPATH 'pems/' INTO TABLE pems;
 
--- Following 'Hadoop in Practice' by Holmes
-SET hive.exec.dynamic.partition=true;
-SET hive.exec.dynamic.partition.mode=nonstrict;
 
-INSERT INTO TABLE pemsstation
-PARTITION (station)
-SELECT timeperiod
-    , flow1, occupancy1, speed1
-    , flow2, occupancy2, speed2
-    , flow3, occupancy3, speed3
-    , flow4, occupancy4, speed4
-    , flow5, occupancy5, speed5
-    , flow6, occupancy6, speed6
-    , flow7, occupancy7, speed7
-    , flow8, occupancy8, speed8
-    , station
-FROM pems;
+-- This loads all the gz files into hive.
+-- Took 15 seconds. Presumably it didn't actually do decompression
+--LOAD DATA INPATH 'pems' INTO TABLE pems;
+
+-- Then I can check it with
+-- SELECT COUNT(*) FROM pems;
+-- Takes 49 seconds to return
+-- 2598111903

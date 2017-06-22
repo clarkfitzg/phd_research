@@ -1,5 +1,8 @@
 DROP TABLE pems;
-DROP TABLE pems2;
+DROP TABLE pemsstation;
+
+-- EXTERNAL and LOCATION creates the table external to hive
+-- in a specific location
 
 -- Only can see within hive
 CREATE TABLE pems (timeperiod STRING, station INT
@@ -13,10 +16,10 @@ CREATE TABLE pems (timeperiod STRING, station INT
     , flow8 INT, occupancy8 DOUBLE, speed8 DOUBLE
 )
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
-STORED AS TEXTFILE;
+STORED AS TEXTFILE
+LOCATION '/user/clarkf/pems';
 
 
--- External should create something on disk
 CREATE EXTERNAL TABLE pemsstation (timeperiod STRING
     , flow1 INT, occupancy1 DOUBLE, speed1 DOUBLE
     , flow2 INT, occupancy2 DOUBLE, speed2 DOUBLE
