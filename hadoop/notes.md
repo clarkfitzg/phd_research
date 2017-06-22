@@ -29,3 +29,6 @@ stdin / stdout to transfer the data via text. This means that both hive and
 Python have to specify the datatypes / parse the strings. It would seem
 better to pass the correct datatype over in Python. Maybe that is what
 Spark offers.
+
+This experiment was surprisingly successful. The next step is to run it on
+the whole data and time it. First I need to probably unzip these .gz files.
