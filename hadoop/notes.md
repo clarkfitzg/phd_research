@@ -28,7 +28,45 @@ It maps an arbitrary Python script onto the data. Curious that it uses
 stdin / stdout to transfer the data via text. This means that both hive and
 Python have to specify the datatypes / parse the strings. It would seem
 better to pass the correct datatype over in Python. Maybe that is what
-Spark offers.
+Spark offers. But R could do this reasonably well for a group by / apply
+operation.
 
 This experiment was surprisingly successful. The next step is to run it on
 the whole data and time it. First I need to probably unzip these .gz files.
+
+Thu Jun 22 16:57:25 PDT 2017
+
+Turns out unzipping is not necessary, hive figures that out for me. After I
+run the query using just a single days worth of data I see that 3096 new
+folders are created within the `pemsstation` directory, as expected based
+on how I made that table. A single 100 MB file took 38 minutes to 
+process, which is much slower than R.
+
+Hive made dynamic partitions based on the values that it saw for station. I
+think 3000 small files may be not ideal for Hadoop, it required changing
+some defaults in hive. Conventional wisdom is that larger files amortize some of the
+overhead associated with Hadoop.
+
+Takes 4.5 minutes to load the gzipped files from local into Hadoop, this
+time using hive rather than `hdfs dfs put`. Somehow I had deleted them
+earlier.
+
+The following code should increase the number of files I can have open. 
+
+```
+clarkf@hadoop ~/phd_research/hadoop (master)
+$ ulimit -n 4096
+clarkf@hadoop ~/phd_research/hadoop (master)
+$ ulimit -n
+4096
+```
+
+When I attempt to load the data with the partitions again the same error:
+```
+java.lang.OutOfMemoryError: unable to create new native thread.
+```
+
+OK. So maybe the next step is to try to execute this on Spark or map
+reduce.
+
+

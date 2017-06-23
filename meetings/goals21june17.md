@@ -5,5 +5,6 @@ doing case studies on parallelism. I need to actually do the PeMS data
 analysis on Hadoop / Spark, see how it works. Understand the operating
 characteristics of the systems.
 
-Specific goal #1: Implement PeMS analysis on Spark. Or possibly just
-preprocessing.
+Specific goal #1: Implement PeMS analysis on Hadoop / Spark. Or possibly
+use the systems to preprocess them and then run actual analysis with
+another tool.
