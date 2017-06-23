@@ -79,4 +79,6 @@ which supports selecting the partition. Along the way I saw something like
 Maybe should have tried this on a smaller subset first. Looking at top the
 java command seems to be using 2800 % CPU, which means at least something
 is happening. As it runs there is a `_temporary` file in the `pems_python`
-directory, so my arguments are likely correct.
+directory, so my arguments are likely correct. No way to check the time
+running interactively as I did here. Will check it when I come back this
+weekend.
