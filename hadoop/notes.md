@@ -69,4 +69,14 @@ java.lang.OutOfMemoryError: unable to create new native thread.
 OK. So maybe the next step is to try to execute this on Spark or map
 reduce.
 
+Fri Jun 23 08:55:55 PDT 2017
 
+Trying to partition using the Python interface. I used the `write.parquet`
+interface
+https://spark.apache.org/docs/1.6.0/api/python/pyspark.sql.html#pyspark.sql.DataFrameWriter.parquet
+which supports selecting the partition. Along the way I saw something like
+"too many partitions, falling back to sorting". This should be fine.
+Maybe should have tried this on a smaller subset first. Looking at top the
+java command seems to be using 2800 % CPU, which means at least something
+is happening. As it runs there is a `_temporary` file in the `pems_python`
+directory, so my arguments are likely correct.
