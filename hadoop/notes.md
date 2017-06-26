@@ -82,3 +82,54 @@ is happening. As it runs there is a `_temporary` file in the `pems_python`
 directory, so my arguments are likely correct. No way to check the time
 running interactively as I did here. Will check it when I come back this
 weekend.
+
+Mon Jun 26 08:07:39 PDT 2017
+
+Just came back. Seems that it failed right away. Some relevant logs:
+
+```
+# Initial command
+>>> pems.write.parquet("pems_python", mode="overwrite", partitionBy="station")
+
+...
+
+17/06/23 09:26:14 INFO ColumnChunkPageWriteStore: written 50B for [flow8] INT32: 2,386 values, 7B raw, 27B comp, 1 pages, encodings: [PLAIN, RLE, BIT_PACKED]
+17/06/23 09:26:14 INFO ColumnChunkPageWriteStore: written 50B for [occupancy8] DOUBLE: 2,386 values, 7B raw, 27B comp, 1 pages, encodings: [PLAIN, RLE, BIT_PACKED]
+17/06/23 09:26:14 INFO ColumnChunkPageWriteStore: written 50B for [speed8] DOUBLE: 2,386 values, 7B raw, 27B comp, 1 pages, encodings: [PLAIN, RLE, BIT_PACKED]
+17/06/23 09:26:14 WARN MemoryManager: Total allocation exceeds 95.00% (984,193,408 bytes) of heap memory
+Scaling row group sizes to 24.44% for 30 writers
+17/06/23 09:26:14 INFO SparkHadoopMapRedUtil: attempt_201706230903_0000_m_000021_0: Not committed because the driver did not authorize commit
+17/06/23 09:26:14 ERROR Utils: Aborting task
+java.lang.RuntimeException: Failed to commit task
+        at org.apache.spark.sql.execution.datasources.DynamicPartitionWriterContainer.org$apache$spark$sql$execution$datasources$DynamicPartitionWriterContainer$$commitTask$2(WriterContainer.scala
+:446)
+        at org.apache.spark.sql.execution.datasources.DynamicPartitionWriterContainer$$anonfun$writeRows$4.apply$mcV$sp(WriterContainer.scala:408)
+        at org.apache.spark.sql.execution.datasources.DynamicPartitionWriterContainer$$anonfun$writeRows$4.apply(WriterContainer.scala:343)
+        at org.apache.spark.sql.execution.datasources.DynamicPartitionWriterContainer$$anonfun$writeRows$4.apply(WriterContainer.scala:343)
+        at org.apache.spark.util.Utils$.tryWithSafeFinallyAndFailureCallbacks(Utils.scala:1277)
+        at org.apache.spark.sql.execution.datasources.DynamicPartitionWriterContainer.writeRows(WriterContainer.scala:409)
+        at org.apache.spark.sql.execution.datasources.InsertIntoHadoopFsRelation$$anonfun$run$1$$anonfun$apply$mcV$sp$3.apply(InsertIntoHadoopFsRelation.scala:148)
+        at org.apache.spark.sql.execution.datasources.InsertIntoHadoopFsRelation$$anonfun$run$1$$anonfun$apply$mcV$sp$3.apply(InsertIntoHadoopFsRelation.scala:148)
+        at org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:66)
+        at org.apache.spark.scheduler.Task.run(Task.scala:89)
+        at org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:227)
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+        at java.lang.Thread.run(Thread.java:745)
+Caused by: org.apache.spark.executor.CommitDeniedException: attempt_201706230903_0000_m_000021_0: Not committed because the driver did not authorize commit
+        at org.apache.spark.mapred.SparkHadoopMapRedUtil$.commitTask(SparkHadoopMapRedUtil.scala:131)
+        at org.apache.spark.sql.execution.datasources.BaseWriterContainer.commitTask(WriterContainer.scala:219)
+        at org.apache.spark.sql.execution.datasources.DynamicPartitionWriterContainer.org$apache$spark$sql$execution$datasources$DynamicPartitionWriterContainer$$commitTask$2(WriterContainer.scala
+:443)
+        ... 13 more
+17/06/23 09:26:14 WARN FileOutputCommitter: Could not delete hdfs://hadoop.ucdavis.edu:8020/user/clarkf/pems_python/_temporary/0/_temporary/attempt_201706230903_0000_m_000021_0
+17/06/23 09:26:14 ERROR DynamicPartitionWriterContainer: Task attempt attempt_201706230903_0000_m_000021_0 aborted.
+17/06/23 09:26:14 WARN TaskSetManager: Lost task 21.0 in stage 0.0 (TID 21, localhost): TaskCommitDenied (Driver denied task commit) for job: 0, partition: 21, attemptNumber: 0
+17/06/23 09:26:14 INFO TaskSchedulerImpl: Removed TaskSet 0.0, whose tasks have all completed, from pool 
+17/06/23 09:51:15 INFO BlockManagerInfo: Removed broadcast_1_piece0 on localhost:33805 in memory (size: 35.7 KB, free: 511.1 MB)
+17/06/23 09:51:15 INFO ContextCleaner: Cleaned accumulator 2
+>>> 
+```
+
+Why is heap memory only 1GB? This is exceedingly small. Nothing ended up
+being written to disk.
