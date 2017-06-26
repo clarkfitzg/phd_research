@@ -34,18 +34,19 @@ of the above characteristics and then output an hourly flow.
 # One station
 
 ```
-scp clarkf@poisson.ucdavis.edu:/scratch/clarkf/pems/stationID/402271.csv ~/data/402271.csv
+scp clarkf@poisson.ucdavis.edu:/scratch/clarkf/pems/stationID/400400.csv ~/data/station_400400.csv
 ```
 
-First focus on just station 402271. This is I80 west bound to San
-Francisco, just west of Davis. Highway 113 comes in here. There are 5
-lanes, and it drops to 3 lanes within the next mile.
+First focus on just station 400400. This is North bound 101 in San Jose
+just North of I680.
 
 
 ```{R}
 
 # Row names are a problem
-I80 = read.csv("~/data/402271.csv", row.names = NULL)
-I80 = I80[, -1]
+station = read.csv("~/data/station_400400.csv", row.names = NULL)
+station = station[, -1]
+
+
 
 ```
