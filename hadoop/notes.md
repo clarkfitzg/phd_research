@@ -133,3 +133,5 @@ Caused by: org.apache.spark.executor.CommitDeniedException: attempt_201706230903
 
 Why is heap memory only 1GB? This is exceedingly small. Nothing ended up
 being written to disk.
+
+Next step: Write a toy data frame to parquet, see if and how it works.
