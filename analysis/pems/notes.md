@@ -44,9 +44,25 @@ just North of I680.
 ```{R}
 
 # Row names are a problem
-station = read.csv("~/data/station_400400.csv", row.names = NULL)
-station = station[, -1]
+station = read.csv("~/data/station_400400.csv", row.names = NULL)[, -1]
 
+fd = traffic::fd_rlm(station$flow2, station$occupancy2)
 
+```
+
+Are these reasonable values? Since flow is in vehicles per 30 seconds this
+can be converted to hourly flows by multiplying by 120.
+
+For congested the flow drops to 0 around when the occupancy = 1, which is
+good. This constraint could also be enforced, for a more parsimonious /
+reasonable model.
+
+```{R}
+
+# For freeflow the max flow is 2628 - seems reasonable
+146 * 120 * 0.15
+
+# For congested the max flow is 1718 - not bad
+120 * (16.6 - 15.2 * 0.15)
 
 ```
