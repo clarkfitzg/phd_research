@@ -66,3 +66,9 @@ reasonable model.
 120 * (16.6 - 15.2 * 0.15)
 
 ```
+
+Running the full analysis in parallel on 20 cores takes just over an hour.
+I believe that the read from the text file takes longer than fitting a
+robust linear model. This could be avoided by better serialization for the
+intermediate step of grouping by station.
+

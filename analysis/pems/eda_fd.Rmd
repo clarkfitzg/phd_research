@@ -1,0 +1,67 @@
+Mon Jun 26 16:40:56 PDT 2017
+
+A little EDA on the new fd data.
+
+```{R}
+
+load("fds.RData")
+
+errors = sapply(fds, is, "try-error")
+
+mean(errors)
+length(fds)
+
+```
+
+Processed 3720 stations, and just over half resulted in errors.
+
+I'll bind these together in a 3d array representing the low occupancy / free flowing traffic.
+
+```{R}
+
+fds = fds[!errors]
+
+firstone = fds[[1]]
+
+get_freeflow = function(x) as.vector(x[[2]]$low_occupancy)
+
+freeflow = do.call(c, lapply(fds, get_freeflow))
+
+freeflow = array(freeflow
+    , dim = c(2, 3, length(fds))
+    , dimnames = list(coefficient = c("intercept", "slope")
+                    , type = c("estimate", "stderr", "tvalue")
+                    , station = allfiles[!errors]
+                    )
+    )
+
+freeflow[, , 1:2]
+
+freeflow["slope", ]
+
+```
+
+Now for a little plotting.
+
+
+```{R}
+
+freeflow2 = freeflow[, , freeflow["slope", "stderr", ] < 0.1]
+
+hist(freeflow2["slope", "estimate", ])
+
+hist(freeflow2["slope", "stderr", ])
+
+hist(freeflow2["intercept", "estimate", ])
+
+hist(freeflow2["intercept", "stderr", ])
+
+```
+
+Filter out those with large standard errors- likely came from too few
+observations.
+
+Surprising that the slopes vary so much. Speed limits aren't that
+different. Could it be caused by an excess of zeros?
+
+Next: try clustering with kmeans or other.
