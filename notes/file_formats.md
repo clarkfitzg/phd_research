@@ -16,6 +16,7 @@ in place.
 | XML       | 1996          | hierarchical, plain text, supports schema and validation
 | JSON      | early 2000's  | hierarchical, plain text, simple
 | HDF5      | early 1990's  | array oriented, binary, sophisticated, includes software
+| Parquet   | 2013          | column oriented, Hadoop
 
 
 # Data Formats
@@ -69,12 +70,17 @@ binary form and scales up to compute clusters.
 
 netCDF uses HDF5. 
 
+### Parquet
+
+Parquet represents 
+Based on the storage format described in Google's 2010 Dremel paper.
+
 
 # Storage Mechanisms
 
 ### Cloud storage
 
-For typical data science applications it makes a lot of sense to pay a
+For typical data science applications it can make sense to pay a
 service to physically store large amounts of data. As of June 2017, Amazon
 S3 costs around $20 / month to store 1 terabyte of data in standard
 storage, and $4 / month in "Glacier Storage".  I have a few rows stored at
