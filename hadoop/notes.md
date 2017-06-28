@@ -135,3 +135,13 @@ Why is heap memory only 1GB? This is exceedingly small. Nothing ended up
 being written to disk.
 
 Next step: Write a toy data frame to parquet, see if and how it works.
+
+```
+
+first10 = sqlContext.sql("SELECT * FROM pems LIMIT 10")
+
+first10.write.parquet("pems_python", mode="overwrite", partitionBy="station")
+
+```
+
+This works with no problem.
