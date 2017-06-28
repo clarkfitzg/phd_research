@@ -65,3 +65,38 @@ Surprising that the slopes vary so much. Speed limits aren't that
 different. Could it be caused by an excess of zeros?
 
 Next: try clustering with kmeans or other.
+
+Tue Jun 27 16:06:42 PDT 2017
+
+Lets see if I can find the metadata. It shows up for each station page like
+this:
+
+```
+Roadway Information (from TSN)
+Road Width  48 ft
+Lane Width  12.0 ft
+Inner Shoulder Width    5 ft
+Inner Shoulder Treated Width    2 ft
+Outer Shoulder Width    10 ft
+Outer Shoulder Treated Width    10 ft
+Design Speed Limit  65 mph
+Functional Class    Principal Arterial W/ C/L Prin Arterial
+Inner Median Type   Ditch
+Inner Median Width  99 ft
+Terrain Flat
+Population  Urbanized
+Barrier Guardrail in Median Both Roadway
+Surface Concrete
+Roadway Use No Special Features
+```
+
+
+```{R}
+
+library(rgdal)
+
+s1 = rgdal::readOGR("/home/clark/data/pems/shn2016")
+
+s2 = rgdal::readOGR("/home/clark/data/pems/shn2016")
+
+```
