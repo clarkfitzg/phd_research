@@ -1,0 +1,88 @@
+Thu Jun 29 08:53:41 PDT 2017
+
+Clustering
+
+```{R}
+
+load("fds.RData")
+errors = sapply(fds, is, "try-error")
+fds = fds[!errors]
+
+# 1040 only fit the intercept, so grab out the coefficients
+fd_coef = lapply(fds, function(x) rbind(x[[2]][[1]], x[[2]][[2]]))
+
+# Removes 2 stations
+has_all_coef = sapply(fd_coef, function(x) nrow(x) == 4)
+
+fd_coef = fd_coef[has_all_coef]
+
+```
+
+Each station is converted to a vector with the following values:
+- Intercept low occupancy
+- Intercept high occupancy
+- Slope low occupancy
+- Slope high occupancy
+
+Then each column will be standardized to have mean 0 and standard deviation
+1.
+
+
+```{R}
+X = lapply(fd_coef, function(y) y[, "Value"])
+X = do.call(rbind, X)
+X = scale(X)
+```
+
+Now we can apply a clustering algorithm and inspect sums of squares to get
+something like the variance explained by the model, a la R2.
+
+
+```{R}
+
+k = 2:10
+
+R2 = function(fit) fit[["betweenss"]] / fit[["totss"]]
+
+one_k = function(k, .X = X, nreps = 100)
+{
+    fits = replicate(nreps, kmeans(.X, k), simplify = FALSE)
+    explained = sapply(fits, R2)
+    list(fits = fits, explained = explained)
+}
+
+set.seed(238957)
+allfits = lapply(k, one_k)
+
+names(allfits) = k
+
+explained = lapply(allfits, `[[`, "explained")
+explained = do.call(rbind, explained)
+
+best = apply(explained, 1, max)
+
+plot(k, best, ylab = "Variance Explained", xlab = "k, number of clusters"
+    , main = "Varying k in kmeans clustering"
+    )
+
+```
+
+Variance explained increases from 0.27 to 0.76 when going from k = 3 to
+k = 4 and increases marginally thereafter. This provides evidence that
+4 distinct clusters exist in the data. 
+
+The above approach fits many models for each value of k, choosing different
+initial starting points each time. This step is very important for this
+data, since only 3 out of 100 fits result in a value of 0.76, all the
+others are around 0.33.
+
+What parameters of the fundamental diagram do the centroids correspond to?
+
+```{R}
+
+e4 = allfits[["4"]][["explained"]]
+
+fit = allfits[["4"]][["fits"]][[which.max(e4)]]
+
+
+```
