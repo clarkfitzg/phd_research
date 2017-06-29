@@ -8,13 +8,40 @@ load("fds.RData")
 errors = sapply(fds, is, "try-error")
 fds = fds[!errors]
 
+params = function(fds) lapply(fds, function(x) rbind(x[[2]][[1]], x[[2]][[2]]))
+
 # 1040 only fit the intercept, so grab out the coefficients
-fd_coef = lapply(fds, function(x) rbind(x[[2]][[1]], x[[2]][[2]]))
+fd_coef = params(fds)
 
 # Removes 2 stations
 has_all_coef = sapply(fd_coef, function(x) nrow(x) == 4)
 
-fd_coef = fd_coef[has_all_coef]
+fds = fds[has_all_coef]
+
+
+# Throw out those with excessive std. error
+se_high = sapply(fds, function(x) x[[2]][[1]][1, 2])
+
+se_low = sapply(fds, function(x) x[[2]][[2]][1, 2])
+
+fds = fds[(se_high < 2) & (!is.na(se_high))
+            & (se_low < 0.015) & (!is.na(se_low))
+            ]
+
+# bring in the station ID
+for(i in seq_along(fds)){
+    fname = fds[[i]][[1]]
+    station_id = as.integer(gsub(".*([0-9]{6})\\.csv", "\\1", fname))
+    fds[[i]][[1]] = station_id
+    names(fds[[i]]) = c("station", "parameters")
+}
+
+# Discovered below in kmeans
+outlier_stations = c(400000, 404922)
+
+stations = sapply(fds, `[[`, "station")
+
+fds = fds[!(stations %in% outlier_stations)]
 
 ```
 
@@ -29,9 +56,12 @@ Then each column will be standardized to have mean 0 and standard deviation
 
 
 ```{R}
+
+fd_coef = params(fds)
 X = lapply(fd_coef, function(y) y[, "Value"])
 X = do.call(rbind, X)
 X = scale(X)
+
 ```
 
 Now we can apply a clustering algorithm and inspect sums of squares to get
@@ -84,5 +114,11 @@ e4 = allfits[["4"]][["explained"]]
 
 fit = allfits[["4"]][["fits"]][[which.max(e4)]]
 
+fit$size
+
+fds[fit$cluster == 4]
 
 ```
+
+This seems unreliable. I keep getting a single station in one group,
+which is not good. Not sure how to fix it.
