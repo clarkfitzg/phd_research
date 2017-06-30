@@ -37,7 +37,7 @@ for(i in seq_along(fds)){
 }
 
 # Discovered below in kmeans
-outlier_stations = c(400000, 404922)
+outlier_stations = c(404922, 400000, 400261)
 
 stations = sapply(fds, `[[`, "station")
 
@@ -60,7 +60,53 @@ Then each column will be standardized to have mean 0 and standard deviation
 fd_coef = params(fds)
 X = lapply(fd_coef, function(y) y[, "Value"])
 X = do.call(rbind, X)
-X = scale(X)
+X_ref = scale(X)
+
+zscore_one = function(x_reference, na.rm)
+{
+# Transfer to and from Z scores
+
+    sigma = sd(x_reference, na.rm = na.rm)
+    mu = mean(x_reference, na.rm = na.rm)
+    
+    function(x, direction)
+    {
+        if(direction == "scale")
+            return((x - mu) / sigma)
+        if(direction == "unscale")
+            return(sigma * x + mu)
+    }
+}
+
+
+zscore = function(x_ref_matrix, na.rm = TRUE)
+{
+    p = ncol(x_ref_matrix)
+    transformers = apply(x_ref_matrix, 2, zscore_one, na.rm = na.rm)
+
+    function(x, direction = "scale")
+    {
+        if(ncol(x) != p)
+            stop("Expected a matrix like object with ", p, " columns.")
+        
+        output = list(p)
+        for(i in seq(p)){
+            output[[i]] = transformers[[i]](x[, i], direction)
+        }
+        do.call(cbind, output)
+    }
+}
+
+
+ztransformer = zscore(X)
+
+Xz = ztransformer(X)
+
+mean(Xz - X_ref)
+
+Xback = ztransformer(Xz, "unscale")
+
+mean(X - Xback)
 
 ```
 
@@ -74,7 +120,7 @@ k = 2:10
 
 R2 = function(fit) fit[["betweenss"]] / fit[["totss"]]
 
-one_k = function(k, .X = X, nreps = 100)
+one_k = function(k, .X = Xz, nreps = 100)
 {
     fits = replicate(nreps, kmeans(.X, k), simplify = FALSE)
     explained = sapply(fits, R2)
@@ -97,28 +143,53 @@ plot(k, best, ylab = "Variance Explained", xlab = "k, number of clusters"
 
 ```
 
-Variance explained increases from 0.27 to 0.76 when going from k = 3 to
-k = 4 and increases marginally thereafter. This provides evidence that
-4 distinct clusters exist in the data. 
-
 The above approach fits many models for each value of k, choosing different
-initial starting points each time. This step is very important for this
-data, since only 3 out of 100 fits result in a value of 0.76, all the
-others are around 0.33.
+initial starting points each time. 
+
+
+```{R}
+
+e3 = allfits[["3"]][["explained"]]
+
+fit = allfits[["3"]][["fits"]][[which.max(e3)]]
+
+allfits[["3"]][["fits"]][[3]]$size
+
+# If this is near 1 then R^2 isn't changing, so the clusters are probably
+# the same
+mean(explained["3", ] == max(explained["3", ]))
+```
+
+The one with 3 clusters is appealing because 3 clusters should be
+straightforward to interpret. It also seems robust to choice of initial
+points.
 
 What parameters of the fundamental diagram do the centroids correspond to?
 
 ```{R}
 
-e4 = allfits[["4"]][["explained"]]
+centers = ztransformer(fit$centers, "unscale")
 
-fit = allfits[["4"]][["fits"]][[which.max(e4)]]
+colnames(centers) = colnames(fit$centers)
 
-fit$size
-
-fds[fit$cluster == 4]
+centers
 
 ```
 
-This seems unreliable. I keep getting a single station in one group,
-which is not good. Not sure how to fix it.
+Lets plot the fundamental diagrams these correspond to.
+
+
+```{R}
+
+plot1fd = function(coefs, ...)
+{
+    abline(coef = coefs[1:2], ...)
+    abline(coef = coefs[3:4], ...)
+}
+
+plot(c(0, 1), c(0, 20), type = "n")
+plot1fd(centers[1, ], col = 1)
+plot1fd(centers[2, ], col = 2)
+plot1fd(centers[3, ], col = 3)
+
+```
