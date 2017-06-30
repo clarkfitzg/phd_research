@@ -202,12 +202,12 @@ means that these stations probably have lower speed limits. Maybe they also
 have stop lights? This could very much influence things.
 
 The next step is to plot these stations / clusters on a physical map to see
-where each occurs. I'll save that for a new program.
+where each occurs. I'll save that for another document.
 
 ```{R}
 
 station_cluster = data.frame(
-    station = sapply(fds, `[[`, "station")
+    ID = sapply(fds, `[[`, "station")
     , cluster = fit$cluster
 )
 
