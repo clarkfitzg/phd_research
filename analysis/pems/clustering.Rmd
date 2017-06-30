@@ -192,4 +192,25 @@ plot1fd(centers[1, ], col = 1)
 plot1fd(centers[2, ], col = 2)
 plot1fd(centers[3, ], col = 3)
 
+fit$size
+
+```
+
+The third (green) cluster is clearly the strange one. Yet 343 / 1746, or
+20% of the stations fall here. The uncongested slope is not as steep, which
+means that these stations probably have lower speed limits. Maybe they also
+have stop lights? This could very much influence things.
+
+The next step is to plot these stations / clusters on a physical map to see
+where each occurs. I'll save that for a new program.
+
+```{R}
+
+station_cluster = data.frame(
+    station = sapply(fds, `[[`, "station")
+    , cluster = fit$cluster
+)
+
+write.csv(station_cluster, "station_cluster.csv", row.names = FALSE)
+
 ```
