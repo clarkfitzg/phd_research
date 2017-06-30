@@ -4,6 +4,9 @@ Clustering
 
 ```{R}
 
+stations = read.table("~/data/pems/stations.txt", header = TRUE
+                      , sep = "\t", quote = "")
+
 load("fds.RData")
 errors = sapply(fds, is, "try-error")
 fds = fds[!errors]
@@ -39,9 +42,11 @@ for(i in seq_along(fds)){
 # Discovered below in kmeans
 outlier_stations = c(404922, 400000, 400261)
 
-stations = sapply(fds, `[[`, "station")
+fd_stations = sapply(fds, `[[`, "station")
 
-fds = fds[!(stations %in% outlier_stations)]
+MLstations = stations$ID[stations$Type == "ML"]
+
+fds = fds[!(fd_stations %in% outlier_stations) & (fd_stations %in% MLstations)]
 
 ```
 
@@ -58,8 +63,13 @@ Then each column will be standardized to have mean 0 and standard deviation
 ```{R}
 
 fd_coef = params(fds)
+
 X = lapply(fd_coef, function(y) y[, "Value"])
 X = do.call(rbind, X)
+
+colnames(X) = c("congested_intercept", "congested_slope"
+        , "free_intercept", "free_slope")
+
 X_ref = scale(X)
 
 zscore_one = function(x_reference, na.rm)
@@ -158,6 +168,7 @@ allfits[["3"]][["fits"]][[3]]$size
 # If this is near 1 then R^2 isn't changing, so the clusters are probably
 # the same
 mean(explained["3", ] == max(explained["3", ]))
+
 ```
 
 The one with 3 clusters is appealing because 3 clusters should be
@@ -196,10 +207,8 @@ fit$size
 
 ```
 
-The third (green) cluster is clearly the strange one. Yet 343 / 1746, or
-20% of the stations fall here. The uncongested slope is not as steep, which
-means that these stations probably have lower speed limits. Maybe they also
-have stop lights? This could very much influence things.
+This is interesting. They all have around the same uncongested slope, and
+only differ in the slope for the congested area.
 
 The next step is to plot these stations / clusters on a physical map to see
 where each occurs. I'll save that for another document.
@@ -209,7 +218,14 @@ where each occurs. I'll save that for another document.
 station_cluster = data.frame(
     ID = sapply(fds, `[[`, "station")
     , cluster = fit$cluster
+    , X
 )
+
+station_cluster = merge(station_cluster
+        , stations[, c("ID", "Latitude", "Longitude"
+                        , "Type", "Lanes", "Fwy", "Dir")]
+        )
+
 
 write.csv(station_cluster, "station_cluster.csv", row.names = FALSE)
 

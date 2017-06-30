@@ -17,7 +17,7 @@ station_cluster = merge(station_cluster
 # corresponds to on ramp, are in the strange 3rd cluster. Also detectors of
 # type "FR". Behavior on an on ramp should be quite a bit different than on
 # the normal freeway. So I should go back and restrict the clustering just
-# to the mainline stations.
+# to stations of type "ML".
 
 cluster3 = station_cluster$cluster == 3
 s12 = station_cluster[!cluster3, ]
