@@ -1,8 +1,14 @@
 // Adds the points to an existing leaflet variable called 'map'
 
 // From https://github.com/pointhi/leaflet-color-markers
-var violetIcon = new L.Icon({
-  iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png'
+var redIcon = new L.Icon({
+  iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png'
+  , iconSize: [13, 21]
+  , iconAnchor: [6, 21],
+});
+
+var yellowIcon = new L.Icon({
+  iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png'
   , iconSize: [13, 21]
   , iconAnchor: [6, 21],
 });
@@ -13,13 +19,8 @@ var orangeIcon = new L.Icon({
   , iconAnchor: [6, 21],
 });
 
-var greenIcon = new L.Icon({
-  iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png'
-  , iconSize: [13, 21]
-  , iconAnchor: [6, 21],
-});
 
-var clusterColors = {1: violetIcon, 2: orangeIcon, 3:greenIcon};
+var clusterColors = {1: orangeIcon, 2: redIcon, 3: yellowIcon};
 
 
 function addMarker(station, i, ndigs = 2) {

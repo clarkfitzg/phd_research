@@ -206,10 +206,12 @@ plot(c(0, 1), c(0, 20), type = "n"
      , ylab = "flow per 30 second interval"
      , main = "Fundamental Diagrams for Cluster Centroids"
      )
-plot1fd(centers[1, ], col = 2)
-plot1fd(centers[2, ], col = 3)
-plot1fd(centers[3, ], col = 4)
-legend("topright", legend = c("Cluster 1", "Cluster 2", "Cluster 3"), lty = 1, col = 2:4)
+plot1fd(centers[1, ], col = "orange")
+plot1fd(centers[2, ], col = "red")
+plot1fd(centers[3, ], col = "yellow")
+legend("topright", legend = c("Cluster 1", "Cluster 2", "Cluster 3")
+       , lty = 1, col = c("orange", "red", "yellow")
+       )
 dev.off()
 
 fit$size
