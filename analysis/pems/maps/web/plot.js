@@ -22,7 +22,7 @@ var greenIcon = new L.Icon({
 var clusterColors = {1: violetIcon, 2: orangeIcon, 3:greenIcon};
 
 
-function addMarker(i, ndigs = 2) {
+function addMarker(station, i, ndigs = 2) {
 
     var m = L.marker([station.Latitude[i], station.Longitude[i]]
             , {icon: clusterColors[station.cluster[i]]}).addTo(map);
@@ -50,9 +50,10 @@ xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
         var station = JSON.parse(xhttp.responseText);
         for (i = 0; i < station.ID.length; i++) {
-            addMarker(i)
+            addMarker(station, i)
         }
     }
 };
 
 xhttp.open("GET", "station.json", true);
+xhttp.send();
