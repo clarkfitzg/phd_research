@@ -1,0 +1,241 @@
+#Thu Jun 29 08:53:41 PDT 2017
+#
+#Clustering
+#
+#```{R}
+
+library(methods)
+
+
+stations = read.table("~/data/pems/stations.txt", header = TRUE
+                      , sep = "\t", quote = "")
+
+load("fds.RData")
+errors = sapply(fds, is, "try-error")
+fds = fds[!errors]
+
+params = function(fds) lapply(fds, function(x) rbind(x[[2]][[1]], x[[2]][[2]]))
+
+# 1040 only fit the intercept, so grab out the coefficients
+fd_coef = params(fds)
+
+# Removes 2 stations
+has_all_coef = sapply(fd_coef, function(x) nrow(x) == 4)
+
+fds = fds[has_all_coef]
+
+
+# Throw out those with excessive std. error
+se_high = sapply(fds, function(x) x[[2]][[1]][1, 2])
+
+se_low = sapply(fds, function(x) x[[2]][[2]][1, 2])
+
+fds = fds[(se_high < 2) & (!is.na(se_high))
+            & (se_low < 0.015) & (!is.na(se_low))
+            ]
+
+# bring in the station ID
+for(i in seq_along(fds)){
+    fname = fds[[i]][[1]]
+    station_id = as.integer(gsub(".*([0-9]{6})\\.csv", "\\1", fname))
+    fds[[i]][[1]] = station_id
+    names(fds[[i]]) = c("station", "parameters")
+}
+
+# Discovered below in kmeans
+outlier_stations = c(404922, 400000, 400261)
+
+fd_stations = sapply(fds, `[[`, "station")
+
+MLstations = stations$ID[stations$Type == "ML"]
+
+fds = fds[!(fd_stations %in% outlier_stations) & (fd_stations %in% MLstations)]
+
+#```
+#
+#Each station is converted to a vector with the following values:
+#- Intercept low occupancy
+#- Intercept high occupancy
+#- Slope low occupancy
+#- Slope high occupancy
+#
+#Then each column will be standardized to have mean 0 and standard deviation
+#1.
+#
+#
+#```{R}
+
+fd_coef = params(fds)
+
+X = lapply(fd_coef, function(y) y[, "Value"])
+X = do.call(rbind, X)
+
+colnames(X) = c("congested_intercept", "congested_slope"
+        , "free_intercept", "free_slope")
+
+X_ref = scale(X)
+
+zscore_one = function(x_reference, na.rm)
+{
+# Transfer to and from Z scores
+
+    sigma = sd(x_reference, na.rm = na.rm)
+    mu = mean(x_reference, na.rm = na.rm)
+    
+    function(x, direction)
+    {
+        if(direction == "scale")
+            return((x - mu) / sigma)
+        if(direction == "unscale")
+            return(sigma * x + mu)
+    }
+}
+
+
+zscore = function(x_ref_matrix, na.rm = TRUE)
+{
+    p = ncol(x_ref_matrix)
+    transformers = apply(x_ref_matrix, 2, zscore_one, na.rm = na.rm)
+
+    function(x, direction = "scale")
+    {
+        if(ncol(x) != p)
+            stop("Expected a matrix like object with ", p, " columns.")
+        
+        output = list(p)
+        for(i in seq(p)){
+            output[[i]] = transformers[[i]](x[, i], direction)
+        }
+        do.call(cbind, output)
+    }
+}
+
+
+ztransformer = zscore(X)
+
+Xz = ztransformer(X)
+
+mean(Xz - X_ref)
+
+Xback = ztransformer(Xz, "unscale")
+
+mean(X - Xback)
+
+#```
+#
+#Now we can apply a clustering algorithm and inspect sums of squares to get
+#something like the variance explained by the model, a la R2.
+#
+#
+#```{R}
+
+k = 2:10
+
+R2 = function(fit) fit[["betweenss"]] / fit[["totss"]]
+
+one_k = function(k, .X = Xz, nreps = 100)
+{
+    fits = replicate(nreps, kmeans(.X, k), simplify = FALSE)
+    explained = sapply(fits, R2)
+    list(fits = fits, explained = explained)
+}
+
+set.seed(238957)
+allfits = lapply(k, one_k)
+
+names(allfits) = k
+
+explained = lapply(allfits, `[[`, "explained")
+explained = do.call(rbind, explained)
+
+best = apply(explained, 1, max)
+
+plot(k, best, ylab = "Variance Explained", xlab = "k, number of clusters"
+    , main = "Varying k in kmeans clustering"
+    )
+
+#```
+#
+#The above approach fits many models for each value of k, choosing different
+#initial starting points each time. 
+#
+#
+#```{R}
+
+e3 = allfits[["3"]][["explained"]]
+
+fit = allfits[["3"]][["fits"]][[which.max(e3)]]
+
+allfits[["3"]][["fits"]][[3]]$size
+
+# If this is near 1 then R^2 isn't changing, so the clusters are probably
+# the same
+mean(explained["3", ] == max(explained["3", ]))
+
+#```
+#
+#The one with 3 clusters is appealing because 3 clusters should be
+#straightforward to interpret. It also seems robust to choice of initial
+#points.
+#
+#What parameters of the fundamental diagram do the centroids correspond to?
+#
+#```{R}
+
+centers = ztransformer(fit$centers, "unscale")
+
+colnames(centers) = colnames(fit$centers)
+
+centers
+
+#```
+#
+#Lets plot the fundamental diagrams these correspond to.
+#
+#```{R}
+
+plot1fd = function(coefs, ...)
+{
+    abline(coef = coefs[1:2], ...)
+    abline(coef = coefs[3:4], ...)
+}
+
+png("maps/web/cluster_fd.png")
+plot(c(0, 1), c(0, 20), type = "n"
+     , xlab = "occupancy"
+     , ylab = "flow per 30 second interval"
+     , main = "Fundamental Diagrams for Cluster Centroids"
+     )
+plot1fd(centers[1, ], col = 2)
+plot1fd(centers[2, ], col = 3)
+plot1fd(centers[3, ], col = 4)
+legend("topright", legend = c("Cluster 1", "Cluster 2", "Cluster 3"), lty = 1, col = 2:4)
+dev.off()
+
+fit$size
+
+#```
+#
+#This is interesting. They all have around the same uncongested slope, and
+#only differ in the slope for the congested area.
+#
+#The next step is to plot these stations / clusters on a physical map to see
+#where each occurs. I'll save that for another document.
+#
+#```{R}
+
+station_cluster = data.frame(
+    ID = sapply(fds, `[[`, "station")
+    , cluster = fit$cluster
+    , X
+)
+
+station_cluster = merge(station_cluster
+        , stations[, c("ID", "Latitude", "Longitude"
+                        , "Type", "Lanes", "Fwy", "Dir")]
+        )
+
+
+write.csv(station_cluster, "station_cluster.csv", row.names = FALSE)
+
+#```
