@@ -16,9 +16,23 @@
 </head>
 <body>
 
+    <br>
+Analysis currently consists of the following steps:
+<ol>
+  <li>Download 10 months worth of 30 second PEMS sensor data for the Bay Area, about 130 GB.</li>
+  <li>Separate it into groups based on station, focusing only on mainline stations (about 1500).</li>
+  <li>Fit a (naive) fundamental diagram by using two robust linear models for each station: One for data with occupancy less than 0.15 and one for greater. </li>
+  <li>Note: Using millions of data points per station allows constructing tight confidence intervals for the parameters.</li>
+  <li>Then these 4 parameters: slope and intercept for congested and uncongested, were used as the inputs to a kmeans clustering.</li>
+  <li>k = 3 was chosen for k means based on comparing the between cluster sum of squares with total sum of squares for various values of k and parameter tuning.</li>
+  <li>Resulting clusters and parameters are plotted on the map below.</li>
+</ol>
+
+    <br>
     The image below shows the centroids of the clusters. 
     <br>
     These correspond to the "typical" fundamental diagram from within each cluster.
+    <br>
     <br>
 
     <img src="cluster_fd.png" alt="Cluster Fundamental Diagram">
