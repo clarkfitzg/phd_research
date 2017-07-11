@@ -206,11 +206,11 @@ plot(c(0, 1), c(0, 20), type = "n"
      , ylab = "flow per 30 second interval"
      , main = "Fundamental Diagrams for Cluster Centroids"
      )
-plot1fd(centers[1, ], col = "orange")
+plot1fd(centers[1, ], col = "purple")
 plot1fd(centers[2, ], col = "red")
-plot1fd(centers[3, ], col = "yellow")
+plot1fd(centers[3, ], col = "green")
 legend("topright", legend = c("Cluster 1", "Cluster 2", "Cluster 3")
-       , lty = 1, col = c("orange", "red", "yellow")
+       , lty = 1, col = c("purple", "red", "green")
        )
 dev.off()
 

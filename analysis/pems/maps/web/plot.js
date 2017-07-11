@@ -7,20 +7,20 @@ var redIcon = new L.Icon({
   , iconAnchor: [6, 21],
 });
 
-var yellowIcon = new L.Icon({
-  iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png'
+var greenIcon = new L.Icon({
+  iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png'
   , iconSize: [13, 21]
   , iconAnchor: [6, 21],
 });
 
-var orangeIcon = new L.Icon({
-  iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png'
+var violetIcon = new L.Icon({
+  iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png'
   , iconSize: [13, 21]
   , iconAnchor: [6, 21],
 });
 
 
-var clusterColors = {1: orangeIcon, 2: redIcon, 3: yellowIcon};
+var clusterColors = {1: violetIcon, 2: redIcon, 3: greenIcon};
 
 
 function addMarker(station, i, ndigs = 2) {
