@@ -11,6 +11,10 @@ loaded, which is good.
 
 time spark-submit pems_to_parquet.py
 
+Fails after 2+ hours. Problem seems to be "(Too many open files)"
+Likely several thousand files are open at one time.
+
+
 """
 
 
@@ -27,12 +31,10 @@ sqlContext.setConf("spark.sql.parquet.compression.codec", "snappy")
 # Testing
 #pems = sqlContext.sql("SELECT * FROM pems LIMIT 10")
 
-pems = sqlContext.sql("SELECT * FROM pems ORDER BY station")
+pems = sqlContext.sql("SELECT * FROM pems WHERE station IN (402265, 402264, 402263, 402261, 402260)")
 
 # Don't see options about file chunk sizes, probably comes from some 
 # environment variable
 # Later versions:
 # pems.write.parquet("pems_sorted", compression = "snappy")
-pems.write.parquet("pems_sorted")
-
-
+pems.write.parquet("pems_sorted", partitionBy="station")
