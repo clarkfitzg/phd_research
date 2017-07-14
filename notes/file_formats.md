@@ -57,8 +57,9 @@ Primitive objects include
 - Boolean
 - null
 
-JSON translates simply and unambiguously into programming languages that have these
-two containers, which is probably why many prefer it over XML.
+JSON translates simply and unambiguously into programming languages that
+have these two containers, such as Javascript and Python, which is probably
+why many prefer it over XML.
 
 
 ### HDF5
@@ -66,24 +67,24 @@ two containers, which is probably why many prefer it over XML.
 Hierarchical Data Format (HDF5) was originally designed to store and
 process large amounts of scientific data. It has a rich data model and
 includes a mature software implementation written in C. It stores data in a
-binary form and scales up to compute clusters.
+binary form and scales up to HPC use cases.
 
 netCDF uses HDF5. 
 
+
 ### Parquet
 
-Parquet represents 
-Based on the storage format described in Google's 2010 Dremel paper.
+Parquet is a newer columnar binary storage format based on Google's 2010
+Dremel paper. It has found a niche in the Hadoop / big data ecosystem. The
+columnar format enables faster reads for data analysis tasks.
 
 
 # Storage Mechanisms
 
 ### Cloud storage
 
-For typical data science applications it can make sense to pay a
+For typical data science applications it can make more sense to pay a
 service to physically store large amounts of data. As of June 2017, Amazon
 S3 costs around $20 / month to store 1 terabyte of data in standard
 storage, and $4 / month in "Glacier Storage".  I have a few rows stored at
 https://clarks-test-bucket.s3.amazonaws.com/tiny.txt
-
-

@@ -17,4 +17,12 @@ Some key points:
 
 ## A Use Case
 
-I would like to see R interact better with larger systems.
+I'm working on processing data that won't fit in memory. Therefore the data
+must be divided into subsets where each subset fits in memory for part of
+the computation. Dividing into subsets also facilitates parallel computing.
+I can write all the splitting logic myself, but this is slow and error
+prone. A better approach is to integrate with existing powerful tools.
+
+More generally I would like to see R interact better with larger systems.
+
+

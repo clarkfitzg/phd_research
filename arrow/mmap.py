@@ -12,7 +12,7 @@ import pyarrow as pa
 
 
 # For a more realistic use case this would be a Parquet file
-fname = 'example.dat'
+fname = '../example.dat'
 with open(fname, 'wb') as f:
     f.write(b'some example data')
 
