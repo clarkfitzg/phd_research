@@ -21,7 +21,7 @@ sc = SparkContext()
 sqlContext = HiveContext(sc)
 
 # snappy compression recommended for Arrow
-# Interesting- snappy is slightly smaller than gz for this.
+# Interesting- snappy is slightly smaller than gz for the 10 rows.
 sqlContext.setConf("spark.sql.parquet.compression.codec", "snappy")
 
 # Testing
