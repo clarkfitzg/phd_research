@@ -31,10 +31,16 @@ sqlContext.setConf("spark.sql.parquet.compression.codec", "snappy")
 # Testing
 #pems = sqlContext.sql("SELECT * FROM pems LIMIT 10")
 
-pems = sqlContext.sql("SELECT * FROM pems WHERE station IN (402265, 402264, 402263, 402261, 402260)")
+# This works
+# pems = sqlContext.sql("SELECT * FROM pems WHERE station IN (402265, 402264, 402263, 402261, 402260)")
+
+pems = sqlContext.sql("SELECT * FROM pems ORDER BY station")
 
 # Don't see options about file chunk sizes, probably comes from some 
 # environment variable
 # Later versions:
 # pems.write.parquet("pems_sorted", compression = "snappy")
-pems.write.parquet("pems_sorted", partitionBy="station")
+
+#pems.write.parquet("pems_station", partitionBy="station")
+
+pems.write.parquet("pems_sorted")

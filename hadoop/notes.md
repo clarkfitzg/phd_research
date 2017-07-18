@@ -146,4 +146,33 @@ first10.write.parquet("pems_python", mode="overwrite", partitionBy="station")
 
 This works with no problem.
 
-!
+Mon Jul 17 15:14:00 PDT 2017
+
+Just now tried it again with the whole dataset after increasing the number
+of open files to 64K.
+Failed after 20 minutes with:
+
+```
+pems.write.parquet("pems_station", partitionBy="station")
+
+2K + lines of traceback... most of which looks like:
+
+17/07/17 14:37:07 ERROR DFSClient: Failed to close inode 3126673
+org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.hdfs.server.namenode.LeaseExpiredException): No lease on /user/clarkf/pems_station/_temporary/0/_temporary/attempt_201707171417_0000_m_000020_0/station=400000/part-r-00020-be95a8e6-0ab7-4f2e-89b6-5875bcbf24de.snappy.parquet (inode 3126673): File does not exist. [Lease.  Holder: DFSClient_NONMAPREDUCE_1546292922_27, pendingcreates: 1]
+        at org.apache.hadoop.hdfs.server.namenode.FSNamesystem.checkLease(FSNamesystem.java:3521)
+```
+
+Tue Jul 18 08:37:02 PDT 2017
+
+Came back to check the results just now- failed after 2 hours again.
+
+```
+17/07/17 17:22:38 ERROR InsertIntoHadoopFsRelation: Aborting job.
+org.apache.spark.SparkException: Job aborted due to stage failure: Task 6 in stage 1.0 failed 1 times, most recent failure: Lost task 6.0 in stage 1.0 (TID 290, localhost): java.lang.OutOfMemoryError: GC overhead limit exceeded
+        at java.util.Arrays.copyOf(Arrays.java:3332)
+```
+
+The memory limits can be adjusted, but the issue is that I have no clue
+what they should be, or how the memory is used.
+ 
+Maybe I can try again to do it totally in Hive, not with Spark.
