@@ -9,7 +9,7 @@ Running with all defaults below. I see all 32 CPU's on the host machine
 loaded, which is good.
 -----------------------------
 
-time spark-submit pems_to_parquet.py
+time spark-submit pems_to_parquet.py --executor-memory 4G
 
 Fails after 2+ hours. Problem seems to be "(Too many open files)"
 Likely several thousand files are open at one time.
