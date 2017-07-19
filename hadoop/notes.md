@@ -176,3 +176,13 @@ The memory limits can be adjusted, but the issue is that I have no clue
 what they should be, or how the memory is used.
  
 Maybe I can try again to do it totally in Hive, not with Spark.
+
+Tue Jul 18 14:54:23 PDT 2017
+
+Ran the Python version with the executor cores set to 4 GB. This time:
+
+```
+java.lang.OutOfMemoryError: GC overhead limit exceeded
+```
+
+Fails after 2 hours just as before.

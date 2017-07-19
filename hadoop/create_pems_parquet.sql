@@ -1,0 +1,24 @@
+SET hive.exec.dynamic.partition=true;
+SET hive.exec.dynamic.partition.mode=nonstrict;
+SET hive.exec.max.dynamic.partitions=100000;
+SET hive.exec.max.dynamic.partitions.pernode=10000;
+
+DROP TABLE pems_parquet;
+
+CREATE EXTERNAL TABLE pems_parquet (timeperiod STRING
+    , flow1 INT, occupancy1 DOUBLE, speed1 DOUBLE
+    , flow2 INT, occupancy2 DOUBLE, speed2 DOUBLE
+    , flow3 INT, occupancy3 DOUBLE, speed3 DOUBLE
+    , flow4 INT, occupancy4 DOUBLE, speed4 DOUBLE
+    , flow5 INT, occupancy5 DOUBLE, speed5 DOUBLE
+    , flow6 INT, occupancy6 DOUBLE, speed6 DOUBLE
+    , flow7 INT, occupancy7 DOUBLE, speed7 DOUBLE
+    , flow8 INT, occupancy8 DOUBLE, speed8 DOUBLE
+)
+PARTITIONED BY (station INT)
+STORED AS PARQUET
+LOCATION '/user/clarkf/pems_parquet';
+
+INSERT INTO TABLE pems_parquet
+PARTITION (station)
+SELECT * FROM pems;
