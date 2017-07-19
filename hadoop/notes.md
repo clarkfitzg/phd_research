@@ -186,3 +186,12 @@ java.lang.OutOfMemoryError: GC overhead limit exceeded
 ```
 
 Fails after 2 hours just as before.
+
+
+## Finally Success!
+
+Wed Jul 19 09:57:28 PDT 2017
+
+This time used it only through hive.
+
+Time taken is 5841 seconds = 97 minutes. Not bad.
