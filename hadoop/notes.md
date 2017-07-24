@@ -201,3 +201,5 @@ Thu Jul 20 11:54:40 PDT 2017
 
 Problem before was the grouping by station did not happen.
 This time I think it will.
+
+Took 98 minutes.
