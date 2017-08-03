@@ -1,4 +1,8 @@
 
+`std::shared_ptr` is a type of smart pointer introduced in C++11. They have
+a pointer with a reference count, so that when the reference count drops to
+0 the object is deleted, aka garbage collection.
+
 ------------------------------------------------------------
 
 What is the meaning of `const` after a function or method signature in the
