@@ -203,3 +203,17 @@ Problem before was the grouping by station did not happen.
 This time I think it will.
 
 Took 98 minutes.
+
+Thu Aug  3 20:27:39 PDT 2017
+
+Ran it again, grouping by station and storing it as a text file. Took 119
+minutes, not much difference from the Parquet.
+
+
+```
+hdfs dfs cat pems_clustered/000000_0 | head
+```
+
+This also seems to have done the grouping by station, although it output
+the data in a goofy way. It actually might be fixed width format?
+TODO: check default hive formatting.
