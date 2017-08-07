@@ -10,8 +10,8 @@ Spark cluster with terabytes of data stored in memory and efficiently run R
 code on that data. Spark does the preprocessing and splitting while R
 operates under its normal in memory model on the pieces.
 
-The analyzed R code allows pushing computations into an underlying data
-retrieval engine. For example:
+The analyzed R code allows pushing computations into an underlying library.
+For example:
 
 ```
 d = load("huge_data.parquet")
@@ -27,6 +27,12 @@ parallel based on the chunked structure of the data. This parallelism also
 translates directly into serial chunk based operations that allow R to work
 efficiently on out of memory data.
 
+Using an Arrow data frame also provides a nice way forward to put
+data frame oriented computations onto the GPU. The recently organized 
+[GPU Analytics Initiative](http://gpuopenanalytics.com/) is working towards
+building the prerequisite software infrastructure, and their specifications
+are based on a subset of Arrow.
+
 > What's the research question, and how does it relate to my current focus?
 
 My current research question is essentially: given code, data, and a
@@ -34,8 +40,10 @@ system, how can we transform the code to run efficiently on a particular
 system?
 
 Then the research goal with Arrow is to demonstrate a system capable of
-interfacing R with systems and other languages. Success means being able to
-do this with more efficiency and less code than would be needed otherwise.
+interfacing R with data provided by other systems and possibly other
+languages. Success means being able to do this with more efficiency and
+less code than would be needed otherwise. In other words, it's more general
+than a connection from R to any particular system.
 
 ## Risks
 
@@ -55,22 +63,22 @@ time and energy on my part.
 
 There's very little publicly available data in Parquet. I see Parquet more
 as something that a larger organization chooses for an analytics focused
-Hadoop cluster. This does not help an independent academic researcher
+Hadoop cluster. Parquet does not help an independent academic researcher
 relying on text data.
 
 ## Conclusions
 
 The inherent splittability of Parquet and Arrow is a large part of the
-appeal. But plain text files are also splittable, and the 
-`iotools` package by Arnold, Kane, Urbanek provide high performance tools
-to do this splitting. I can get deeper into the code analysis faster by
+appeal. But plain text files are also splittable, and the `iotools` package
+by Arnold, Kane, Urbanek provide high performance tools to read and assist
+with this splitting. I can get deeper into the code analysis faster by
 taking regular R code and mapping it into equivalent iotools code.
 
-Arrow is a peripheral task.  It seems much less risky at the moment to
+Arrow is a peripheral task. It seems much less risky at the moment to
 focus on the research activities that will lead to my PhD. Once I have
 something more tangible in terms of research I could pick this up again.
 It would certainly be helpful for me to learn the details of data storage,
-C++, and the R C API. Doing this project would also help with employment
+C++, and R's C API. Doing this project would also help with employment
 afterwards, say as a data engineer.
 
 ## Background
