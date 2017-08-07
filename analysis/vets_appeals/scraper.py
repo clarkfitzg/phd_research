@@ -1,5 +1,10 @@
 """
 Scraping vets appeals data.
+
+Mon Aug  7 09:08:20 PDT 2017
+Checking the results, this script currently only downloads 67813 files.
+This corresponds to the default selection of years 2016 - 2017.
+It's enough to work with though.
 """
 
 from lxml import etree
