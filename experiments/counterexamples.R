@@ -68,3 +68,14 @@ g3 = function(x) 20
 
 # While this works perfectly fine because the arg is never evaluated.
 g1(stop())
+
+
+# Mon Aug 21 11:25:03 PDT 2017
+# Suppose m < n
+# Here are some surprising timings
+n = 1e6
+m = 10
+x = rnorm(n)
+
+# x[-1] is O(n) because it copies, while the other is O(m)
+microbenchmark::microbenchmark(x[-1][1:(m-1)], x[2:m], times = 10L)
