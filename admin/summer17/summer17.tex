@@ -169,6 +169,33 @@ write higher level code that also performs better.
 % \end{verbatim}
 % 
 
+\newpage
+
+\begin{center}
+    \large Automatic Parallelism Through R Code Analysis 
+\end{center}
+
+\hfill
+
+This summer I began development on the \texttt{autoparallel} package for R
+to automatically convert serial code to parallel. It's publicly available
+at \url{https://github.com/clarkfitzg/autoparallel}; documentation and use
+cases can be found in the \texttt{vignettes} and \texttt{inst/examples}
+directories. The \texttt{CodeDepends} package is used as a dependency for
+static code analysis \cite{R-CodeDepends}.
+
+The package supports interactive function development on large
+data sets. It does this by automatically distributing the data across a
+cluster, and then returning a closure which evaluates serial code on each
+cluster node. Code to be evaluated through this closure is analyzed to
+automatically discover which functions and variables are used. Found
+variables are exported to the cluster nodes so that the most current
+versions are used. This allows the user to define a data analysis function,
+quickly test it on a large data set, redefine the function and repeat.
+
+Automatic parallelization happens through analysis and manipulation of
+`apply()` and `lapply()` calls in the parse tree.
+
 \hfill
 
 \bibliographystyle{plain}
