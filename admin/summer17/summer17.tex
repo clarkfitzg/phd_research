@@ -184,17 +184,40 @@ cases can be found in the \texttt{vignettes} and \texttt{inst/examples}
 directories. The \texttt{CodeDepends} package is used as a dependency for
 static code analysis \cite{R-CodeDepends}.
 
-The package supports interactive function development on large
-data sets. It does this by automatically distributing the data across a
+The package supports iterative, interactive function development on large
+data sets. It does this by automatically distributing data across a
 cluster, and then returning a closure which evaluates serial code on each
-cluster node. Code to be evaluated through this closure is analyzed to
+cluster node. The package analyzes the code to
 automatically discover which functions and variables are used. Found
 variables are exported to the cluster nodes so that the most current
 versions are used. This allows the user to define a data analysis function,
 quickly test it on a large data set, redefine the function and repeat.
+This type of workflow was not possible with existing packages.
 
-Automatic parallelization happens through analysis and manipulation of
-`apply()` and `lapply()` calls in the parse tree.
+Automatic parallelization of scripts happens through analysis and
+manipulation of calls to the apply functions (\texttt{lapply, apply,
+mapply, Map}) in the parse tree. The simple version finds all statements in
+a program using an apply function and converts it to an equivalent parallel
+version. Then the script is ran, while benchmarking wall time for serial
+and parallel versions of each of the target statements. The version with
+the faster median time is chosen and included in the transformed program.
+A disadvantage of this approach is that it requires many evaluations of
+expensive functions, so it only applies if the script will be used many
+times in a similar manner.
+
+My current focus is to capture the benchmarks along with metadata about the
+data, such as the dimensions of matrices, as the code actually runs.
+This allows me to experiment with different implementations dynamically.
+It becomes an online machine learning problem. Given data along with a
+vector of metadata, which is the best implementation to use? In this
+context it generalizes to include any performance optimizations.
+
+Performance benchmarks were compared across 9 different implementations of
+R's \texttt{cov()} function. This motivates some heuristics around how many
+chunks to use for multiprocessing; for chunked versions of \texttt{cov()} I
+found 2 * the number of cores to work best. This improved \texttt{cov()}
+was used to create a relatively efficient implementation of fitting linear discriminant
+analysis.
 
 \hfill
 
