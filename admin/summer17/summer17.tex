@@ -179,20 +179,23 @@ write higher level code that also performs better.
 
 This summer I began development on the \texttt{autoparallel} package for R
 to automatically convert serial code to parallel. It's publicly available
-at \url{https://github.com/clarkfitzg/autoparallel}; documentation and use
+at \url{https://github.com/clarkfitzg/autoparallel}. Documentation and use
 cases can be found in the \texttt{vignettes} and \texttt{inst/examples}
 directories. The \texttt{CodeDepends} package is used as a dependency for
 static code analysis \cite{R-CodeDepends}.
+This work creates new possibilities for automatic parallelization in R in three
+different ways; interactive function development, script benchmarking, and function
+metaprogramming.
 
-The package supports iterative, interactive function development on large
-data sets. It does this by automatically distributing data across a
-cluster, and then returning a closure which evaluates serial code on each
-cluster node. The package analyzes the code to
-automatically discover which functions and variables are used. Found
-variables are exported to the cluster nodes so that the most current
-versions are used. This allows the user to define a data analysis function,
-quickly test it on a large data set, redefine the function and repeat.
-This type of workflow was not possible with existing packages.
+\texttt{autoparallel} supports iterative, interactive function development
+on large data sets. It does this by automatically distributing data across
+a cluster, and then returning a closure which evaluates serial code on each
+cluster node. The package analyzes the code to automatically discover which
+functions and variables are used. Found variables are exported to the
+cluster nodes so that the most current versions are used.  A user may
+define a data analysis function, quickly test it on a large data set,
+redefine the function and repeat.  This is the type of workflow that most R
+users are accustomed to, and it was not possible with existing packages.
 
 Automatic parallelization of scripts happens through analysis and
 manipulation of calls to the apply functions (\texttt{lapply, apply,
@@ -205,12 +208,31 @@ A disadvantage of this approach is that it requires many evaluations of
 expensive functions, so it only applies if the script will be used many
 times in a similar manner.
 
-My current focus is to capture the benchmarks along with metadata about the
-data, such as the dimensions of matrices, as the code actually runs.
-This allows me to experiment with different implementations dynamically.
-It becomes an online machine learning problem. Given data along with a
-vector of metadata, which is the best implementation to use? In this
-context it generalizes to include any performance optimizations.
+The most exciting development is in the function metaprogramming.  A direct
+way to use this is to provide multiple implementations for a function along
+with statistical models for how long they will take. For example, let $X$
+be an $n \times p$ matrix of real numbers. Calling \texttt{crossprod(X)} in
+R will compute the matrix $X^T X$. \texttt{crossprod(X)} can use the
+symmetry of the result, so it needs 
+\[
+    \label{eq:f}
+    f(n, p) = n p (p + 1) / 2
+\]
+floating
+point operations.  Then a linear model works well to predict the run time:
+$t = \beta_0 + \beta_1 f(n, p) + \epsilon$. A different, parallel
+implementation, say \texttt{crossprodPAR(X)} can use the same linear model,
+but with different coefficients to account for the overhead of
+parallelization. \texttt{autoparallel::evolve()} uses R's
+S3 classes to create functions that dynamically choose the fastest
+implementations based on the characteristics of their inputs, ie.
+equation~\ref{eq:f} above. I'm currently working to generalize this
+function metaprogramming to include the ability to modify and record the
+operating characterisitcs of a wider class of functions to include those in
+base R.
+
+\texttt{autoparallel} provides parallelism with interactive features, the
+ability to transform scripts, and self tuning functions.
 
 Performance benchmarks were compared across 9 different implementations of
 R's \texttt{cov()} function. This motivates some heuristics around how many
