@@ -45,6 +45,10 @@ languages. Success means being able to do this with more efficiency and
 less code than would be needed otherwise. In other words, it's more general
 than a connection from R to any particular system.
 
+> What can we do with R / Arrow that's qualitatively new?
+
+
+
 ## Risks
 
 It will likely take months to produce decent bindings. This is time that
@@ -94,3 +98,20 @@ Some key points:
 - Parquet and Arrow both provide standardized formats for columnar data
 - Parquet is for storage on disk while Arrow is for representation in
   memory.
+
+
+## Feather
+
+In 2016 Hadley Wickham and Wes Mckinney released Feather, a file format and
+software implementation to serialize data frames compatible between R and
+Python. One [design goal](https://blog.rstudio.com/2016/03/29/feather/) was
+that operations on Feather objects should be fast enough that the disk is
+the limiting factor, or in other words be IO bound.
+
+Many of the benchmarks I've observed take the median time to read and write
+without flushing the hard drive cache. This means that they measure time to
+load to and from memory, when usually the goal is to measure the time to go
+to and from disk.  Actually, most data science workflows probably care most
+about how long it takes to load from disk and how long it takes to write to
+memory. We're typically not writing files larger than memory, so we can
+afford to let the OS physically write the pages out at it's own convenience.
