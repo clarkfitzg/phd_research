@@ -48,7 +48,8 @@ Research goals:
 
 This could even be done dynamically using numerical optimization- check
 programmatically if prices drop below a certain level and then run it.  See
-what it's like for data stored in S3 or EBS.  Elastic map reduce (EMR) with
+what it's like for data stored in Simple Storage Service (S3) or Elastic
+Block Storage (EBS).  Elastic map reduce (EMR) with
 S3.
 
 Compare performance among Azure, Google.

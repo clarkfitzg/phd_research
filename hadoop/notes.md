@@ -211,9 +211,23 @@ minutes, not much difference from the Parquet.
 
 
 ```
-hdfs dfs cat pems_clustered/000000_0 | head
+
+hdfs dfs -cat pems_clustered/000000_0 | head
+
 ```
 
 This also seems to have done the grouping by station, although it output
 the data in a goofy way. It actually might be fixed width format?
 TODO: check default hive formatting.
+
+
+Wed Sep 13 10:49:45 PDT 2017
+
+Considering the relative file sizes:
+```
+hdfs dfs -du -s -h pems
+```
+
+- 24.1 GB for `pems` compressed daily `txt.gz` files as downloaded from server
+- 68.4 GB for `pems_parquet` clustered and stored as parquet
+- 261.1 GB for `pems_clustered` plain text with hive formatting
