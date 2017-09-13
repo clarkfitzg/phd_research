@@ -1,3 +1,4 @@
+-- Took
 --SET hive.exec.dynamic.partition=true;
 --SET hive.exec.dynamic.partition.mode=nonstrict;
 --SET hive.exec.max.dynamic.partitions=100000;
