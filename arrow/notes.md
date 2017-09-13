@@ -1,3 +1,15 @@
+Tue Sep 12 17:29:48 PDT 2017
+
+What can I do with what currently exists in Arrow? I'd like to be able to
+do a fast parallel group by type operation. Suppose that I start off with a
+partitioned Parquet dataset. From `pyarrow` I would load this with
+`pyarrow.parquet.ParquetDataset` which would give me `pyarrow.Table`. This
+gives me fast access to the columns and conversion into a pandas data
+frame, but doesn't help with parallel group by.
+
+TODO: Come back here
+
+
 ## Ideal case
 
 > Suppose we have nice R / Arrow bindings and everything works out perfectly.
@@ -47,7 +59,8 @@ than a connection from R to any particular system.
 
 > What can we do with R / Arrow that's qualitatively new?
 
-
+The plasma store provides a way for multiple processes to operate on the same
+data. This is similar to the following R packages:
 
 ## Risks
 
@@ -99,6 +112,27 @@ Some key points:
 - Parquet is for storage on disk while Arrow is for representation in
   memory.
 
+> One of the goals of Apache Arrow is to serve as a common data layer
+> enabling zero-copy data exchange between multiple frameworks.
+
+[August 17 blog post](https://arrow.apache.org/blog/2017/08/08/plasma-in-memory-object-store/)
+
+## Related work
+
+`bigmatrix` has a memory mapped matrix.
+
+`LaF` provides access and data processing to CSV and fixed width text files
+possibly exceeding memory.
+
+`ff` provides "memory-efficient storage of large data on disk and fast
+access functions". Further:
+
+> ff files can be shared by multiple ff R objects (using different data
+> en/de-coding schemes) in the same process or from multiple R processes to
+> exploit parallelism.
+
+
+## pyarrow
 
 ## Feather
 
