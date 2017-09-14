@@ -38,7 +38,7 @@ recombine paradigm. This lets one keep R's regular vectorized model on
 small subsets of the data.
 
 Another goal is to have something that bridges the gap between what can be
-done on a single server and a 
+done on a single server and a large cluster.
 
 
 ## Cloud computing
@@ -46,11 +46,10 @@ done on a single server and a
 Research goals:
 - How cheaply can we do some data processing task? Make it real with Amazon.
 
-This could even be done dynamically using numerical optimization- check
-programmatically if prices drop below a certain level and then run it.  See
-what it's like for data stored in Simple Storage Service (S3) or Elastic
-Block Storage (EBS).  Elastic map reduce (EMR) with
-S3.
+This could even be done with numerical optimization- check programmatically
+if prices drop below a certain level and then run it.  See what it's like
+for data stored in Simple Storage Service (S3) or Elastic Block Storage
+(EBS).  Elastic map reduce (EMR) with S3.
 
 Compare performance among Azure, Google.
 
