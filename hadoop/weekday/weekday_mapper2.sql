@@ -10,7 +10,7 @@ FIELDS TERMINATED BY '\t';
 
 add FILE weekday_mapper.R;
 
-INSERT OVERWRITE TABLE u_data_new
+INSERT OVERWRITE TABLE u_data_new2
 SELECT
   TRANSFORM (userid, movieid, rating, unixtime)
   USING 'Rscript weekday_mapper.R'
