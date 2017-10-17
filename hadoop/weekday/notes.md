@@ -7,6 +7,17 @@ better to pass the correct datatype over in Python. Maybe that is what
 Spark offers. But R could do this reasonably well for a group by / apply
 operation.
 
-This experiment was surprisingly successful. The next step is to run it on
-the whole data and time it. First I need to probably unzip these .gz files.
+Tue Oct 17 10:18:31 PDT 2017
+
+When I try again here to run something similar with R I see:
+
+```
+Caused by: java.io.IOException: Cannot run program "Rscript": error=2, No
+such file or directory
+```
+ 
+This may mean that the `Rscript` command is not available on the worker
+nodes? Indeed, that was the same error as the original one, had I dug
+through it more carefully!
+
 

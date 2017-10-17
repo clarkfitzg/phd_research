@@ -13,7 +13,7 @@ add FILE pid.R;
 INSERT OVERWRITE TABLE movie_r_pid
 SELECT
   TRANSFORM (userid, movieid, rating)
-  USING 'Rscript pid.R'
+  USING 'pid.R'
   AS (userid, movieid, rating, pid)
 FROM u_data;
 
