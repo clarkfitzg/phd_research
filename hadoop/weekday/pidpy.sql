@@ -10,10 +10,15 @@ FIELDS TERMINATED BY '\t';
 
 add FILE pid.py;
 
+
 INSERT OVERWRITE TABLE movie_py_pid
 SELECT
   TRANSFORM (userid, movieid, rating)
-  USING 'python pid.py'
+-- This works fine if I tell it to use python by changing the first line of
+-- pid.py to:
+-- #!/usr/bin/env python
+-- Script doesn't need to be executable either.
+  USING 'pid.py'
   AS (userid, movieid, rating, pid)
 FROM u_data;
 
