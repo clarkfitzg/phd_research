@@ -1,4 +1,3 @@
--- Took
 --SET hive.exec.dynamic.partition=true;
 --SET hive.exec.dynamic.partition.mode=nonstrict;
 --SET hive.exec.max.dynamic.partitions=100000;
@@ -10,9 +9,7 @@
 
 SET hive.enforce.bucketing = true;
 
-DROP TABLE pems_clustered;
-
-CREATE EXTERNAL TABLE pems_clustered (
+CREATE EXTERNAL TABLE pems_parquet_comp (
     timeperiod STRING, station INT
     , flow1 INT, occupancy1 DOUBLE, speed1 DOUBLE
     , flow2 INT, occupancy2 DOUBLE, speed2 DOUBLE
@@ -25,11 +22,12 @@ CREATE EXTERNAL TABLE pems_clustered (
 )
 COMMENT "This is Clark writing a comment to see where it shows up."
 CLUSTERED BY (station) INTO 256 BUCKETS
---STORED AS PARQUET
-LOCATION '/user/clarkf/pems_clustered'
+STORED AS PARQUET
+LOCATION '/user/clarkf/pems_parquet_comp'
+TBLPROPERTIES ("parquet.compression"="SNAPPY")
 ;
 
-INSERT INTO TABLE pems_clustered
+INSERT INTO TABLE pems_parquet_comp
 SELECT * FROM pems
 CLUSTER BY station
 ;

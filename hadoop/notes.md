@@ -22,18 +22,6 @@ Running Hive 1.2.1000
 Now I run the two hive scripts to create my table and load data into it.
 After loading the data does not exist in HDFS any longer.
 
-This 'weekday mapper' script is extremely interesting.
-https://cwiki.apache.org/confluence/display/Hive/GettingStarted
-It maps an arbitrary Python script onto the data. Curious that it uses
-stdin / stdout to transfer the data via text. This means that both hive and
-Python have to specify the datatypes / parse the strings. It would seem
-better to pass the correct datatype over in Python. Maybe that is what
-Spark offers. But R could do this reasonably well for a group by / apply
-operation.
-
-This experiment was surprisingly successful. The next step is to run it on
-the whole data and time it. First I need to probably unzip these .gz files.
-
 Thu Jun 22 16:57:25 PDT 2017
 
 Turns out unzipping is not necessary, hive figures that out for me. After I
@@ -194,7 +182,7 @@ Wed Jul 19 09:57:28 PDT 2017
 
 This time used it only through hive.
 
-Time taken is 5841 seconds = 97 minutes. Not bad.
+Time taken is 5841 seconds = 97 minutes for the uncompressed Parquet file. Not bad.
 
 
 Thu Jul 20 11:54:40 PDT 2017
@@ -202,7 +190,7 @@ Thu Jul 20 11:54:40 PDT 2017
 Problem before was the grouping by station did not happen.
 This time I think it will.
 
-Took 98 minutes.
+Took 98 minutes for the uncompressed Parquet file including grouping.
 
 Thu Aug  3 20:27:39 PDT 2017
 
@@ -211,9 +199,45 @@ minutes, not much difference from the Parquet.
 
 
 ```
-hdfs dfs cat pems_clustered/000000_0 | head
+
+hdfs dfs -cat pems_clustered/000000_0 | head
+
 ```
 
 This also seems to have done the grouping by station, although it output
 the data in a goofy way. It actually might be fixed width format?
 TODO: check default hive formatting.
+
+
+Wed Sep 13 10:49:45 PDT 2017
+
+Considering the relative file sizes:
+```
+
+hdfs dfs -du -s -h pems
+
+```
+
+- 24.1 GB for `pems` compressed daily `txt.gz` files as downloaded from server
+- 25.1 GB for `pems_parquet_comp`, Parquet compressed using "Snappy"
+- 68.4 GB for `pems_parquet` clustered and stored as parquet
+- 261.1 GB for `pems_clustered` plain text with hive formatting
+
+Creation of the `pems_parquet_comp` table from `pems` took 94 minutes. Does
+this then facilitate the sort of computation we would like to do?
+Here's a basic one:
+
+```
+SELECT station, MAX(flow1) FROM pems
+GROUP BY station;
+```
+
+This query takes 78 seconds with compressed Parquet, and 114 seconds with
+the original gz compressed text. So the text is only about 1.5 times slower
+than Parquet. The sizes are about the same. The speed improvement is nice,
+but it is not a game changer.  And it doesn't justify spending a ton of
+time writing R / Parquet bindings.  If Parquet was one or two orders of
+magnitude faster that would be a different story.
+
+Side note- performance is impressive regardless considering this requires a
+full scan of 2.6 billion rows.
