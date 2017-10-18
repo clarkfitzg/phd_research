@@ -5,7 +5,6 @@
 # Not removing whitespace as in the Python version.
 
 sep = "\t"
-n = 100000
 
 #infile = stdin()
 infile = file("stdin")
