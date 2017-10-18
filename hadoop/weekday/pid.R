@@ -7,7 +7,10 @@
 sep = "\t"
 n = 100000
 
-tbl = read.table(stdin(), sep = sep)
+#infile = stdin()
+infile = file("stdin")
+
+tbl = read.table(infile, sep = sep)
 
 pid = Sys.getpid()
 
