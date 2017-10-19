@@ -22,7 +22,7 @@ SELECT
 FROM u_data
 ;
 
-SELECT DISTINCT pid
-FROM movie_r_pid
---GROUP BY pid
-;
+--SELECT DISTINCT pid
+--FROM movie_r_pid
+----GROUP BY pid
+--;

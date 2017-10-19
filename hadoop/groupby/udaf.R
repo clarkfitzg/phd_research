@@ -1,4 +1,5 @@
 #!/usr/bin/env Rscript
+tryCatch({
 
 col = 1L
 sep = "\t"
@@ -13,3 +14,6 @@ agg = agg[, 1:3]
 
 write.table(agg, stdout(), sep = sep
             , col.names = FALSE, row.names = FALSE)
+
+
+}, error = function(e) cat(e))

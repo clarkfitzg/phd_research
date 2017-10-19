@@ -15,10 +15,14 @@ add FILE udaf.R
 
 INSERT OVERWRITE TABLE udaf
 SELECT
-  TRANSFORM (userid)
-  USING "Rscript udaf.R"
-  AS (userid, count)
-FROM (SELECT userid FROM foo CLUSTER BY userid)
+TRANSFORM (userid)
+USING "Rscript udaf.R"
+AS (userid, movieid, count)
+FROM (
+    SELECT userid, movieid
+    FROM u_data 
+    CLUSTER BY userid
+) AS tmp  -- Seems that it's necessary to add this alias here. Why?
 ;
 
 SELECT COUNT(*)
@@ -29,3 +33,6 @@ SELECT *
 FROM udaf
 LIMIT 10
 ;
+
+
+--SELECT userid, movieid FROM u_data CLUSTER BY userid limit 10;

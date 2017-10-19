@@ -22,7 +22,7 @@ through it more carefully!
 
 Yes, this was the error.
 
-# Gamma Example
+# Gamma Function Example
 
 The gamma example uses exactly the same idea as the weekday mapper script
 referenced above. The workers execute `Rscript`, reading from the data from
@@ -43,7 +43,7 @@ vehicles. We first wait to accumulate `n` rows to amortize the cost of the vecto
 operations. Next we process them all and release them.
 
 I think it makes more sense to do it all from the R side, since this would
-be useful for things other than Hive, and it's more natural for to think of
+be useful for things other than Hive, and it's more natural to think of
 the streaming transforms in Hive. Ie. Hive developers shouldn't have to
 write anything R specific. I wonder how well `iotools` supports this
 streaming model, since it was created to work with Hadoop.
