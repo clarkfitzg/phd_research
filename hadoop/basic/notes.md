@@ -44,5 +44,6 @@ operations. Next we process them all and release them.
 
 I think it makes more sense to do it all from the R side, since this would
 be useful for things other than Hive, and it's more natural for to think of
-the streaming transforms in Hive. Ie. the Hive developers shouldn't have to
-write anything R specific.
+the streaming transforms in Hive. Ie. Hive developers shouldn't have to
+write anything R specific. I wonder how well `iotools` supports this
+streaming model, since it was created to work with Hadoop.
