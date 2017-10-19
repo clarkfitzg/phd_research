@@ -56,5 +56,4 @@ A program that prints a single line causes this error:
 Caused by: java.io.IOException: Stream closed
 ```
 
-I believe this comes from not reading from `stdin`. Nope. Even if I consume
-all of `stdin` the same result.
+I believe this comes from not reading from `stdin`. Yes, ok finally.
