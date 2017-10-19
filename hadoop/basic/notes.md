@@ -47,3 +47,14 @@ be useful for things other than Hive, and it's more natural to think of
 the streaming transforms in Hive. Ie. Hive developers shouldn't have to
 write anything R specific. I wonder how well `iotools` supports this
 streaming model, since it was created to work with Hadoop.
+
+# Error Handling
+
+A program that prints a single line causes this error:
+
+```
+Caused by: java.io.IOException: Stream closed
+```
+
+I believe this comes from not reading from `stdin`. Nope. Even if I consume
+all of `stdin` the same result.

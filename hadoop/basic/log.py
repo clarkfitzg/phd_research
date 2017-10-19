@@ -5,7 +5,10 @@
 
 import sys
 
-print("AAAAAHHHHH!")
+for line in sys.stdin:
+    print("AAAAAHHHHH!")
+
+
 #
 #try:
 #    # Will fail for large table
