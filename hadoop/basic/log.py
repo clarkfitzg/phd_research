@@ -5,9 +5,11 @@
 
 import sys
 
-try:
-    # Will fail for large table
-    #tbl = sys.stdin.read()
-    raise ValueError("Python error dude!")
-except:
-    print(sys.exc_info())
+print("AAAAAHHHHH!")
+#
+#try:
+#    # Will fail for large table
+#    #tbl = sys.stdin.read()
+#    raise ValueError("Python error dude!")
+#except:
+#    print(sys.exc_info())
