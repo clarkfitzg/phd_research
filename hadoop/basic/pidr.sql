@@ -1,22 +1,28 @@
-DROP TABLE movie_r_pid;
+DROP TABLE movie_r_pid
+;
 
 CREATE TABLE movie_r_pid (
   userid INT,
   movieid INT,
   rating INT,
-  pid INT)
+  pid INT,
+  nrow INT)
 ROW FORMAT DELIMITED
-FIELDS TERMINATED BY '\t';
+FIELDS TERMINATED BY '\t'
+;
 
-add FILE pid.R;
+ADD FILE pid.R
+;
 
 INSERT OVERWRITE TABLE movie_r_pid
 SELECT
   TRANSFORM (userid, movieid, rating)
   USING 'pid.R'
-  AS (userid, movieid, rating, pid)
-FROM u_data;
+  AS (userid, movieid, rating, pid, nrow)
+FROM u_data
+;
 
-SELECT pid, COUNT(*)
+SELECT DISTINCT pid
 FROM movie_r_pid
-GROUP BY pid;
+--GROUP BY pid
+;

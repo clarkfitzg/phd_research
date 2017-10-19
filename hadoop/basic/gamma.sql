@@ -1,3 +1,4 @@
+-- gamma.sql
 DROP TABLE gamma
 ;
 
@@ -5,7 +6,7 @@ CREATE TABLE gamma (
   userid INT,
   movieid INT,
   rating INT,
-  gamma_col INT)
+  gamma_col DOUBLE)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 ;
@@ -16,9 +17,9 @@ add FILE gamma.R
 INSERT OVERWRITE TABLE gamma
 SELECT
   TRANSFORM (userid, movieid, rating)
--- The tab and 3 following the command makes them available from commandArgs within R
-  --USING "Rscript gamma.R $'\t' 3"
-  USING "Rscript gamma.R"
+-- The 3 following the command makes it available from commandArgs within
+-- R. Haven't figured out how to pass the tab character though.
+  USING "Rscript gamma.R 3"
   AS (userid, movieid, rating, gamma_col)
 FROM u_data
 ;

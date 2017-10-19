@@ -22,4 +22,27 @@ through it more carefully!
 
 Yes, this was the error.
 
+# Gamma Example
 
+The gamma example uses exactly the same idea as the weekday mapper script
+referenced above. The workers execute `Rscript`, reading from the data from
+`stdin` and writing to `stdout`. `gamma()` works in a vectorized way,
+mapping each row into another row.
+
+On this sample dataset with 100K rows a single R process handled all the
+data. The actual model is a streaming transformation, which R is not doing.
+R can only process batches at a time, since it's so expensive to go row by
+row. R will fail to consume the whole stream once it becomes large enough.
+We can get around this by having a streaming mechanism either from Hive or
+R. If it comes from the Hive side it needs to send only a fixed amount of
+data before starting a new process. If it comes from the R side we need to
+stop and process once enough data comes in.
+
+This can be understood like a traffic signal. Rows of data in a table are
+vehicles. We first wait to accumulate `n` rows to amortize the cost of the vector
+operations. Next we process them all and release them.
+
+I think it makes more sense to do it all from the R side, since this would
+be useful for things other than Hive, and it's more natural for to think of
+the streaming transforms in Hive. Ie. the Hive developers shouldn't have to
+write anything R specific.
