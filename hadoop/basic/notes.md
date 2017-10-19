@@ -20,4 +20,6 @@ This may mean that the `Rscript` command is not available on the worker
 nodes? Indeed, that was the same error as the original one, had I dug
 through it more carefully!
 
+Yes, this was the error.
+
 
