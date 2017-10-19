@@ -4,10 +4,9 @@ tryCatch({
 
 infile = file("stdin")
 
-sep = "\t"
-tbl = read.table(infile, sep = sep)
+tbl = readLines(infile)
 
-stop("Ground Control to Major Tom.")
+stop("R error dude!")
 
 
-}, error = function(e) cat(e, file = stdout()))
+}, error = function(e) print(e))
