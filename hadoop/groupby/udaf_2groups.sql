@@ -4,6 +4,7 @@ DROP TABLE udaf
 
 CREATE TABLE udaf (
   userid INT,
+  movieid INT,
   count INT)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
@@ -14,14 +15,14 @@ add FILE udaf.R
 
 INSERT OVERWRITE TABLE udaf
 SELECT
-TRANSFORM (userid)
+TRANSFORM (userid, movieid)
 USING "Rscript udaf.R"
-AS (userid, count)
+AS (userid, movieid, count)
 FROM (
-    SELECT userid
+    SELECT userid, movieid
     FROM u_data 
     CLUSTER BY userid
-) AS tmp  -- Seems that it's necessary to add this alias here to avoid parsing error.
+) AS tmp  -- Seems that it's necessary to add this alias here. Why?
 ;
 
 SELECT COUNT(*)
@@ -30,7 +31,6 @@ FROM udaf
 
 SELECT *
 FROM udaf
-ORDER BY count DESC
 LIMIT 10
 ;
 

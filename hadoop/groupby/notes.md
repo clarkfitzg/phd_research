@@ -9,11 +9,11 @@ I'm attempting to do the SQL equivalent of:
 
 ```
 
-SELECT userid, movieid, COUNT(*) as n
+SELECT userid, COUNT(*) as n
 FROM u_data
-GROUP BY userid, movieid
+GROUP BY userid
 ORDER BY n DESC
---LIMIT 10
+LIMIT 10
 ;
 
 ```
