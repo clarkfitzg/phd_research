@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-writeLines("BEGIN R SCRIPT", stderr())
+writeLines("\n\n\nBEGIN R SCRIPT", stderr())
 
 infile = file("stdin")
 tbl = read.table(infile)
@@ -7,8 +7,15 @@ tbl = read.table(infile)
 msg = paste(c("tbl dimensions:", dim(tbl)), collapse = " ")
 writeLines(msg, stderr())
 
-agg = aggregate(tbl, by = tbl, length)
-#agg = agg[, 1:3]
+s = split(tbl, tbl[, 1])
 
-write.table(agg, stdout(), sep = "\t"
+ans = lapply(s, function(ss){
+    data.frame(ss[1, 1], nrow(ss))
+})
+
+ans = do.call(rbind, ans)
+
+write.table(ans, stdout(), sep = "\t"
             , col.names = FALSE, row.names = FALSE)
+
+writeLines("END R SCRIPT\n\n\n", stderr())
