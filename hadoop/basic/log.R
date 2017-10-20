@@ -1,11 +1,9 @@
 #!/usr/bin/env Rscript
-tryCatch({
+writeLines("\n\n\n\n\nBEGIN R LOG\n", stderr())
 
 infile = file("stdin")
 
-writeLines("hot damn it's a log!", stderr())
-
-
+stop("R error dude!")
 
 tbl = readLines(infile, n = 100L)
 
@@ -15,7 +13,5 @@ tbl = readLines(infile, n = 100L)
 #logfile = "/home/clarkf/hiveR.log"
 #writeLines("hot damn it's a log!", logfile)
 
-}, error = function(e) print(e))
 
-
-stop("R error dude!")
+writeLines("\nEND R LOG", stderr())

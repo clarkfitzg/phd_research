@@ -15,7 +15,7 @@ add FILE udaf.R
 
 INSERT OVERWRITE TABLE udaf
 SELECT
-TRANSFORM (userid)
+TRANSFORM (userid, movieid)
 USING "Rscript udaf.R"
 AS (userid, movieid, count)
 FROM (
