@@ -48,6 +48,7 @@ the streaming transforms in Hive. Ie. Hive developers shouldn't have to
 write anything R specific. I wonder how well `iotools` supports this
 streaming model, since it was created to work with Hadoop.
 
+
 # Error Handling
 
 A program that prints a single line causes this error:
@@ -57,3 +58,23 @@ Caused by: java.io.IOException: Stream closed
 ```
 
 I believe this comes from not reading from `stdin`. Yes, ok finally.
+
+
+# Checking logs
+
+When I run the hive query I see a line like this indicating the YARN application ID:
+
+```
+Status: Running (Executing on YARN cluster with App id application_1480440170646_0140)
+```
+
+We can used this ID to inspect the logs:
+
+```
+
+$ yarn logs -applicationId application_1480440170646_0140 -log_files stderr | less
+
+```
+
+I've discovered that if the error occurs before the script begins to read
+from `stdin` then you won't see the error. Presumably this happens because
