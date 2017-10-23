@@ -1,6 +1,14 @@
 Thu Jun 29 08:53:41 PDT 2017
 
+
 Clustering
+
+
+```{R, eval = FALSE, echo = FALSE}
+
+rmarkdown::render("clustering.Rmd", output_format = "html_document")
+
+```
 
 ```{R}
 
@@ -198,10 +206,19 @@ plot1fd = function(coefs, ...)
     abline(coef = coefs[3:4], ...)
 }
 
-plot(c(0, 1), c(0, 20), type = "n")
-plot1fd(centers[1, ], col = 1)
-plot1fd(centers[2, ], col = 2)
-plot1fd(centers[3, ], col = 3)
+png("maps/web/cluster_fd.png")
+plot(c(0, 1), c(0, 20), type = "n"
+     , xlab = "occupancy"
+     , ylab = "flow per 30 second interval"
+     , main = "Fundamental Diagrams for Cluster Centroids"
+     )
+plot1fd(centers[1, ], col = "purple")
+plot1fd(centers[2, ], col = "red")
+plot1fd(centers[3, ], col = "green")
+legend("topright", legend = c("Cluster 1", "Cluster 2", "Cluster 3")
+       , lty = 1, col = c("purple", "red", "green")
+       )
+dev.off()
 
 fit$size
 
