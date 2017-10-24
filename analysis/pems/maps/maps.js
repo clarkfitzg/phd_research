@@ -13,11 +13,21 @@ L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=p
 var xhttp = new XMLHttpRequest();
 
 // Declaring a global variable
-var station
+var station;
+
+
+function plot_circles(station) {
+    for (i = 0; i < station.ID.length; i++) {
+        L.circle([station.Latitude[i], station.Longitude[i]], 
+                {radius: 10, color: station.color[i], fillOpacity: 1})
+                    .addTo(map);
+    }
+}
 
 xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
         station = JSON.parse(xhttp.responseText);
+        plot_circles(station);
     }
 };
 
@@ -26,10 +36,10 @@ xhttp.send();
 
 
 // The actual markers
-for (i = 0; i < station.ID.length; i++) {
-
-    L.circle([station.Latitude[i], station.Longitude[i]], 
-            {radius: 10, color: station.color[i], fillOpacity: 1})
-                .addTo(map);
-
-}
+//for (i = 0; i < station.ID.length; i++) {
+//
+//    L.circle([station.Latitude[i], station.Longitude[i]], 
+//            {radius: 10, color: station.color[i], fillOpacity: 1})
+//                .addTo(map);
+//
+//}
