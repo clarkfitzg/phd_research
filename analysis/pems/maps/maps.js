@@ -1,3 +1,6 @@
+// In retrospect it would be more natural to store the JSON as an array,
+// with each element containing a dictionary
+
 var map = L.map('mapid').setView([37.7, -122], 10);
 
 L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
@@ -12,16 +15,51 @@ L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=p
 // https://www.w3schools.com/xml/xml_http.asp
 var xhttp = new XMLHttpRequest();
 
-// Declaring a global variable
+// global variables
 var station;
+var lat_eps = 2e-3;
+var long_eps = 3e-3;
+var ndigs = 8;
 
-// TODO: Add popups, legend describing what red and green colors mean.
+function one_circle(i) {
+    var lat = station.Latitude[i];
+    var lon = station.Longitude[i];
+    // switch seems to only move one direction, leaving the other fixed.
+    switch (station.Dir[i]) {
+        case "N":
+            lon += long_eps;
+            break;
+        case "E":
+            lat -= lat_eps;
+            break;
+        case "S":
+            lon -= long_eps;
+            break;
+        case "W":
+            lat += lat_eps;
+    }
+
+    var circle = L.circle([lat, lon],
+            {radius: 200, color: station.color[i], fillOpacity: 1})
+            .addTo(map);
+    
+    var info = ["Cluster: " + station.cluster[i]
+        , "ID: " + station.ID[i]
+        , "Freeway: " + station.Fwy[i] + " " + station.Dir[i]
+        , ""
+        , "Free flow intercept: " + station.free_intercept[i].toFixed(ndigs)
+        , "Free flow slope: " + station.free_slope[i].toFixed(ndigs)
+        , "Congested intercept: " + station.congested_intercept[i].toFixed(ndigs)
+        , "Congested slope: " + station.congested_slope[i].toFixed(ndigs)
+        ];
+
+    circle.bindPopup(info.join("<br>")).openPopup();
+}
+
 
 function plot_circles(station) {
     for (i = 0; i < station.ID.length; i++) {
-        L.circle([station.Latitude[i], station.Longitude[i]], 
-                {radius: 200, color: station.color[i], fillOpacity: 1})
-                    .addTo(map);
+        one_circle(i)
     }
 }
 
