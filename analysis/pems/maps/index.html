@@ -16,14 +16,25 @@
 </head>
 <body>
 
+    <h1>PEMS stations fundamental diagrams</h1>
+
+    Clark Fitzgerald
+
     <br>
 
 Analysis currently consists of the following steps:
 <ol>
   <li>Download 10 months worth of 30 second PEMS sensor data for the Bay Area, about 130 GB.</li>
   <li>Separate them into groups based on station. </li>
-  <li>Fit a (naive) fundamental diagram to the second lane of the freeway by using two robust linear models for each station: One for data with occupancy less than 0.15 and one for greater. </li>
-  <li>Note: Using millions of data points per station allows constructing tight confidence intervals for the parameters.</li>
+  <li>Fit a (naive) fundamental diagram to the second lane of the freeway
+      by using two robust linear models for each station: One for data with
+      occupancy less than 0.15 and one for greater. This approximates
+      minimizing the L1 loss as in 
+      <a href="http://trrjournalonline.trb.org/doi/abs/10.3141/2260-06">Li and Zhang's 2011 paper</a>.
+  </li>
+  <li>Throw out on/off ramp stations and those with problems such as no
+      observations, excessive standard error, or positive congested slopes.
+      This reduces the number of stations from 3720 to 1438.</li>
   <li>Then these 4 parameters: slope and intercept for congested and
       uncongested, were used as the inputs to a kmeans clustering. I didn't
   discover any reasonable clusters.</li>
@@ -31,20 +42,18 @@ Analysis currently consists of the following steps:
 
     <br>
     <br>
-    The green line below is from station 400501 on I80W.  The red line is
-    from station 404401 on I80E before Carquinez toll.  Both are in the
-    same area west of Carquinez Bridge.
+    The lines below come from the stations on I80 west of the Carquinez
+    Bridge and northeast of Hercules.
     <br>
     <br>
-    <img src="typical_fd.svg" alt="Typical Fundamental Diagram">
+    <img src="carquinez_fd.svg" alt="Typical Fundamental Diagram">
     <br>
     <br>
     Theoretically, each line should pass through the point (1, 0). 
-    The lines plotted above represent 2 cases on opposite extremes. Most
-    other lines will lie between these and hence closer to (1, 0).
     Thinking further, it might be the case that for many stations there are
     relatively few observations in the area of high density. This can bias
-    results since the fundamental diagram isn't truly linear.
+    results since the fundamental diagram isn't truly linear. Also the
+    variance in flow may depend on the occupancy.
     <br>
     <br>
     The circles plotted below correspond to different values for the congested slope in
@@ -54,7 +63,11 @@ Analysis currently consists of the following steps:
     congestion takes more time to clear.
     <br>
     <br>
-    Click on the circles to see the actual values.
+    What's going on with the Bay Bridge? These points are right next to
+    each other, yet they have very different values.
+    <br>
+    <br>
+    Zoom in and click on the circles to see the actual values.
     <br>
     <br>
 

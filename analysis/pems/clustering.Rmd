@@ -294,10 +294,18 @@ lapply(vars, function(varname) {
 
 ```{R}
 
-green = station_cluster[station_cluster$ID == 400501, ]
-red = station_cluster[station_cluster$ID == 404401, ]
+plot_fd = function(row)
+{
+    with(row, abline(free_intercept, free_slope, col = as.character(color)))
+    with(row, abline(congested_intercept, congested_slope
+            , col = as.character(color), lwd = 2
+            ))
+}
 
-svg("maps/typical_fd.svg", width = 9, height = 7)
+carquinez = station_cluster$ID %in% c(404401, 401793, 400501, 403459, 401673, 403460)
+carquinez = station_cluster[carquinez, ]
+
+svg("maps/carquinez_fd.svg", width = 9, height = 7)
 
 plot(c(0, 1), c(0, 20), type = "n"
      , xlab = "occupancy"
@@ -305,15 +313,7 @@ plot(c(0, 1), c(0, 20), type = "n"
      , main = "Representative Fundamental Diagrams"
      )
 
-with(green, abline(free_intercept, free_slope, col = as.character(color)))
-with(green, abline(congested_intercept, congested_slope
-        , col = as.character(color), lwd = 2
-        ))
-
-with(red, abline(free_intercept, free_slope, col = as.character(color)))
-with(red, abline(congested_intercept, congested_slope
-        , col = as.character(color), lwd = 2
-        ))
+by(carquinez, carquinez$ID, plot_fd)
 
 dev.off()
 
