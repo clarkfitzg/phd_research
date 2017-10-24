@@ -236,10 +236,21 @@ fit$size
 ```
 
 This is interesting. They all have around the same uncongested slope, and
-only differ in the slope for the congested area.
+only differ in the slope for the congested area. 
 
 The next step is to plot these stations / clusters on a physical map to see
 where each occurs. I'll save that for another document.
+
+Add in a diverging color palette
+
+```{R}
+# Diverging color palette
+
+cuts = cut(X[, "congested_slope"], breaks = 11)
+pal = rev(RColorBrewer::brewer.pal(11, "RdYlGn"))
+red_green = pal[cuts]
+
+```
 
 ```{R}
 
@@ -247,6 +258,7 @@ station_cluster = data.frame(
     ID = sapply(fds, `[[`, "station")
     , cluster = fit$cluster
     , X
+    , color = red_green
 )
 
 station_cluster = merge(station_cluster
@@ -259,15 +271,23 @@ write.csv(station_cluster, "station_cluster.csv", row.names = FALSE)
 
 ```
 
+Mon Oct 23 16:07:14 PDT 2017
+
+Coming back to this analysis after removing those with positive congested
+slopes. Not sure why I did the clustering in the first place, since 
+there's no evidence that any clustering actually happens. 
+
+The congested slope is the real differentiator, and it's relatively
+normally distributed, so the more natural thing to do is to color the
+points according to the congested slope.
 
 ```{R}
 
 par(mfrow = c(2, 2))
 
-vars = names(stations)[3:6]
-
+vars = names(station_cluster)[3:6]
 lapply(vars, function(varname) {
-    hist(stations[, varname], main = varname, xlab = "")
+    hist(station_cluster[, varname], main = varname, xlab = "")
 })
 
 ```

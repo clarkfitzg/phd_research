@@ -8,34 +8,28 @@ L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=p
     id: 'mapbox.streets'
 }).addTo(map);
 
-// From https://github.com/pointhi/leaflet-color-markers
-var violetIcon = new L.Icon({
-  iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png'
-  , iconSize: [13, 21]
-  , iconAnchor: [6, 21],
-});
+// Working off:
+// https://www.w3schools.com/xml/xml_http.asp
+var xhttp = new XMLHttpRequest();
 
-var orangeIcon = new L.Icon({
-  iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png'
-  , iconSize: [13, 21]
-  , iconAnchor: [6, 21],
-});
+// Declaring a global variable
+var station
 
-var greenIcon = new L.Icon({
-  iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png'
-  , iconSize: [13, 21]
-  , iconAnchor: [6, 21],
-});
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+        station = JSON.parse(xhttp.responseText);
+    }
+};
+
+xhttp.open("GET", "station.json", true);
+xhttp.send();
 
 
+// The actual markers
 for (i = 0; i < station.ID.length; i++) {
-    if (station.cluster[i] == 1) {
-        L.marker([station.Latitude[i], station.Longitude[i]], {icon: violetIcon}).addTo(map);
-    }
-    if (station.cluster[i] == 2) {
-        L.marker([station.Latitude[i], station.Longitude[i]], {icon: orangeIcon}).addTo(map);
-    }
-    if (station.cluster[i] == 3) {
-        L.marker([station.Latitude[i], station.Longitude[i]], {icon: greenIcon}).addTo(map);
-    }
+
+    L.circle([station.Latitude[i], station.Longitude[i]], 
+            {radius: 10, color: station.color[i], fillOpacity: 1})
+                .addTo(map);
+
 }
