@@ -258,7 +258,6 @@ station_cluster = data.frame(
     ID = sapply(fds, `[[`, "station")
     , cluster = fit$cluster
     , X
-    , color = red_green
 )
 
 station_cluster = merge(station_cluster

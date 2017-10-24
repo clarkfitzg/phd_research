@@ -15,11 +15,12 @@ var xhttp = new XMLHttpRequest();
 // Declaring a global variable
 var station;
 
+// TODO: Add popups, legend describing what red and green colors mean.
 
 function plot_circles(station) {
     for (i = 0; i < station.ID.length; i++) {
         L.circle([station.Latitude[i], station.Longitude[i]], 
-                {radius: 10, color: station.color[i], fillOpacity: 1})
+                {radius: 200, color: station.color[i], fillOpacity: 1})
                     .addTo(map);
     }
 }
