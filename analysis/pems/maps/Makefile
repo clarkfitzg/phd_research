@@ -5,4 +5,4 @@ station.json: station_json.R ../station_cluster.csv
 	Rscript $<
 
 link:
-	ln -s ~/phd_research/analysis/pems/maps/* ~/public_html/cluster
+	cp -f ~/phd_research/analysis/pems/maps/* ~/public_html/fd
