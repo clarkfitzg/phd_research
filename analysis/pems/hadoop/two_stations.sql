@@ -9,6 +9,10 @@
 -- real    1m43.807s
 -- user    0m41.116s
 -- sys     0m2.474s
+
+-- Store as txt.gz
+SET hive.exec.compress.output=true;
+SET mapred.output.compression.codec=org.apache.hadoop.io.compress.GzipCodec;
  
 DROP TABLE two_stations;
 
@@ -24,6 +28,8 @@ CREATE EXTERNAL TABLE two_stations (
     , flow8 INT, occupancy8 DOUBLE, speed8 DOUBLE
 )
 COMMENT "Two stations worth of data. Used for developing a script locally before running as UDAF in hive"
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+STORED AS TEXTFILE
 LOCATION '/user/clarkf/two_stations'
 ;
 
