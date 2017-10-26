@@ -16,12 +16,13 @@
 # max flow that was sustained for at least 1 minute. I queried the maxs by
 # station in SQL previously.
 
-s1 = read.table("~/data/two_stations/000014_0.gz")
+s1 = read.table("~/data/two_stations/000016_0.gz")
 
 # read.table behaves differently from data.table here, so these values will
 # change
 FLOW2_INDEX = 7
 OCC2_INDEX = 8
+HI_OCC_THRESHOLD = 0.5
 
 names(s1)[FLOW2_INDEX] = "flow2"
 names(s1)[OCC2_INDEX] = "occ2"
@@ -38,14 +39,7 @@ table(binned)
 # I want to randomly sample k points from each congestion area and plot
 # them.
 
-plot_k = function(grp, x = OCC2_INDEX, y = FLOW2_INDEX, k = 20)
-{
-    samp = grp[sample.int(nrow(grp), size = k), ]
-    points(samp[, x], samp[, y])
-}
-
-
-samp_k = function(grp, k = 20)
+samp_k = function(grp, k = 12)
 {
     grp[sample.int(nrow(grp), size = k), ]
 }
@@ -58,6 +52,8 @@ samp = do.call(rbind, samp)
 # A triangular FD actually seems quite reasonable in this case.
 # The only concern is that variance is unequal: there's much greater
 # variance around occupancy 0.3
+# And wow- when I look at a different station I see _much_ more variability
+# in the fd
 plot(samp[, OCC2_INDEX], samp[, FLOW2_INDEX]
      , type = "p", xlab = "occupancy", ylab = "flow vehicles/30 sec")
 
@@ -73,7 +69,8 @@ spline_full = smooth.spline(s1[, OCC2_INDEX], s1[, FLOW2_INDEX]
 
 x = data.frame(occ2 = seq(0, 1, length.out = 200))
 
-psamp = predict(spline_samp, x)
+psamp = predict(spline_samp, x[, 1])
+
 lines(psamp$x, psamp$y, col = "blue")
 
 pfull = predict(spline_full)
@@ -103,9 +100,6 @@ fitpfull = segmented(fitfull, seg.Z = ~occ2, psi = list(occ2 = c(0.2, 0.4))
     #, control = seg.control(
                  )
 
-# This is appealing, seems to be doing something reasonable.
-lines(x$occ2, predict(fitpfull, x), col = "blue")
-
 # What are these U's and psi's?
 sf = summary(fitpfull) 
 
@@ -114,6 +108,51 @@ sf$coefficients
 
 # use this one
 fitpfull$psi
+
+
+
+
+# This is appealing, seems to be doing something reasonable.
+# EDIT: Less so for the other of the two stations.
+lines(x$occ2, predict(fitpfull, x), col = "blue")
+
+# What does the actual data look like in region of high occupancy?
+hiocc = s1[s1$occ > HI_OCC_THRESHOLD, ]
+
+with(hiocc, plot(occ2, flow2))
+
+lm_hi = lm(flow2 ~ occ2, hiocc)
+
+# At least the linear fit passes through (1, 0)
+abline(lm_hi)
+
+seg_hi = segmented(lm_hi, seg.Z = ~occ2, psi = list(occ2 = c(0.7, 0.9)))
+
+# Interesting result
+lines(x$occ2, predict(seg_hi, x), col = "blue")
+
+
+# I can also enforce the constraint that it runs through the point (1, 0)
+# by removing the intercept in the model
+lm_hi2 = lm(flow2 ~ I(occ2 - 1) - 1, hiocc)
+# -20.49
+
+lines(x$occ2, predict(lm_hi2, x), col = "red")
+
+# What's the slope in mph? Michael says it should be consistent between -10
+# and - 15 mph.
+vehicle_length = 15
+ft_per_mile = 5280
+vehicle_mile = ft_per_mile / vehicle_length
+
+# This slope is -7 mph. Doesn't exactly match up. Possibly because of
+# various types of traffic?
+mph = 120 * coef(lm_hi2) / vehicle_mile
+
+# Will a robust linear model help at all?
+rlm_hi2 = MASS::rlm(flow2 ~ I(occ2 - 1) - 1, hiocc)
+# -20.15
+
 
 # So we want to make a data frame with all the relevant interesting
 # parameters, including standard error. There's no reason we can't do every
