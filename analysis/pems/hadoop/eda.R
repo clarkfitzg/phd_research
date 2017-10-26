@@ -41,12 +41,40 @@ plot_k = function(grp, x = OCC2_INDEX, y = FLOW2_INDEX, k = 20)
     points(samp[, x], samp[, y])
 }
 
-grouped = split(s1, binned)
 
+samp_k = function(grp, k = 20)
+{
+    grp[sample.int(nrow(grp), size = k), ]
+}
+
+
+set.seed(934)
+samp = by(s1, binned, samp_k)
+samp = do.call(rbind, samp)
 
 # A triangular FD actually seems quite reasonable in this case.
-# With the caveat that 
-plot(c(0, 1), c(0, 22), type = "n")
-set.seed(934)
-lapply(grouped, plot_k)
+# The only concern is that variance is unequal: there's much greater
+# variance around occupancy 0.3
+plot(samp[, OCC2_INDEX], samp[, FLOW2_INDEX]
+     , type = "p", xlab = "occupancy", ylab = "flow vehicles/30 sec")
 
+# What does a smoothing spline look like?
+
+spline_samp = smooth.spline(samp[, OCC2_INDEX], samp[, FLOW2_INDEX]
+                            , nknots = 9)
+
+spline_full = smooth.spline(s1[, OCC2_INDEX], s1[, FLOW2_INDEX]
+                            , nknots = 9)
+
+x = seq(0, 1, length.out = 200)
+
+psamp = predict(spline_samp, x)
+lines(psamp$x, psamp$y, col = "blue")
+
+pfull = predict(spline_full)
+lines(pfull$x, pfull$y, col = "red")
+
+# Probably the spline is 'wavy' because it's fitting to these integer
+# values.
+# But by the time the occupancy is 0.4 they both look well approximated by
+# the linear fit.
