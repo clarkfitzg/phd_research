@@ -152,6 +152,46 @@ mph = 120 * coef(lm_hi2) / vehicle_mile
 # Will a robust linear model help at all?
 rlm_hi2 = MASS::rlm(flow2 ~ I(occ2 - 1) - 1, hiocc)
 # -20.15
+# No, it's pretty much the same.
+
+# Here's an idea- Fit the areas as follows:
+#
+# (0, 0.1) with a line passing through the origin
+# (0.2, 0.5) with a standard linear model with intercept
+# (0.5, 1.0) with a line through (1, 0)
+#
+# The area between (0.1, 0.2) is ambiguous because traffic may be free
+# flowing or congested We can extend the fundamental diagram to this area by
+# just taking the intersection of the first two lines. Similarly we can
+# (probably) make the fd continuous at the right knot by taking the
+# intersection of the second and third lines. 
+#
+# If we do all of this the complete fd is defined by two points between 
+# (0, 1). => Four numbers... I'll just store the parameters for the models
+# I find, because that's easiest.
+
+LEFT_RIGHT = 0.1
+MIDDLE_LEFT = 0.2
+MIDDLE_RIGHT = 0.5
+RIGHT_LEFT = 0.5
+
+left_data = s1[s1$occ2 <= LEFT_RIGHT, ]
+left_fit = lm(flow2 ~ occ2 -1, left_data)
+
+middle_data = s1[(MIDDLE_LEFT <= s1$occ2) & (s1$occ2 < MIDDLE_RIGHT), ]
+middle_fit = lm(flow2 ~ occ2, middle_data)
+
+right_data = s1[RIGHT_LEFT <= s1$occ2, ]
+right_fit = lm(flow2 ~ I(occ2 - 1) - 1, right_data)
+
+# This looks reasonable.
+# IDEA: This diagram also implies a maximum flow. It would be interesting
+# to compare real max flows with the theoretical max flow.
+plot(samp[, OCC2_INDEX], samp[, FLOW2_INDEX]
+     , type = "p", xlab = "occupancy", ylab = "flow vehicles/30 sec")
+abline(left_fit)
+abline(middle_fit)
+lines(x$occ2, predict(right_fit, x))
 
 
 # So we want to make a data frame with all the relevant interesting
