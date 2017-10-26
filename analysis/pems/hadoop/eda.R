@@ -16,14 +16,14 @@
 # max flow that was sustained for at least 1 minute. I queried the maxs by
 # station in SQL previously.
 
-s1 = read.table("~/data/two_stations/000016_0.gz")
-
+# It doesn't seem that data.table can read from stdin. Then I'm left with
+# read.table. Could pass more args here for efficiency.
+s1 = read.table("~/data/two_stations/000014_0.gz")
 # read.table behaves differently from data.table here, so these values will
 # change
 FLOW2_INDEX = 7
 OCC2_INDEX = 8
 HI_OCC_THRESHOLD = 0.5
-
 names(s1)[FLOW2_INDEX] = "flow2"
 names(s1)[OCC2_INDEX] = "occ2"
 
@@ -161,7 +161,7 @@ rlm_hi2 = MASS::rlm(flow2 ~ I(occ2 - 1) - 1, hiocc)
 # (0.5, 1.0) with a line through (1, 0)
 #
 # The area between (0.1, 0.2) is ambiguous because traffic may be free
-# flowing or congested We can extend the fundamental diagram to this area by
+# flowing or congested. We can extend the fundamental diagram to this area by
 # just taking the intersection of the first two lines. Similarly we can
 # (probably) make the fd continuous at the right knot by taking the
 # intersection of the second and third lines. 
@@ -179,12 +179,14 @@ left_data = s1[s1$occ2 <= LEFT_RIGHT, ]
 left_fit = lm(flow2 ~ occ2 -1, left_data)
 
 middle_data = s1[(MIDDLE_LEFT <= s1$occ2) & (s1$occ2 < MIDDLE_RIGHT), ]
+
 middle_fit = lm(flow2 ~ occ2, middle_data)
 
 right_data = s1[RIGHT_LEFT <= s1$occ2, ]
 right_fit = lm(flow2 ~ I(occ2 - 1) - 1, right_data)
 
-# This looks reasonable.
+# This looks reasonable for both 000016 and 000014. Quite interesting that
+# one is convex and one is concave at the 2nd knot.
 # IDEA: This diagram also implies a maximum flow. It would be interesting
 # to compare real max flows with the theoretical max flow.
 plot(samp[, OCC2_INDEX], samp[, FLOW2_INDEX]
@@ -192,6 +194,8 @@ plot(samp[, OCC2_INDEX], samp[, FLOW2_INDEX]
 abline(left_fit)
 abline(middle_fit)
 lines(x$occ2, predict(right_fit, x))
+
+abline(middle_fit)
 
 
 # So we want to make a data frame with all the relevant interesting
