@@ -23,6 +23,9 @@ s1 = read.table("~/data/two_stations/000014_0.gz")
 FLOW2_INDEX = 7
 OCC2_INDEX = 8
 
+names(s1)[FLOW2_INDEX] = "flow2"
+names(s1)[OCC2_INDEX] = "occ2"
+
 flow2 = s1[, FLOW2_INDEX]
 occ2 = s1[, OCC2_INDEX]
 
@@ -58,7 +61,9 @@ samp = do.call(rbind, samp)
 plot(samp[, OCC2_INDEX], samp[, FLOW2_INDEX]
      , type = "p", xlab = "occupancy", ylab = "flow vehicles/30 sec")
 
+
 # What does a smoothing spline look like?
+############################################################
 
 spline_samp = smooth.spline(samp[, OCC2_INDEX], samp[, FLOW2_INDEX]
                             , nknots = 9)
@@ -66,7 +71,7 @@ spline_samp = smooth.spline(samp[, OCC2_INDEX], samp[, FLOW2_INDEX]
 spline_full = smooth.spline(s1[, OCC2_INDEX], s1[, FLOW2_INDEX]
                             , nknots = 9)
 
-x = seq(0, 1, length.out = 200)
+x = data.frame(occ2 = seq(0, 1, length.out = 200))
 
 psamp = predict(spline_samp, x)
 lines(psamp$x, psamp$y, col = "blue")
@@ -78,3 +83,25 @@ lines(pfull$x, pfull$y, col = "red")
 # values.
 # But by the time the occupancy is 0.4 they both look well approximated by
 # the linear fit.
+
+
+# How about a piecewise linear fit?
+library(segmented)
+
+
+fit = lm(flow2 ~ occ2, samp)
+fitp = segmented(fit, seg.Z = ~occ2, psi = list(occ2 = c(0.2, 0.4))
+    #, control = seg.control(
+                 )
+
+lines(x$occ2, predict(fitp, x), col = "blue")
+
+
+fitfull = lm(flow2 ~ occ2, s1)
+
+fitpfull = segmented(fitfull, seg.Z = ~occ2, psi = list(occ2 = c(0.2, 0.4))
+    #, control = seg.control(
+                 )
+
+# This is appealing, seems to be doing something reasonable.
+lines(x$occ2, predict(fitpfull, x), col = "blue")
