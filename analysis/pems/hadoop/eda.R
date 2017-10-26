@@ -105,3 +105,33 @@ fitpfull = segmented(fitfull, seg.Z = ~occ2, psi = list(occ2 = c(0.2, 0.4))
 
 # This is appealing, seems to be doing something reasonable.
 lines(x$occ2, predict(fitpfull, x), col = "blue")
+
+# What are these U's and psi's?
+sf = summary(fitpfull) 
+
+# psi coef not correct here.
+sf$coefficients
+
+# use this one
+fitpfull$psi
+
+# So we want to make a data frame with all the relevant interesting
+# parameters, including standard error. There's no reason we can't do every
+# lane also, or at least the first 3.
+# We can also throw out those that have all zeros, or with various errors.
+data.frame(station = 
+    , lane_number = 
+    , n_total = 
+    , n_high_density = 
+    , r_squared = sf$r.squared
+    , break1 = 
+    , break2 = 
+    , slope1 = 
+    , slope2 = 
+    , slope3 = 
+    , seb1 = 
+    , seb2 = 
+    , ses1 = 
+    , ses2 = 
+    , ses3 = 
+    )
