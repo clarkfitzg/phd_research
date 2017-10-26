@@ -18,9 +18,35 @@
 
 s1 = read.table("~/data/two_stations/000014_0.gz")
 
-flow2 = s1[, 7]
-occ2 = s1[, 8]
+# read.table behaves differently from data.table here, so these values will
+# change
+FLOW2_INDEX = 7
+OCC2_INDEX = 8
+
+flow2 = s1[, FLOW2_INDEX]
+occ2 = s1[, OCC2_INDEX]
+
+hist(occ2)
 
 binned = cut(occ2, breaks = seq(0, 1, by = 0.1), right = FALSE)
 
 table(binned)
+
+# I want to randomly sample k points from each congestion area and plot
+# them.
+
+plot_k = function(grp, x = OCC2_INDEX, y = FLOW2_INDEX, k = 20)
+{
+    samp = grp[sample.int(nrow(grp), size = k), ]
+    points(samp[, x], samp[, y])
+}
+
+grouped = split(s1, binned)
+
+
+# A triangular FD actually seems quite reasonable in this case.
+# With the caveat that 
+plot(c(0, 1), c(0, 22), type = "n")
+set.seed(934)
+lapply(grouped, plot_k)
+
