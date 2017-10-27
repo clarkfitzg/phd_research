@@ -21,14 +21,14 @@ msg("BEGIN R SCRIPT")
 CHUNKSIZE = 1e6L
 
 # This is the index for the column defining the groups
-GROUP_INDEX = 1L
+GROUP_INDEX = 3L
 
 SEP = "\t"
 
 # Columns for the variables of interest. It would be better to do this by
 # name based on the Hive table.
-FLOW2_INDEX = 2L
-OCC2_INDEX = 3L
+FLOW2_INDEX = 7
+OCC2_INDEX = 8
 
 # Parameters related to analysis
 LEFT_RIGHT = 0.1
