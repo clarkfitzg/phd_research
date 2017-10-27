@@ -6,14 +6,24 @@
 # 
 # Concepts
 # ===========
-# working batch- The whole chunk to process. A single chunk, and in
-#   particular the _largest_ such chunk should fit comfortably in memory.
+# working chunk- The whole chunk to process. The _largest_ such chunk
+#   should fit comfortably in memory.
 # queue- Data that has been read from stdin, but is not part of the working
 #   chunk because it comes from the next group
+
+# Logging to stderr() writes to the Hadoop logs where we can find them.
+msg = function(...) writeLines(paste(...), stderr())
+
+msg("BEGIN R SCRIPT")
 
 # Each working chunk to process has around 800K rows, so make this parameter larger
 # than 800K. 
 CHUNKSIZE = 1e6L
+
+# This is the index for the column defining the groups
+GROUP_INDEX = 3L
+
+SEP = "\t"
 
 # Columns for the variables of interest. It would be better to do this by
 # name based on the Hive table.
@@ -31,31 +41,73 @@ stream_in = file("stdin")
 open(stream_in)
 stream_out = stdout()
 
-queue = read.table(stream_in)
+multiple_groups = function(queue, g = GROUP_INDEX) length(unique(queue[, g])) > 1
 
-# All psuedocode at the moment:
-while(nrow(queue) > 0) {
-    while(multiple_groups) {
-        working = queue[...] #TODO
+
+# Process an entire group.
+# This function will change depending on the analysis to perform.
+process_group = function(grp, outfile)
+{
+    names(grp)[FLOW2_INDEX] = "flow2"
+    names(grp)[OCC2_INDEX] = "occ2"
+
+    left_data = grp[grp$occ2 <= LEFT_RIGHT, ]
+    left_fit = lm(flow2 ~ occ2 -1, left_data)
+
+    middle_data = grp[(MIDDLE_LEFT <= grp$occ2) & (grp$occ2 < MIDDLE_RIGHT), ]
+    middle_fit = lm(flow2 ~ occ2, middle_data)
+
+    mid_coef = summary(middle_fit)$coefficients
+
+    right_data = grp[RIGHT_LEFT <= grp$occ2, ]
+    right_fit = lm(flow2 ~ I(occ2 - 1) - 1, right_data)
+
+    out = data.frame(station = grp[1, GROUP_INDEX]
+        , n_total = nrow(grp)
+        , n_middle = nrow(middle_data)
+        , n_high = nrow(right_data)
+        , left_slope = coef(left_fit)
+        , left_slope_se = summary(left_fit)$coefficients[1, 2]
+        , mid_intercept = mid_coef[1, 1]
+        , mid_intercept_se = mid_coef[1, 2]
+        , mid_slope = mid_coef[2, 1]
+        , mid_slope_se = mid_coef[2, 2]
+        , right_slope = coef(right_fit)
+        , right_slope_se = summary(right_fit)$coefficients[1, 2]
+        )
+        
+    write.table(out, outfile, col.names = FALSE, row.names = FALSE)
+}
+
+
+# Main stream processing
+############################################################
+
+# Initialize the queue
+queue = read.table(stream_in, nrows = CHUNKSIZE, sep = SEP)
+
+msg("Entering main stream processing loop.")
+
+while(TRUE) {
+    while(multiple_groups(queue)) {
+        # Pop the first group out of the queue
+        ng = queue[1, GROUP_INDEX]
+        msg("Processing group", ng)
+        nextgrp = queue[, GROUP_INDEX] == ng
+        working = queue[nextgrp, ]
+        queue = queue[!nextgrp, ]
+
+        process_group(working, stream_out)
     }
     # Fill up the queue
     nextqueue = read.table(stream_in)
+    if(nrow(nextqueue) == 0) {
+        msg("Last group")
+        process_group(queue, stream_out)
+        break
+    }
     queue = rbind(queue, nextqueue)
 }
 
-s1 = read.table("~/data/two_stations/000014_0.gz")
-names(s1)[FLOW2_INDEX] = "flow2"
-names(s1)[OCC2_INDEX] = "occ2"
-
-
-left_data = s1[s1$occ2 <= LEFT_RIGHT, ]
-left_fit = lm(flow2 ~ occ2 -1, left_data)
-
-middle_data = s1[(MIDDLE_LEFT <= s1$occ2) & (s1$occ2 < MIDDLE_RIGHT), ]
-
-middle_fit = lm(flow2 ~ occ2, middle_data)
-
-right_data = s1[RIGHT_LEFT <= s1$occ2, ]
-right_fit = lm(flow2 ~ I(occ2 - 1) - 1, right_data)
-
-
+# I'm not sure if this will run or if it will stop execution earlier.
+msg("END R SCRIPT")
