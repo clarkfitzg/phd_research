@@ -12,7 +12,11 @@
 #   chunk because it comes from the next group
 
 # Logging to stderr() writes to the Hadoop logs where we can find them.
-msg = function(...) writeLines(paste(...), stderr())
+DEBUG = FALSE
+msg = function(..., log = DEBUG)
+{
+    if(log) writeLines(paste(...), stderr())
+}
 
 msg("BEGIN R SCRIPT")
 
@@ -27,8 +31,8 @@ SEP = "\t"
 
 # Columns for the variables of interest. It would be better to do this by
 # name based on the Hive table.
-FLOW2_INDEX = 2L
-OCC2_INDEX = 3L
+col.names = c("station", "flow2", "occ2")
+colClasses = c("integer", "integer", "numeric")
 
 # Parameters related to analysis
 LEFT_RIGHT = 0.1
@@ -49,9 +53,6 @@ multiple_groups = function(queue, g = GROUP_INDEX) length(unique(queue[, g])) > 
 process_group = function(grp, outfile)
 {
     msg("Processing group", grp[1, GROUP_INDEX])
-
-    names(grp)[FLOW2_INDEX] = "flow2"
-    names(grp)[OCC2_INDEX] = "occ2"
 
     left_data = grp[grp$occ2 <= LEFT_RIGHT, ]
     left_fit = lm(flow2 ~ occ2 -1, left_data)
@@ -90,7 +91,8 @@ process_group = function(grp, outfile)
 #queue = read.table(stream_in, nrows = CHUNKSIZE, sep = SEP)
 # We could generate these read.table calls based on the Hive table being
 # transformed.
-queue = read.table(stream_in, nrows = CHUNKSIZE, na.strings = "\N")
+queue = read.table(stream_in, nrows = CHUNKSIZE, colClasses = colClasses
+    , col.names = col.names, na.strings = "\\N")
 colClasses = sapply(queue, class)
 col.names = colnames(queue)
 
@@ -108,8 +110,8 @@ while(TRUE) {
     }
 
     # Fill up the queue
-    nextqueue = read.table(stream_in, colClasses = colClasses
-        , col.names = col.names, na.strings = "\N")
+    nextqueue = read.table(stream_in, nrows = CHUNKSIZE
+        , colClasses = colClasses, col.names = col.names, na.strings = "\\N")
     if(nrow(nextqueue) == 0) {
         msg("Last group")
         try(process_group(queue, stream_out))
