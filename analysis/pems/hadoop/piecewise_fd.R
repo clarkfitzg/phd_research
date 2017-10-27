@@ -90,7 +90,7 @@ process_group = function(grp, outfile)
 #queue = read.table(stream_in, nrows = CHUNKSIZE, sep = SEP)
 # We could generate these read.table calls based on the Hive table being
 # transformed.
-queue = read.table(stream_in, nrows = CHUNKSIZE)
+queue = read.table(stream_in, nrows = CHUNKSIZE, na.strings = "\N")
 colClasses = sapply(queue, class)
 col.names = colnames(queue)
 
@@ -109,7 +109,7 @@ while(TRUE) {
 
     # Fill up the queue
     nextqueue = read.table(stream_in, colClasses = colClasses
-        , col.names = col.names)
+        , col.names = col.names, na.strings = "\N")
     if(nrow(nextqueue) == 0) {
         msg("Last group")
         try(process_group(queue, stream_out))
