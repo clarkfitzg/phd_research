@@ -2,6 +2,7 @@
 DROP TABLE fundamental_diagram
 ;
 
+-- Removing the EXTERNAL TABLE stopped the temporary file error.
 CREATE TABLE fundamental_diagram (
   station INT
   , n_total INT
@@ -16,10 +17,8 @@ CREATE TABLE fundamental_diagram (
   , right_slope DOUBLE
   , right_slope_se DOUBLE
   )
--- Removing the EXTERNAL TABLE along with the following commands saved us
--- from getting the temporary file error.
---ROW FORMAT DELIMITED
---FIELDS TERMINATED BY '\t'
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '\t'
 --STORED AS TEXTFILE
 --LOCATION '/user/clarkf/fundamental_diagram'
 ;

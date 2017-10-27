@@ -80,7 +80,8 @@ process_group = function(grp, outfile)
         , right_slope_se = summary(right_fit)$coefficients[1, 2]
         )
         
-    write.table(out, outfile, col.names = FALSE, row.names = FALSE)
+    write.table(out, outfile, col.names = FALSE, row.names = FALSE
+                , sep = SEP)
 }
 
 
