@@ -48,6 +48,8 @@ multiple_groups = function(queue, g = GROUP_INDEX) length(unique(queue[, g])) > 
 # This function will change depending on the analysis to perform.
 process_group = function(grp, outfile)
 {
+    msg("Processing group", grp[1, GROUP_INDEX])
+
     names(grp)[FLOW2_INDEX] = "flow2"
     names(grp)[OCC2_INDEX] = "occ2"
 
@@ -84,23 +86,28 @@ process_group = function(grp, outfile)
 ############################################################
 
 # Initialize the queue
-queue = read.table(stream_in, nrows = CHUNKSIZE, sep = SEP)
+#queue = read.table(stream_in, nrows = CHUNKSIZE, sep = SEP)
+# We could generate these read.table calls based on the Hive table being
+# transformed.
+queue = read.table(stream_in, nrows = CHUNKSIZE)
+colClasses = sapply(queue, class)
+col.names = colnames(queue)
 
 msg("Entering main stream processing loop.")
 
 while(TRUE) {
     while(multiple_groups(queue)) {
         # Pop the first group out of the queue
-        ng = queue[1, GROUP_INDEX]
-        msg("Processing group", ng)
-        nextgrp = queue[, GROUP_INDEX] == ng
+        nextgrp = queue[, GROUP_INDEX] == queue[1, GROUP_INDEX]
         working = queue[nextgrp, ]
         queue = queue[!nextgrp, ]
 
         process_group(working, stream_out)
     }
+
     # Fill up the queue
-    nextqueue = read.table(stream_in)
+    nextqueue = read.table(stream_in, colClasses = colClasses
+        , col.names = col.names)
     if(nrow(nextqueue) == 0) {
         msg("Last group")
         process_group(queue, stream_out)
@@ -109,5 +116,6 @@ while(TRUE) {
     queue = rbind(queue, nextqueue)
 }
 
-# I'm not sure if this will run or if it will stop execution earlier.
+# I'm not sure if this will run or if Hive will stop execution when stdin
+# and stdout are exhausted.
 msg("END R SCRIPT")
