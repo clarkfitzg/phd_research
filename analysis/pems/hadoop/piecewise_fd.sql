@@ -29,10 +29,22 @@ INSERT OVERWRITE TABLE fundamental_diagram
 SELECT
 TRANSFORM (station, flow2, occupancy2)
 USING "Rscript piecewise_fd.R"
--- This seems redundant
---AS (userid, count)
+-- This AS seems redundant, since the reducers produce these.
+AS(station 
+  , n_total 
+  , n_middle 
+  , n_high 
+  , left_slope 
+  , left_slope_se 
+  , mid_intercept 
+  , mid_intercept_se 
+  , mid_slope 
+  , mid_slope_se 
+  , right_slope 
+  , right_slope_se 
+  )
 FROM (
-    SELECT (station, flow2, occupancy2)
+    SELECT station, flow2, occupancy2
     FROM pems 
     CLUSTER BY station
 ) AS tmp  -- Seems that it's necessary to add this alias here to avoid parsing error.
