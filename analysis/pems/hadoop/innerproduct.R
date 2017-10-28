@@ -4,3 +4,5 @@
 # functions.
 #
 # This is \int_0^1 f(x) g(x) dx
+
+kernlab::kkmeans
