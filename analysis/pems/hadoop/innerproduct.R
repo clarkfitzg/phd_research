@@ -59,12 +59,23 @@ library(kernlab)
 m = as.matrix(fd$funcs)
 
 # Not working
-km = kernelMatrix(fd_inner, as.matrix(fd$funcs))
+km = kernelMatrix(fd_inner, m)
 
 ?kernlab::kkmeans
 
-# Do it the dumb way.
-# No, this produces the same error
-# Maybe it's the list that causes the issue?
-d = outer(fd$funcs, fd$funcs, fd_inner)
+# Vectorized version
+fd_inner_vec = function(f1, f2)
+{
+    out = Map(fd_inner, f1, f2)
+    unlist(out)
+}
 
+# Works
+fd_inner_vec(fd$funcs[1:3], fd$funcs[1:3])
+
+# Leaving this running
+system.time(
+d <- outer(fd$funcs, fd$funcs, fd_inner_vec)
+)
+
+?kernlab::kkmeans

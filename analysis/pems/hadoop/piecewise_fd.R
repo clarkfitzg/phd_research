@@ -94,8 +94,6 @@ process_group = function(grp, outfile)
 # transformed.
 queue = read.table(stream_in, nrows = CHUNKSIZE, colClasses = colClasses
     , col.names = col.names, na.strings = "\\N")
-colClasses = sapply(queue, class)
-col.names = colnames(queue)
 
 msg("Entering main stream processing loop.")
 
