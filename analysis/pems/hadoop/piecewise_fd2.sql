@@ -1,12 +1,13 @@
--- Uses the original, unclustered data, directly as downloaded from the
--- website.
+-- This version uses the pre clustered data.
 
--- Fri Oct 27 11:07:09 PDT 2017
-DROP TABLE fundamental_diagram
+-- real    6m23.290s
+-- user    0m44.630s
+-- sys     0m3.000s
+DROP TABLE fundamental_diagram2
 ;
 
 -- Removing the EXTERNAL TABLE stopped the temporary file error.
-CREATE TABLE fundamental_diagram (
+CREATE TABLE fundamental_diagram2 (
   station INT
   , n_total INT
   , n_middle INT
@@ -23,13 +24,13 @@ CREATE TABLE fundamental_diagram (
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 --STORED AS TEXTFILE
---LOCATION '/user/clarkf/fundamental_diagram'
+--LOCATION '/user/clarkf/fundamental_diagram2'
 ;
 
 add FILE piecewise_fd.R
 ;
 
-INSERT OVERWRITE TABLE fundamental_diagram
+INSERT OVERWRITE TABLE fundamental_diagram2
 SELECT
 TRANSFORM (station, flow2, occupancy2)
 USING "Rscript piecewise_fd.R"
@@ -49,16 +50,16 @@ AS(station
   )
 FROM (
     SELECT station, flow2, occupancy2
-    FROM pems
-    CLUSTER BY station
+    FROM pems_clustered
 ) AS tmp  -- Seems that it's necessary to add this alias here to avoid parsing error.
 ;
 
+-- 2414 rows
 SELECT COUNT(*)
-FROM fundamental_diagram
+FROM fundamental_diagram2
 ;
 
 SELECT *
-FROM fundamental_diagram
+FROM fundamental_diagram2
 LIMIT 10
 ;
