@@ -54,12 +54,18 @@ FROM (
 ) AS tmp  -- Seems that it's necessary to add this alias here to avoid parsing error.
 ;
 
--- 2414 rows
-SELECT COUNT(*)
-FROM fundamental_diagram2
-;
-
 SELECT *
 FROM fundamental_diagram2
 LIMIT 10
 ;
+
+-- 2414 rows. That means that this did not work!
+SELECT COUNT(*)
+FROM fundamental_diagram2
+;
+
+-- 1997? Weird, the other one has 1998
+SELECT COUNT(DISTINCT station)
+FROM fundamental_diagram2
+;
+

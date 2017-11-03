@@ -1,5 +1,9 @@
 -- Uses the original, unclustered data, directly as downloaded from the
 -- website.
+-- 
+-- real    9m6.143s
+-- user    0m50.771s
+-- sys     0m3.245s
 
 -- Fri Oct 27 11:07:09 PDT 2017
 DROP TABLE fundamental_diagram
@@ -54,6 +58,7 @@ FROM (
 ) AS tmp  -- Seems that it's necessary to add this alias here to avoid parsing error.
 ;
 
+-- 1998
 SELECT COUNT(*)
 FROM fundamental_diagram
 ;
