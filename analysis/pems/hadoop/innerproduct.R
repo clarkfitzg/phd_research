@@ -73,9 +73,16 @@ fd_inner_vec = function(f1, f2)
 # Works
 fd_inner_vec(fd$funcs[1:3], fd$funcs[1:3])
 
-# Leaving this running
+# Leaving this running...
 system.time(
 d <- outer(fd$funcs, fd$funcs, fd_inner_vec)
 )
+
+# Took 2.6 hours. Worth it to write a parallel version.
+9475 / 60^2
+
+save(d, file = "func_dist.rds")
+
+write.table(d, file = "~/data/pems/fd_inner.txt")
 
 ?kernlab::kkmeans

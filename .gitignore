@@ -6,6 +6,9 @@ data/*
 *.log.*
 *.pdf
 
+# Rdata
+*.rda
+
 *.aux
 *.bbl
 *.blg
