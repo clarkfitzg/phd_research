@@ -1,0 +1,49 @@
+# Mon Nov  6 07:52:15 PST 2017
+#
+# Looking at the results of the kernel based clustering.
+
+library(kernlab)
+
+d = read.table("~/data/pems/fd_inner.txt")
+
+# Make this into the kernel matrix as expected by kernlab
+
+library(cluster)
+
+# Scaling it into a correlation matrix
+dcor = as.matrix(d)
+N = nrow(d)
+for(i in 1:N){
+    for(j in 1:N){
+        dcor[i, j] = d[i, j] / sqrt(d[i, i] * d[j, j])
+    }
+}
+
+d3 = as.matrix(d)
+
+sum(is.na(d3))
+
+sum(is.na(dcor))
+
+hist(diag(d3))
+
+
+# Don't know what's going on. Why are values of dcor NA?
+
+
+
+
+
+# They're almost all the same :)
+hist(dcor[dcor > 0.5])
+
+N2 = sum(is.na(dcor[1, ]))
+
+d2 = dcor[!is.na(dcor)]
+
+# Becomes a measure of dissimilarity
+D = as.dist(1 - dcor)
+
+D[is.na(D)] = NULL
+
+pam1 = pam(D, 2)
