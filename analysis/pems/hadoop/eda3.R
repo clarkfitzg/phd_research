@@ -4,14 +4,27 @@
 
 library(cluster)
 
+source("tools.R")
 
 d = read.table("~/data/pems/fd_inner.txt")
 
 dm = as.matrix(d)
 
-nonzero = diag(dm) != 0
+# From histogram some of these values are way out of line. We'll chop off
+# the outliers because it's likely due to faulty sensors rather than
+# any interesting phenomenon.
 
-dm = dm[nonzero, nonzero]
+# These actually represent the squared function norms
+norms = diag(dm)
+
+# Chop off the upper and lower 1 percent
+hilow = quantile(norms, probs = c(0.01, 0.99))
+keepers = (hilow[1] < norms) & (norms < hilow[2])
+
+# Sanity check, should be about 0.98
+mean(keepers)
+
+dm = dm[keepers, keepers]
 
 # Scaling a similarity matrix into a correlation matrix
 dcor = dm
@@ -38,14 +51,37 @@ clusters = pam1$clustering
 
 table(clusters)
 
-# What do these representative FD's look like?
-pam1$medoids
-
 fd = read.table("~/data/pems/fdclean.tsv", header = TRUE)
-fd = fd[nonzero, ]
 
 # match clusters to stations
 c2 = clusters[as.character(fd$station)]
 fd$cluster = c2
 
-# The representative clusters
+# Remove those that didn't match
+fd = fd[!is.na(fd$cluster), ]
+
+# What do the representative FD's look like?
+# These are the "median" cluster for each group. Whatever that means :)
+pam1$medoids
+
+cluster1 = fd[fd$station == as.integer(pam1$medoids[1]), ]
+
+cluster2 = fd[fd$station == as.integer(pam1$medoids[2]), ]
+
+plot(c(0, 1), c(0, max(cluster1$lefty, cluster2$lefty)), type = "n"
+     , main = "Cluster medoids"
+     , xlab = "occupancy"
+     , ylab = "flow (veh / 30 sec)")
+plotfd(cluster1, lty = 2)
+plotfd(cluster2, lty = 1)
+legend("topright", legend = c("Cluster 1", "Cluster 2"), lty = c(2, 1))
+
+# Cool!
+# The most obvious feature is that one function is concave while the other
+# is not.
+
+c2 = fd$cluster == 2
+
+# This is only 0.84, so concavity mostly corresponds to the clustering, but
+# not exactly.
+mean(fd$right_convex == c2)
