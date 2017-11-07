@@ -42,6 +42,8 @@ for(i in 1:N){
 }
 
 # Becomes a measure of dissimilarity
+# Is it a metric? Only thing to verify is the triangle inequality
+# Started to try this on paper, could come back if I feel like it.
 D = as.dist(1 - dcor)
 
 
@@ -68,6 +70,7 @@ cluster1 = fd[fd$station == as.integer(pam1$medoids[1]), ]
 
 cluster2 = fd[fd$station == as.integer(pam1$medoids[2]), ]
 
+svg("../maps/cluster_fd.svg")
 plot(c(0, 1), c(0, max(cluster1$lefty, cluster2$lefty)), type = "n"
      , main = "Cluster medoids"
      , xlab = "occupancy"
@@ -75,6 +78,7 @@ plot(c(0, 1), c(0, max(cluster1$lefty, cluster2$lefty)), type = "n"
 plotfd(cluster1, lty = 2)
 plotfd(cluster2, lty = 1)
 legend("topright", legend = c("Cluster 1", "Cluster 2"), lty = c(2, 1))
+dev.off()
 
 # Cool!
 # The most obvious feature is that one function is concave while the other
@@ -85,3 +89,7 @@ c2 = fd$cluster == 2
 # This is only 0.84, so concavity mostly corresponds to the clustering, but
 # not exactly.
 mean(fd$right_convex == c2)
+
+fd$ID = fd$station
+
+write.csv(fd, "../station_cluster.csv")
