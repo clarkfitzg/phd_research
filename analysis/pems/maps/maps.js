@@ -40,17 +40,17 @@ function one_circle(i) {
     }
 
     var circle = L.circle([lat, lon],
-            {radius: 200, color: station.color[i], fillOpacity: 1})
+            {radius: 100, color: station.color[i], fillOpacity: 0.5})
             .addTo(map);
     
     var info = ["Cluster: " + station.cluster[i]
         , "ID: " + station.ID[i]
         , "Freeway: " + station.Fwy[i] + " " + station.Dir[i]
-        , ""
-        , "Free flow intercept: " + station.free_intercept[i].toFixed(ndigs)
-        , "Free flow slope: " + station.free_slope[i].toFixed(ndigs)
-        , "Congested intercept: " + station.congested_intercept[i].toFixed(ndigs)
-        , "Congested slope: " + station.congested_slope[i].toFixed(ndigs)
+        //, ""
+        //, "Free flow intercept: " + station.free_intercept[i].toFixed(ndigs)
+        //, "Free flow slope: " + station.free_slope[i].toFixed(ndigs)
+        //, "Congested intercept: " + station.congested_intercept[i].toFixed(ndigs)
+        //, "Congested slope: " + station.congested_slope[i].toFixed(ndigs)
         ];
 
     circle.bindPopup(info.join("<br>")).openPopup();
