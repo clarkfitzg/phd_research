@@ -2,26 +2,26 @@
 #
 # Looking at the results of the kernel based clustering.
 
-library(kernlab)
+library(cluster)
+
 
 d = read.table("~/data/pems/fd_inner.txt")
 
-# Make this into the kernel matrix as expected by kernlab
-
-library(cluster)
+dm = as.matrix(d)
 
 # Scaling it into a correlation matrix
-dcor = as.matrix(d)
+dcor = dm
 N = nrow(d)
 for(i in 1:N){
     for(j in 1:N){
-        dcor[i, j] = d[i, j] / sqrt(d[i, i] * d[j, j])
+        dij = dm[i, j] / sqrt(dm[i, i] * dm[j, j])
+        if(is.na(dij)) stop()
+        dcor[i, j] = dij
     }
 }
 
-d3 = as.matrix(d)
 
-sum(is.na(d3))
+sum(is.na(dm))
 
 sum(is.na(dcor))
 
