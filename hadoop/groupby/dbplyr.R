@@ -53,3 +53,5 @@ tailnum_delay_db2 <- batting %>%
 # Then it translates to UDF(`G`) in the SQL, which has no meaning unless it's
 # implemented in the database.
 
+# It could theoretically be translated into the fancy SQL I write for the
+# Hive stuff though.
