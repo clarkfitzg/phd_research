@@ -6,7 +6,7 @@ work well for the high throughput jobs that Hadoop was designed for.
 Latency is generally poor, as with all Hadoop applications.
 
 Writing now thinking about what kind of software to produce. I have in mind
-an `rhive` package, kind of following the naming convention for the Hadoop
+an `RHive` package, kind of following the naming convention for the Hadoop
 ecosystem as found in [Revolution
 R](https://github.com/RevolutionAnalytics). This would become a package to
 put on CRAN and talk about next summer at JSM.
@@ -43,15 +43,15 @@ More flexible:
 - `input_sql` sql query defining the input data. Might be possible to infer
   this from script or function, if the function uses column names.
   Otherwise it might be a `SELECT *`. To start with it's best to have a
-  script or string.
+  script or string pointing to a filename.
 - `hive_params` explicitly set parameters in Hive. How to write the data,
   etc.
 - `try` fail silently or not?.
 
 Optional:
 
-- `self_contained` worker nodes may or may not have the `rhive` library available.
-  If they don't then we can send the code that we need, or send the library
+- `self_contained` worker nodes may or may not have the `RHive` library available.
+  If they don't then we can generate and send the code that we need, or send the library
   as a tarball or something.
 
 __Outputs:__
@@ -64,3 +64,12 @@ __Outputs:__
 
 Will there be a speedup from using a fast file reader? Possibly not much if
 we already know the schema, since we can skip column type inference.
+
+How about SQL generation from R code? Some work has been done on this in R,
+ie. dplyr.
+
+I could also follow [R's database interface (DBI)
+specification](https://cran.r-project.org/web/packages/DBI/vignettes/spec.html)
+to support the interactive stuff. It looks like [Rstudio already does
+that](http://db.rstudio.com/databases/hive/) through ODBC. I wonder if I
+could hook in to dplyr?
