@@ -70,14 +70,17 @@ seconds = function(expr, times = 1L, ...)
     median(bm$time) / 1e9
 }
 
+mb = microbenchmark
+# Post process
+ppmb = function(x) median(x$time) / 1e9
 
-infer_params = function(x)
+infer_params = function(f, x)
 {
     p = list()
     # How long does it take to execute f(x[i])?
     # Assume this doesn't depend on x[i]
-    p$one_func_time = seconds(fx1 <- wrapper(x[1]), times = 10L)
-    p$one_func_memory = object.size(fx1)
+    p$one_func_time = ppmb(mb(fx1 <- f(x[[1]]), times = 10L))
+    p$one_func_memory = as.numeric(object.size(fx1))
     p$n = length(x)
     p
 }
@@ -90,11 +93,11 @@ one_experiment = function(nobs = 50, nx = 20)
     x = replicate(nx, list(1:nobs, rnorm(nobs), 1:nobs + 0.5, rnorm(nobs))
         , simplify = FALSE)
 
-    p = infer_params(x)
+    p = infer_params(wrapper, x)
     out = as.data.frame(p)
 
-    out$sertime = seconds(lapply(x, wrapper))
-    out$partime = seconds(parallel::mclapply(x, wrapper))
+    out$sertime = ppmb(mb(lapply(x, wrapper), times = 1L))
+    out$partime = ppmb(mb(parallel::mclapply(x, wrapper), times = 1L))
     out
 }
 
@@ -103,13 +106,14 @@ lapply_overhead_time = 2e-6
 transfer_rate = 400e6
 nprocs = 2
 
-timings = lapply(seq(from = 50, by = 50, length.out = 100), one_experiment)
+timings = lapply(seq(from = 50, by = 50, length.out = 20), one_experiment)
 
+timings = do.call(rbind, timings)
 
 # Intercepts correspond to mclapply and lapply overhead.
 
 sermodel = lm(sertime ~ I(one_func_time * n), timings)
 
-parmodel = lm(partime ~ I(one_func_time * ceiling(p$n / nprocs))
+parmodel = lm(partime ~ I(one_func_time * ceiling(n / nprocs))
                       + I(one_func_memory * n / transfer_rate), timings)
 
