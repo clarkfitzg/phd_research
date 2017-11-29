@@ -1,0 +1,45 @@
+Tue Nov 28 15:40:24 PST 2017
+
+Duncan and I were talking about the code analysis, which is something I
+need to get on. I'd like to do this in a literate programming style.
+
+## Optimization
+
+Consider execution of code as an optimization problem. The semantics of the
+language are the constraints. We want to perform the same calculations,
+only faster.
+
+Suppose we're deciding whether to execute `lapply(x, f)` in serial
+or in parallel via `parallel::mclapply(x, f)`. To make this decision
+generally we need to know several parameters based on the code running on
+that system:
+
+(Units are seconds and bytes)
+
+```{R}
+
+p = list()
+
+# How long does it take to execute f(x[i])?
+p$one_func_time = 1e-6
+
+# How large is f(x[i])?
+p$one_func_memory = 20
+
+```
+
+We also need to know something about that system:
+
+```{R}
+
+s = list()
+
+# How long does it take to call mclapply with no args?
+s$mclapply_overhead_time = 5e-3
+
+# How quickly can one transfer data between processes?
+s$transfer_rate = 400e6
+
+```
+
+

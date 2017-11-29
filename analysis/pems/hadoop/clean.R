@@ -76,6 +76,7 @@ nrow(fd)
 
 fd$right_convex = fd$mid_slope < fd$right_slope
 
+# This is an interesting find
 mean(fd$right_convex)
 
 write.table(fd, "~/data/pems/fdclean.tsv", sep = "\t"
