@@ -50,6 +50,19 @@ piecewise_inner = function(x1, y1, x2, y2)
 }
 
 
+# What I really want is a macro that evaluates this function body exactly
+# as if I had typed it out. Right now it's causing me all kinds of
+# headaches. For example, I thought this version would work, but looks like
+# it could be trying to use dynamic rather than lexical scoping. Ack.
+
+# debug at validation.R#56: bm = microbenchmark(list = list(e), times = times, ...)
+# Browse[2]> e
+# fx1 <- wrapper(x[1])
+# Browse[2]> x
+# Error: object 'x' not found
+# Browse[2]> ls(parent.frame())
+# [1] "p" "x"
+
 seconds = function(expr, times = 1L, ...)
 {
     e = substitute(expr)
@@ -58,13 +71,12 @@ seconds = function(expr, times = 1L, ...)
 }
 
 
-infer_params = function(f, x)
+infer_params = function(x)
 {
     p = list()
-    force(f)
     # How long does it take to execute f(x[i])?
     # Assume this doesn't depend on x[i]
-    p$one_func_time = seconds(fx1 <- f(x[1]), times = 10L)
+    p$one_func_time = seconds(fx1 <- wrapper(x[1]), times = 10L)
     p$one_func_memory = object.size(fx1)
     p$n = length(x)
     p
@@ -78,7 +90,7 @@ one_experiment = function(nobs = 50, nx = 20)
     x = replicate(nx, list(1:nobs, rnorm(nobs), 1:nobs + 0.5, rnorm(nobs))
         , simplify = FALSE)
 
-    p = infer_params(wrapper, x)
+    p = infer_params(x)
     out = as.data.frame(p)
 
     out$sertime = seconds(lapply(x, wrapper))
