@@ -133,3 +133,25 @@ summary(parmodel)
 # takes much longer than expected. I've observed this phenomenon before
 # with microbenchmarks involving mclapply, and I don't know the exact
 # reason for it.
+
+# The parallel model has R2 = 0.825, and the serial has R2 = 0.997, so the
+# serial fits much better.
+
+# Looking at Faraway's Linear Model book now:
+
+mm = model.matrix(parmodel)
+r = residuals(parmodel)
+
+plot(mm[, 2], r)
+
+var.test(r[mm[, 2] >= 0.1], r[mm[, 2] < 0.1])
+# Strong evidence that variance is larger if the one function call takes
+# longer. Totally reasonable!
+
+# Suggests a log transform of the response.
+MASS::boxcox(parmodel)
+
+logparmodel = lm(log(partime) ~ I(one_func_time * ceiling(n / nprocs))
+                      + I(one_func_memory * n / transfer_rate), timings)
+
+plot(logparmodel)

@@ -67,10 +67,3 @@ partime = mclapply_overhead_time +
 To make this concrete and validate the model I'll take an example of a
 function I used recently. 
 
-
-```{R}
-
-
-```
-
-
