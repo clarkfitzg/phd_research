@@ -26,13 +26,16 @@ example of this.
 __Common Implementation__ Is it a good idea to share the implementation of
 algorithms across different parallel / distributed systems? SNOW, Unix
 fork, GPU's, slurm, MPI, tensorflow, and Hadoop offer quite different
-computational models at different levels of abstraction. If an algorithm is
+computational models at different levels of abstraction. They may also
+offer hybrid approaches. The [rslurm
+package](https://cran.r-project.org/web/packages/rslurm/index.html) uses
+slurm and a Unix fork through `parallel::mclapply`. If an algorithm is
 general enough to run on all of them then this means the algorithm can only
 rely on features common to all. Then we miss out on performance benefits
 offered by more specialized systems.
 
 In 2016 Spark didn't have efficient machine learning algorithms even in their own system, so
-it's unlikely that adding an abstraction layer.
+it's unlikely that adding an abstraction layer will help performance.
 
 Contrast this with DBI, a similar project.
 
@@ -50,9 +53,20 @@ __Abstraction__ It's not clear that the abstraction layer in ddR reduces
 complexity. I found that I needed to thoroughly understand both ddR and
 the underlying distributed system in order to use them.
 
+__Complexity__ The code base was quite complex for what it does.
+
 ### Suggestions
 
+Identify a concrete example use case on public data where this will add value.
 
+Just have `lapply` on a distributed list. 
+Celebrate that we have to use the lowest common denominator.
+This is the lowest common
+denominator. It has a direct analog in base R. Code shouldn't be
+excessively complex. It offers users something different beyond data
+frames- ie. partools already does distributed data frames.
+
+Offer a memory and disk based system.
 
 ## Personal
 

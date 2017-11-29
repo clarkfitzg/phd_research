@@ -18,13 +18,18 @@ that system:
 
 ```{R}
 
+
 p = list()
 
 # How long does it take to execute f(x[i])?
+# Assume this doesn't depend on x[i]
 p$one_func_time = 1e-6
 
 # How large is f(x[i])?
-p$one_func_memory = 20
+p$one_func_memory = 48
+
+# How many elements in x?
+p$n = length(x)
 
 ```
 
@@ -32,14 +37,39 @@ We also need to know something about that system:
 
 ```{R}
 
-s = list()
+# How long does it take to call lapply / mclapply with no args?
+mclapply_overhead_time = 5e-3
+lapply_overhead_time = 2e-6
 
-# How long does it take to call mclapply with no args?
-s$mclapply_overhead_time = 5e-3
-
-# How quickly can one transfer data between processes?
+# What is the data transfer rate between processes?
 # Units bytes / second
-s$transfer_rate = 400e6
+transfer_rate = 400e6
+
+# How many parallel processors are available?
+nprocs = 2
+
+```
+
+Now we can estimate the time required for serial and parallel executions:
+
+```{R}
+
+sertime = lapply_overhead_time + p$one_func_time * p$n
+
+partime = mclapply_overhead_time + 
+    p$one_func_time * ceiling(p$n / nprocs) +
+    p$one_func_memory * p$n / transfer_rate
+
+```
+
+## Example
+
+To make this concrete and validate the model I'll take an example of a
+function I used recently. 
+
+
+```{R}
+
 
 ```
 
