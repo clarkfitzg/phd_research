@@ -106,14 +106,30 @@ lapply_overhead_time = 2e-6
 transfer_rate = 400e6
 nprocs = 2
 
-timings = lapply(seq(from = 50, by = 50, length.out = 20), one_experiment)
+nobs = seq(from = 50, by = 50, length.out = 20)
+nx = c(20, 50, 100)
+params = expand.grid(nobs, nx)
 
-timings = do.call(rbind, timings)
+rawtimings = Map(one_experiment, params[, 1], params[, 2])
+
+timings = do.call(rbind, rawtimings)
 
 # Intercepts correspond to mclapply and lapply overhead.
 
 sermodel = lm(sertime ~ I(one_func_time * n), timings)
 
+# The intercept is about 0, and the slope is about 1, so the model of
+# runtime for the serial case is reasonable.
+summary(sermodel)
+
 parmodel = lm(partime ~ I(one_func_time * ceiling(n / nprocs))
                       + I(one_func_memory * n / transfer_rate), timings)
 
+# The last coefficient is difficult to estimate in this case because we're only
+# transferring single scalars back- the cost is negligible.
+summary(parmodel)
+
+# The residuals have a long right tail, so in some few exceptional cases it
+# takes much longer than expected. I've observed this phenomenon before
+# with microbenchmarks involving mclapply, and I don't know the exact
+# reason for it.
