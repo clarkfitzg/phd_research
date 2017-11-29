@@ -38,6 +38,7 @@ s = list()
 s$mclapply_overhead_time = 5e-3
 
 # How quickly can one transfer data between processes?
+# Units bytes / second
 s$transfer_rate = 400e6
 
 ```

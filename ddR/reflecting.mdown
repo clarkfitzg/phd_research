@@ -1,9 +1,44 @@
+## Reflections and Lessons Learned
+
+Wed Nov 29 07:10:33 PST 2017
+
+ddR is on my radar again, since they have another intern working on it, and
+people have been asking.
+
+### Social
+
+__Ownership__ Who will maintain ddR and push it forward? Officially the
+repo is on Vertica's Github site, but the contributors have since left
+Vertica. So further efforts are probably going to require forking the
+project.
+
+__Motivating Use Cases__ Where will ddR be used in the wild? Who are the
+users who will benefit from this? I believe the intended audience was the
+few highly technical people involved in the working group.
+
+Spark - they don't have efficient ML algos even in their own system.
+
+### Technical
+
+Bryan Lewis said something along the lines of: "Maybe R itself is
+expressive enough." He meant that R's class system suffices as an
+abstraction layer. [gpuR](https://github.com/cdeterman/gpuR) is a nice
+example of this.
+
+__Abstraction__ It's not clear that the abstraction layer in ddR adds
+value. I found that I needed to thoroughly understand both ddR and the
+underlying distributed system in order to use them. So it didn't abstract
+away the details of the distributed system.
+
+__Common Implementation__
+
+
+## Personal
+
 Fri Oct  7 11:41:18 PDT 2016
 
 The project has been done for a few weeks, having a final call this
 afternoon.
-
-## Reflections and Lessons Learned
 
 Now I am not convinced that `ddR`'s model is necessary. Distributed systems
 are so different, this seems excessively ambitious to work well and
