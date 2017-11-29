@@ -12,11 +12,9 @@ repo is on Vertica's Github site, but the contributors have since left
 Vertica. So further efforts are probably going to require forking the
 project.
 
-__Motivating Use Cases__ Where will ddR be used in the wild? Who are the
-users who will benefit from this? I believe the intended audience was the
-few highly technical people involved in the working group.
-
-Spark - they don't have efficient ML algos even in their own system.
+__Motivating Use Cases__ Where will ddR be used in the wild? Which
+users will benefit from this? I believe the intended user group is people
+developing distributed algorithms in R.
 
 ### Technical
 
@@ -25,12 +23,35 @@ expressive enough." He meant that R's class system suffices as an
 abstraction layer. [gpuR](https://github.com/cdeterman/gpuR) is a nice
 example of this.
 
-__Abstraction__ It's not clear that the abstraction layer in ddR adds
-value. I found that I needed to thoroughly understand both ddR and the
-underlying distributed system in order to use them. So it didn't abstract
-away the details of the distributed system.
+__Common Implementation__ Is it a good idea to share the implementation of
+algorithms across different parallel / distributed systems? SNOW, Unix
+fork, GPU's, slurm, MPI, tensorflow, and Hadoop offer quite different
+computational models at different levels of abstraction. If an algorithm is
+general enough to run on all of them then this means the algorithm can only
+rely on features common to all. Then we miss out on performance benefits
+offered by more specialized systems.
 
-__Common Implementation__
+In 2016 Spark didn't have efficient machine learning algorithms even in their own system, so
+it's unlikely that adding an abstraction layer.
+
+Contrast this with DBI, a similar project.
+
+
+__Data__ The overhead associated with loading, moving, and saving data can
+take up the majority of the total run time. This is especially true with
+distributed data, and it's why we have systems like Hadoop. ddR doesn't
+help much with data management, so it misses the chance to solve a real
+pain point.
+
+There's also the related question of how to use R to compute on data stored
+in a native system like Spark.
+
+__Abstraction__ It's not clear that the abstraction layer in ddR reduces
+complexity. I found that I needed to thoroughly understand both ddR and
+the underlying distributed system in order to use them.
+
+### Suggestions
+
 
 
 ## Personal
