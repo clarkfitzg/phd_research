@@ -3,14 +3,18 @@
 Wed Nov 29 07:10:33 PST 2017
 
 ddR is on my radar again, since they have another intern working on it, and
-people have been asking.
+people have been asking. Now that some time has passed and I'm a little
+more experienced with computing on larger data sets I wanted to reflect on
+ddR, ask some hard questions, and offer some suggestions on how to improve
+it. The following is my opinion, take it for what it's worth.
 
 ### Social
 
 __Ownership__ Who will maintain ddR and push it forward? Officially the
-repo is on Vertica's Github site, but the contributors have since left
-Vertica. So further efforts are probably going to require forking the
-project.
+repo is on HP Vertica's Github site, but the contributors have since moved
+to other companies. So further efforts may require forking the project.
+For ddR to survive it needs an active owner. People will only be interested
+in owning it if they can use it to solve their own problems.
 
 __Motivating Use Cases__ Where will ddR be used in the wild? Which
 users will benefit from this? I believe the intended user group is people
@@ -18,27 +22,35 @@ developing distributed algorithms in R.
 
 ### Technical
 
+From ddR's README:
+
+> The 'ddR' package aims to provide an unified R interface for writing
+> parallel and distributed applications.
+
 Bryan Lewis said something along the lines of: "Maybe R itself is
 expressive enough." He meant that R's class system suffices as an
-abstraction layer. [gpuR](https://github.com/cdeterman/gpuR) is a nice
-example of this.
+abstraction layer. I tend to agree.
+[gpuR](https://github.com/cdeterman/gpuR) is a nice example of this.
 
 __Common Implementation__ Is it a good idea to share the implementation of
 algorithms across different parallel / distributed systems? SNOW, Unix
-fork, GPU's, slurm, MPI, tensorflow, and Hadoop offer quite different
+multicore, GPU's, slurm, MPI, tensorflow, and Hadoop offer quite different
 computational models at different levels of abstraction. They may also
-offer hybrid approaches. The [rslurm
+offer hybrid approaches. For example, the [rslurm
 package](https://cran.r-project.org/web/packages/rslurm/index.html) uses
-slurm and a Unix fork through `parallel::mclapply`. If an algorithm is
-general enough to run on all of them then this means the algorithm can only
-rely on features common to all. Then we miss out on performance benefits
-offered by more specialized systems.
+slurm and multicore. If an algorithm is general enough to run on all of
+these systems then this means the algorithm can only rely on features
+common to all. Then we miss out on performance benefits offered by more
+specialized systems.
 
-In 2016 Spark didn't have efficient machine learning algorithms even in their own system, so
-it's unlikely that adding an abstraction layer will help performance.
-
-Contrast this with DBI, a similar project.
-
+The DBI package provides a standard interface from R to relational
+databases, so it's somewhat like ddR. DBI differs from ddR in that it has a
+much more well defined task. A relational database interface essentially
+manages connections, sends queries, and returns rows. DBI doesn't need to
+support the much broader and more open ended task of general purpose
+computation.  Many languages besides R defined standard database interfaces
+like DBI. But I'm not aware of anything like ddR in other languages; if
+they exist we should definitely be learning from them.
 
 __Data__ The overhead associated with loading, moving, and saving data can
 take up the majority of the total run time. This is especially true with
@@ -47,26 +59,34 @@ help much with data management, so it misses the chance to solve a real
 pain point.
 
 There's also the related question of how to use R to compute on data stored
-in a native system like Spark.
+in some native format. I don't think there are simple general answers to this
+question.
 
 __Abstraction__ It's not clear that the abstraction layer in ddR reduces
-complexity. I found that I needed to thoroughly understand both ddR and
-the underlying distributed system in order to use them.
+complexity for the users. I found that I needed to thoroughly understand
+both ddR and the underlying distributed system in order to use them.
 
-__Complexity__ The code base was quite complex for what it does.
+__Complexity__ The code base is complex for what it does. I did what
+I could to simplify it, but there's more to be done.
 
 ### Suggestions
 
-Identify a concrete example use case on public data where this will add value.
+Restrict ddR to only providing `lapply` on a distributed list. Lists and
+`lapply` are simple and powerful. Let ddR be proud that it uses the lowest
+common denominator of functionality. SNOW's success shows that this is
+still very useful. Focusing and narrowing down the scope will produce a
+more manageable codebase for ddR.
 
-Just have `lapply` on a distributed list. 
-Celebrate that we have to use the lowest common denominator.
-This is the lowest common
-denominator. It has a direct analog in base R. Code shouldn't be
-excessively complex. It offers users something different beyond data
-frames- ie. partools already does distributed data frames.
+Do a disk based backend for large data sets. This would be a distributed
+list where each chunk of the lists is an .Rdata file stored on disk. The
+bigmemory and ff packages do similar things in different ways. Maybe it's
+like we're going back to the S language, but I think there's a place in the
+R ecosystem for this.
 
-Offer a memory and disk based system.
+Identify a concrete example use case on public data where ddR adds value,
+ideally by doing something beyond what current packages provide.
+
+
 
 ## Personal
 
