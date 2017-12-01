@@ -1,3 +1,8 @@
+Fri Dec  1 10:20:40 PST 2017
+
+Could I take profiling information as input to decide when and how to
+parallelize?
+
 Simon Urbanek wrote an R / OpenCL package in 2012. Everything I'm
 interested in it seems like Simon has done significant work on.
 

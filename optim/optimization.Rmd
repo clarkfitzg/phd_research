@@ -65,5 +65,5 @@ partime = mclapply_overhead_time +
 ## Example
 
 To make this concrete and validate the model I'll take an example of a
-function I used recently. 
+function I used recently. See `validation.R`
 
