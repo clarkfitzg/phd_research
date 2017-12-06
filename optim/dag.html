@@ -1,0 +1,26 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+</head>
+<body>
+<p>Wed Dec 6 09:33:05 PST 2017</p>
+<h1 id="canonical-form">Canonical Form</h1>
+<p>Storing code in some uniform representation may help with determining how to parallelize it.</p>
+<p>What do I want to represent? How about a DAG representing the data flow for the whole program. This relates to what I had before. It could be augmented by annotating each function with being a <code>map</code> or <code>reduce</code> operation. Or the function could be neither, just producing something new and different.</p>
+<p>We can then compose <code>map</code> functions in parallel, which is something like loop fusion.</p>
+<p>Here's one example program</p>
+<pre class="{r}"><code>x = genx()
+y = f(g(x))
+z = h(x)
+fzy(z, y)</code></pre>
+<div class="figure">
+<img src="program.svg" title="DAG" alt="program" />
+<p class="caption">program</p>
+</div>
+</body>
+</html>
