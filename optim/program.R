@@ -1,4 +1,4 @@
 x = genx()
-y = f(g(x))
-z = h(x)
+y = f(as.integer(ceiling(x)))
+z = mean(x)
 fzy(z, y)

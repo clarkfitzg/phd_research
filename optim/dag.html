@@ -15,12 +15,25 @@
 <p>We can then compose <code>map</code> functions in parallel, which is something like loop fusion.</p>
 <p>Here's one example program</p>
 <pre class="{r}"><code>x = genx()
-y = f(g(x))
-z = h(x)
+y = f(as.integer(ceiling(x)))
+z = mean(x)
 fzy(z, y)</code></pre>
 <div class="figure">
-<img src="program.svg" title="DAG" alt="program" />
-<p class="caption">program</p>
+<img src="program.svg" />
+
 </div>
+<p>Nodes represent functions. We annotate them with a type (TODO: better word) <code>t</code>, with the following meanings:</p>
+<ul>
+<li><code>map</code> apply the same operation to many elements</li>
+<li><code>reduce</code> reduce from size <code>n -&gt; 1</code></li>
+<li><code>general</code> does something other than map or reduce</li>
+</ul>
+<p>The cost attribute on the node represents cost as a function of the number of elements <code>n</code>.</p>
+<p>Arrows represent the data flow, each arrow is a piece of data.</p>
+<ul>
+<li><code>n</code> is the number of elements</li>
+<li><code>size</code> is the size of each element in bytes, ie. 8 bytes for a double precision number.</li>
+</ul>
+<p>The idea in constructing this is we can choose what is an appropriate level of</p>
 </body>
 </html>

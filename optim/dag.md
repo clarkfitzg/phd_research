@@ -17,9 +17,31 @@ Here's one example program
 
 ```{R}
 x = genx()
-y = f(g(x))
-z = h(x)
+y = f(as.integer(ceiling(x)))
+z = mean(x)
 fzy(z, y)
 ```
 
-![program](program.svg)
+The idea in constructing this DAG is:
+
+- determine whether it's worth it go parallel based on the overhead
+- "fuse" nested map calls into parallel versions
+- see where parallel tasks exist
+
+![](program.svg)
+
+Nodes represent functions. We annotate them with a type (TODO: better word)
+`t`, with the following meanings:
+
+- `map` apply the same operation to many elements
+- `reduce` reduce from size `n -> 1`
+- `general` does something other than map or reduce
+
+The cost attribute on the node represents cost as a function of the number
+of elements `n`.
+
+Arrows represent the data flow, each arrow is a piece of data.
+
+- `n` is the number of elements
+- `size` is the size of each element in bytes, ie. 8 bytes for a double
+  precision number.
