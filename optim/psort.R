@@ -3,3 +3,46 @@
 # - serial
 # - parallel given existing workers
 # - parallel using fork
+
+# If transfer rate is 400 MB/s then it will take 20 ms to transfer a
+# million points. Ouch.
+
+library(microbenchmark)
+
+n = 1e6
+
+x = rnorm(n)
+
+# About 80 ms for 1 million pts
+microbenchmark(sort(x), times = 10L)
+
+
+# Produce the breaks for cut based on a sample
+find_cut_pts = function(samp, nworkers)
+{
+    step = 1 / nworkers
+    qpts = seq(from = step, to = 1 - step, by = step)
+    q = quantile(samp, probs = qpts)
+    c(-Inf, q, Inf)
+}
+
+
+sort2 = function(x, nworkers = 2L)
+{
+    samp = sample(x, size = 1000L)
+    cutpts = find_cut_pts(samp, nworkers = nworkers)
+    xc = cut(x, cutpts)
+    # Still need a parallel version of `tapply` to drop in here.
+    xs = tapply(x, xc , sort, simplify = FALSE)
+    do.call(c, xs)
+}
+
+
+# Matches, but...
+all(sort2(x) == sort(x))
+
+
+# Takes 600ms!! Ouch.
+Rprof()
+microbenchmark(sort2(x), times = 5L)
+Rprof(NULL)
