@@ -28,6 +28,9 @@ The idea in constructing this DAG is:
 - "fuse" nested map calls into parallel versions
 - see where parallel tasks exist
 
+This DAG should be the input to the optimization problem. Analyzing the
+code to discover the DAG is a separate (very important) step.
+
 ![](program.svg)
 
 Nodes represent functions. We annotate them with a type (TODO: better word)
@@ -45,3 +48,43 @@ Arrows represent the data flow, each arrow is a piece of data.
 - `n` is the number of elements
 - `size` is the size of each element in bytes, ie. 8 bytes for a double
   precision number.
+
+
+## Optimization
+
+TODO: read and cite these articles:
+https://scholar.google.com/scholar?cites=4657930174210332454&as_sdt=2005&sciodt=0,5&hl=en
+
+[DAGuE](http://www.sciencedirect.com/science/article/pii/S0167819111001347)
+optimizes things dynamically. In contrast, the approach described here is
+totally static.
+
+How do general purpose systems like dask and tez approach this?
+
+Start from ideal code that is already in this DAG form. Suppose we're just
+working with a multiprocessing fork type machine.
+
+Objective function to minimize: total program runtime
+
+decisions:
+- which maps to run in parallel?
+- which tasks to run in parallel?
+
+constraints: 
+- `p` processors can be used at one time
+- statements must run in order specified by DAG
+
+constants:
+- time to fork
+- time to compute function on each element in collection
+- size of each collection
+- transfer rate
+
+
+Most data analysis programs probably aren't that large. We might have at
+most a handful of tasks and a handful of maps. We can't make this into two
+separate problems with maps and tasks because they're constrained by only
+simultaneously using the `p` processors.
+
+If the problem isn't too large I can solve it with an exhaustive search.
+Not very elegant.

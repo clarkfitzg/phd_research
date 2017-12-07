@@ -18,6 +18,12 @@
 y = f(as.integer(ceiling(x)))
 z = mean(x)
 fzy(z, y)</code></pre>
+<p>The idea in constructing this DAG is:</p>
+<ul>
+<li>determine whether it's worth it go parallel based on the overhead</li>
+<li>&quot;fuse&quot; nested map calls into parallel versions</li>
+<li>see where parallel tasks exist</li>
+</ul>
 <div class="figure">
 <img src="program.svg" />
 
@@ -34,6 +40,5 @@ fzy(z, y)</code></pre>
 <li><code>n</code> is the number of elements</li>
 <li><code>size</code> is the size of each element in bytes, ie. 8 bytes for a double precision number.</li>
 </ul>
-<p>The idea in constructing this is we can choose what is an appropriate level of</p>
 </body>
 </html>
