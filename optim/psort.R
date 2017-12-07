@@ -33,9 +33,14 @@ sort2 = function(x, nworkers = 2L)
     cutpts = find_cut_pts(samp, nworkers = nworkers)
     xc = cut(x, cutpts)
     # Still need a parallel version of `tapply` to drop in here.
-    xs = tapply(x, xc , sort, simplify = FALSE)
-    do.call(c, xs)
+    xs = tapply(x, xc, sort, simplify = FALSE)
+    #browser()
+    #do.call(c, xs)
+    c(xs[[1]], xs[[2]])
 }
+
+
+xs2 = sort2(x)
 
 
 # Matches, but...
@@ -46,3 +51,16 @@ all(sort2(x) == sort(x))
 Rprof()
 microbenchmark(sort2(x), times = 5L)
 Rprof(NULL)
+
+# sort2 doesn't call as.character(), yet this profiling shows that it's
+# quite expensive. Must be catching the result from somewhere else
+summaryRprof()
+
+n = 1e6L
+x1 = rnorm(n)
+x2 = rnorm(n)
+l = list(x1, x2)
+# But these are about the same...
+microbenchmark(c(x1, x2))
+microbenchmark(do.call(c, l))
+
