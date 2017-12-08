@@ -4,6 +4,9 @@
 # About 2 - 2.5 ns on my Mac
 # Which is about 400 MB / sec. This is in the same ballpark as the IO speed
 # for some SSD's.
+# Forking has an overhead of about 3 ms or so. Then if the data is larger than 
+# 400 * 0.003, or about 1 MB then it may be more efficient to fork even if
+# there are existing workers.
 
 library(microbenchmark)
 library(parallel)

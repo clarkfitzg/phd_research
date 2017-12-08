@@ -60,6 +60,7 @@ optimizes things dynamically. In contrast, the approach described here is
 totally static.
 
 How do general purpose systems like dask and tez approach this?
+dask is a dynamic scheduler, so it is completely different.
 
 Start from ideal code that is already in this DAG form. Suppose we're just
 working with a multiprocessing fork type machine.
@@ -88,3 +89,16 @@ simultaneously using the `p` processors.
 
 If the problem isn't too large I can solve it with an exhaustive search.
 Not very elegant.
+
+## Algorithm
+
+I'm reading Kwok and Ahmad's "Static Scheduling Algos for allocating
+directed task graphs to multiprocessors". Great overview of the state of
+the art in CS until 2000- much has been done.
+
+Then what is different about R? The tasks together with lots of
+vectorization / maps are different.
+
+I want to start based on shared read memory using `mcparallel()`. This is
+generally more performant than SNOW.
+
