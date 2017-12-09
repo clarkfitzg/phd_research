@@ -1,3 +1,9 @@
+The more I think about this the more it seems these ideas are relevant to
+general purpose vector based data analysis computing, not just R.
+Julia and Python have the reference semantics which would change things,
+but they might fit in a similar model.
+
+
 Wed Dec  6 09:33:05 PST 2017
 
 # Canonical Form
@@ -99,6 +105,37 @@ the art in CS until 2000- much has been done.
 Then what is different about R? The tasks together with lots of
 vectorization / maps are different.
 
-I want to start based on shared read memory using `mcparallel()`. This is
-generally more performant than SNOW.
+I want to start based on shared read memory using `mcparallel()`. This
+usually outperforms SNOW.
 
+Perhaps the algorithm could first identify the "main" thread. This would
+be the thread of flow from which all initial forks happen. Heuristically,
+if an operation produces a large amount of data which will be used later
+then it should be in this main thread.
+
+If the weights on the edges measure the size of the data flowing out of
+them then we can assign each node a score by summing the weights of
+outgoing edges. Those with high scores should be in the main thread.
+
+I can already think of cases where this won't work, for example when one
+task produces a large data structure and the next reduces it. Then it may
+prove better to execute those two together in one thread, and bring back
+the small result.
+
+Every task presents a choice. It can either be done in serial, or we can
+fork and do it. If we look at it this way, we can represent that single
+task node as a four nodes:
+
+```
+Task A
+
+becomes:
+
+        ---> serial A ----> 
+start A                     end A
+        ---> parallel A -->
+```
+
+I'm thinking of doing it this way so we can use a shortest path algorithm
+to choose an execution strategy. The weights on the edges are the time that
+this way adds to the total execution.

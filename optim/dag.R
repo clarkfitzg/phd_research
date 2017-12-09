@@ -5,4 +5,5 @@
 library(igraph)
 
 
-Maps can be 
+# The running time for maps can be thought of as a function of the number
+# of processors.
