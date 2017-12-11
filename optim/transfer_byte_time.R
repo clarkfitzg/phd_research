@@ -25,6 +25,9 @@ ts = median(ts$time) / 1e9
 tp = microbenchmark(result <- mclapply(1:nprocs, f), times = 10)
 tp = median(tp$time) / 1e9
 
+# Why does makeForkCluster() take 10x longer than mclapply? We might be
+# able to improve that, dask does it.
+
 time_f_one = ts/nprocs
 
 # Assuming:

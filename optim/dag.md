@@ -160,4 +160,17 @@ program as one flow of statements that can be executed in any of 3 ways:
 ![](only_map.svg)
 
 A greedy shortest path algorithm could take the shortest path at each
-node. If it doesn't then
+node. Shortest path has a nice interpretation as the total run time of the
+program. We could set the cost to use an existing cluster to be
+infinite until we've forked at least once to create an existing cluster.
+This heuristic will fail to find the global optimal solution if we have
+several operations where each one costs less than the overhead to fork, but
+the total run time would be smaller if we just used the same running cluster.
+
+Alternatively we can use the existing cluster cost and check afterwards to
+see if it's worth it to keep it alive.
+
+One wrinkle is when in time the fork cluster was created, since this
+determines which variables can be accessed. The cost will differ
+if you have to export large variables.
+
