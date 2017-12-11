@@ -65,7 +65,7 @@
 <g id="edge3" class="edge"><title>2&#45;&gt;6</title>
 <path fill="none" stroke="black" d="M342.228,-105.477C375.341,-105.477 421.616,-105.477 459.194,-105.477"/>
 <polygon fill="black" stroke="black" points="459.544,-108.977 469.544,-105.477 459.544,-101.977 459.544,-108.977"/>
-<text text-anchor="middle" x="405.93" y="-139.277" font-family="Times,serif" font-size="14.00">x</text>
+<text text-anchor="middle" x="405.93" y="-139.277" font-family="Times,serif" font-size="14.00">x2</text>
 <text text-anchor="middle" x="405.93" y="-124.277" font-family="Times,serif" font-size="14.00">n=20</text>
 <text text-anchor="middle" x="405.93" y="-109.277" font-family="Times,serif" font-size="14.00">size=8</text>
 </g>
@@ -79,7 +79,7 @@
 <g id="edge5" class="edge"><title>6&#45;&gt;4</title>
 <path fill="none" stroke="black" d="M580.221,-103.3C600.219,-102.497 622.932,-101.584 643.181,-100.771"/>
 <polygon fill="black" stroke="black" points="643.357,-104.267 653.208,-100.368 643.076,-97.2723 643.357,-104.267"/>
-<text text-anchor="middle" x="616.701" y="-135.277" font-family="Times,serif" font-size="14.00">x2</text>
+<text text-anchor="middle" x="616.701" y="-135.277" font-family="Times,serif" font-size="14.00">x3</text>
 <text text-anchor="middle" x="616.701" y="-120.277" font-family="Times,serif" font-size="14.00">n=20</text>
 <text text-anchor="middle" x="616.701" y="-105.277" font-family="Times,serif" font-size="14.00">size=4</text>
 </g>

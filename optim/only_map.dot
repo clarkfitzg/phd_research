@@ -1,0 +1,41 @@
+digraph {
+    rankdir=LR;
+    //size="8,5"
+    //node [shape = square]; 2;
+    //node [shape = none];
+
+    0 [label="START"];
+
+    10 [label="A"];
+    11 [label="ser A"];
+    12 [label="fork A"];
+    13 [label="clus A"];
+
+    20 [label="B"];
+    21 [label="ser B"];
+    22 [label="fork B"];
+    23 [label="clus B"];
+
+    30 [label="C"];
+    100 [label = "..."]
+
+    0 -> 10;
+
+    10 -> 11;
+    10 -> 12;
+    10 -> 13;
+
+    11 -> 20;
+    12 -> 20;
+    13 -> 20;
+
+    20 -> 21;
+    20 -> 22;
+    20 -> 23;
+
+    21 -> 30;
+    22 -> 30;
+    23 -> 30;
+
+    30 -> 100;
+}

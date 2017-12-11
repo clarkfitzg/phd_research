@@ -8,6 +8,8 @@
   <style type="text/css">code{white-space: pre;}</style>
 </head>
 <body>
+<p>The more I think about this the more it seems these ideas are relevant to general purpose vector based data analysis computing, not just R. Julia and Python have the reference semantics which would change things, but they might fit in a similar model.</p>
+<p>The real question is: How can we make a program more efficient if we know the entire script ahead of time? Assume we understand the semantics of the language.</p>
 <p>Wed Dec 6 09:33:05 PST 2017</p>
 <h1 id="canonical-form">Canonical Form</h1>
 <p>Storing code in some uniform representation may help with determining how to parallelize it.</p>
@@ -24,6 +26,7 @@ fzy(z, y)</code></pre>
 <li>&quot;fuse&quot; nested map calls into parallel versions</li>
 <li>see where parallel tasks exist</li>
 </ul>
+<p>This DAG should be the input to the optimization problem. Analyzing the code to discover the DAG is a separate (very important) step.</p>
 <div class="figure">
 <img src="program.svg" />
 
@@ -40,5 +43,45 @@ fzy(z, y)</code></pre>
 <li><code>n</code> is the number of elements</li>
 <li><code>size</code> is the size of each element in bytes, ie. 8 bytes for a double precision number.</li>
 </ul>
+<h2 id="optimization">Optimization</h2>
+<p>TODO: read and cite these articles: https://scholar.google.com/scholar?cites=4657930174210332454&amp;as_sdt=2005&amp;sciodt=0,5&amp;hl=en</p>
+<p><a href="http://www.sciencedirect.com/science/article/pii/S0167819111001347">DAGuE</a> optimizes things dynamically. In contrast, the approach described here is totally static.</p>
+<p>How do general purpose systems like dask and tez approach this? dask is a dynamic scheduler, so it is completely different.</p>
+<p>Start from ideal code that is already in this DAG form. Suppose we're just working with a multiprocessing fork type machine.</p>
+<p>Objective function to minimize: total program runtime</p>
+<p>decisions: - which maps to run in parallel? - which tasks to run in parallel?</p>
+<p>constraints: - <code>p</code> processors can be used at one time - statements must run in order specified by DAG</p>
+<p>constants: - time to fork - time to compute function on each element in collection - size of each collection - transfer rate</p>
+<p>Most data analysis programs probably aren't that large. We might have at most a handful of tasks and a handful of maps. We can't make this into two separate problems with maps and tasks because they're constrained by only simultaneously using the <code>p</code> processors.</p>
+<p>If the problem isn't too large I can solve it with an exhaustive search. Not very elegant.</p>
+<h2 id="algorithm">Algorithm</h2>
+<p>I'm reading Kwok and Ahmad's &quot;Static Scheduling Algos for allocating directed task graphs to multiprocessors&quot;. Great overview of the state of the art in CS until 2000- much has been done.</p>
+<p>Then what is different about R? The tasks together with lots of vectorization / maps are different.</p>
+<p>I want to start based on shared read memory using <code>mcparallel()</code>. This usually outperforms SNOW.</p>
+<p>Perhaps the algorithm could first identify the &quot;main&quot; thread. This would be the thread of flow from which all initial forks happen. Heuristically, if an operation produces a large amount of data which will be used later then it should be in this main thread.</p>
+<p>If the weights on the edges measure the size of the data flowing out of them then we can assign each node a score by summing the weights of outgoing edges. Those with high scores should be in the main thread.</p>
+<p>I can already think of cases where this won't work, for example when one task produces a large data structure and the next reduces it. Then it may prove better to execute those two together in one thread, and bring back the small result.</p>
+<p>Every task presents a choice. It can either be done in serial, or we can fork and do it. If we look at it this way, we can represent that single task node as a four nodes:</p>
+<pre><code>Task A
+
+becomes:
+
+        ---&gt; serial A ----&gt; 
+start A                     end A
+        ---&gt; parallel A --&gt;</code></pre>
+<p>I'm thinking of doing it this way so we can use a shortest path algorithm to choose an execution strategy. The weights on the edges are the time that this way adds to the total execution.</p>
+<h2 id="only-maps">Only maps</h2>
+<p>To simplify the problem, forget about task parallelism for the moment. Just focus on maps. Consider a program that runs sequentially. We can actually execute in three ways:</p>
+<ol style="list-style-type: decimal">
+<li>Serial</li>
+<li>Fork</li>
+<li>Use existing cluster</li>
+</ol>
+<p>Depending on the size of the problem and the properties of the data transfer any of these could be most efficient. Then we can express the program as one flow of statements that can be executed in any of 3 ways:</p>
+<div class="figure">
+<img src="only_map.svg" />
+
+</div>
+<p>A greedy shortest path algorithm could take the shortest path at each node. If it doesn't then</p>
 </body>
 </html>

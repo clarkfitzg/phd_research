@@ -3,6 +3,9 @@ general purpose vector based data analysis computing, not just R.
 Julia and Python have the reference semantics which would change things,
 but they might fit in a similar model.
 
+The real question is: How can we make a program more efficient if we know
+the entire script ahead of time? Assume we understand the semantics of the
+language.
 
 Wed Dec  6 09:33:05 PST 2017
 
@@ -139,3 +142,22 @@ start A                     end A
 I'm thinking of doing it this way so we can use a shortest path algorithm
 to choose an execution strategy. The weights on the edges are the time that
 this way adds to the total execution.
+
+## Only maps
+
+To simplify the problem, forget about task parallelism for the moment. Just
+focus on maps. Consider a program that runs sequentially. We can actually
+execute in three ways:
+
+1. Serial
+2. Fork
+3. Use existing cluster
+
+Depending on the size of the problem and the properties of the data
+transfer any of these could be most efficient. Then we can express the
+program as one flow of statements that can be executed in any of 3 ways:
+
+![](only_map.svg)
+
+A greedy shortest path algorithm could take the shortest path at each
+node. If it doesn't then
