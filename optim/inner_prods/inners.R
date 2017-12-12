@@ -95,7 +95,6 @@ keep = read.csv("~/projects/pems_fd/data/keep.csv")[, 1]
 stn = split(fd_shape, fd_shape$station)
 keep_logical = sapply(stn, function(x) all(x$station %in% keep))
 stn = stn[keep_logical]
-
 N = length(stn)
 
 if(FALSE){
@@ -123,8 +122,10 @@ fd_inners = matrix(NA, nrow = N, ncol = N)
 
 # Takes 15 minutes. Numerical integration took 2+ hours with the three
 # lines.
-# Using a vectorized version on a smaller set took ~4 minutes. Still slow.
+# Using a vectorized version on 1378 takes 4.1 minutes. Still slow.
 # This profiling might be a good exercise for the reading group.
+Rprof("serial.out")
+# Spends 99% of time inside inner, as expected
 time_serial = system.time(
 for(i in 1:N){
     for(j in i:N){
@@ -134,6 +135,7 @@ for(i in 1:N){
     }
 }
 )
+Rprof()
 
 colnames(fd_inners) = rownames(fd_inners) = keep
 
@@ -151,16 +153,46 @@ ij = c(ij, lapply(seq(N), function(x) c(x, x)))
 # We could first compute the loop indices and transform into an efficient
 # parallel apply. This actually goes along with the CodeAnalysis.
 
-do_ij = function(ij){
+do_ij2 = function(ij){
     i = ij[1]
     j = ij[2]
-    data.frame(i = i, j = j, fij = inner(stn[[i]], stn[[j]]))
+    fij = inner(stn[[i]], stn[[j]])
+    c(i = i, j = j, fij = fij)
 }
 
-# This should be the one expensive line:
-time_parallel = system.time(
-tall <- lapply(ij, do_ij)
+# This should be the one expensive line. Takes 8.8 minutes. This is more
+# than twice as long as it took for the for loop. So far I've checked:
+# - They get the same answer
+# - I'm not inadvertently looping over twice as much data
+# Structure of the computation:
+# do_ij wraps inner, inner wraps piecewise_inner. piecewise_inner does a
+# few things, most notably calling inner_one_piece. Hence I expect almost
+# all the time to be spent inside piecewise_inner. Yet in the profile I see
+# it only spends 57% of time in inner and piecewise_inner, compared to 99%
+# with the for loop version.
+Rprof("Rprof2.out")
+time_parallel2 = system.time(
+tall <- lapply(ij, do_ij2)
 )
+Rprof(NULL)
+
+summaryRprof("Rprof2.out")
+
+Rprof("Rprof3.out")
+time_for = system.time({
+    # Essentially just rewriting lapply
+    out = vector("list", length = length(ij))
+    for(i in seq_along(ij)){
+        x = ij[[i]]
+        out[[i]] = do_ij2(x)
+    }
+})
+Rprof(NULL)
+
+summaryRprof("Rprof3.out")
+
+
+
 tall = do.call(rbind, tall)
 
 fd_inners = sym_matrix(tall)
