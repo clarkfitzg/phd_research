@@ -7,6 +7,18 @@ The real question is: How can we make a program more efficient if we know
 the entire script ahead of time? Assume we understand the semantics of the
 language.
 
+
+> The scheduling and mapping of the precedence-constrained task graph to
+> processors is considered to be the most crucial NP-complete problem in
+> parallel and distributed computing systems.
+
+- [Omara
+  Arafa](http://www.sciencedirect.com/science/article/pii/S0743731509001804)
+
+What's the big idea here? There are often several ways to execute a program
+in parallel. We want to find a way that will give us a speed improvement,
+and use that one.
+
 Wed Dec  6 09:33:05 PST 2017
 
 # Canonical Form
@@ -174,3 +186,11 @@ One wrinkle is when in time the fork cluster was created, since this
 determines which variables can be accessed. The cost will differ
 if you have to export large variables.
 
+It takes about 30 ms to create a fork cluster. I'm trying to improve R scripts
+that take at least 10 seconds or more. Then the cost of cluster startup is
+relatively small, so it's fine to assume that it happens.
+
+Thinking more about it, the shortest path problem decomposes in this case
+is totally trivial, because each one is independent.
+
+Man I really need an example to make this tangible.
