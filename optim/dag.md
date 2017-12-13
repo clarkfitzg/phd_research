@@ -194,3 +194,12 @@ Thinking more about it, the shortest path problem decomposes in this case
 is totally trivial, because each one is independent.
 
 Man I really need an example to make this tangible.
+
+## Profiling
+
+Just ran into this issue where calling `data.frame()` was super slow,
+especially compared to `list()` and `c()`.
+
+Looking at the code for `data.frame()` it's no surprise; that's a lot of R
+code. I'm frustrated though. Last week I got caught off guard by the cost
+to do names, and now this.
