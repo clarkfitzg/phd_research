@@ -4,11 +4,13 @@ Wed Dec 13 09:36:56 PST 2017
 
 I'm reflecting now on the research progress so far, and on the future.
 
-Duncan always asks: what are the new research ideas? As I look at them now
-they seem like a bunch of relatively small things. They can give
-incremental improvements in a few specific cases.
+Duncan always asks: what are the new research ideas? As I look at what I've
+done over the past year it seems like a bunch of relatively small things.
+They can give incremental improvements in a few specific cases. All the
+ideas relate to parallelism, but I'm nowhere near the stated goal of
+a general program transformation system.
 
-## Working
+## Done
 
 I've listed the more or less working ideas here with the most significant
 first. 
@@ -53,32 +55,47 @@ object `x` and executes code in parallel on it based on the presence of `x`
 in the code. `benchmark_transform` simply replaces `lapply` with
 `parallel::mclapply` if benchmarks indicate it's faster based on a t test.
 
-## Difficult
-
-I feel like R's C implementation puts a ceiling on the opportunities for
-metaprogramming / code analysis / compilation in R.
-
-__C/C++ generation__ This is something I've played a little with but found
-difficult to really get the hang of. It doesn't help that I have only a
-basic understanding of C.
+## Difficulties
 
 __Basic Parallelism__ It can be difficult, unnatural, and error prone to
 transform R code into a version that can run in parallel. The parallel
 versions are often slower.
 
+I feel like R's C implementation puts a ceiling on the opportunities for
+metaprogramming / code analysis / compilation in R. The current state of
+the art is to write it in C or Rcpp to get speed. R's C code is hard to
+read and analyze programmatically because of all the macros. Rcpp provides
+an interface that's friendlier to programmers, but even more difficult for
+analysis because it does its own code generation.
+
+Writing more C / Rcpp code ties us more tightly to R's current model and
+implementation. In 2008 Duncan and Ross Ihaka suggested replacing R
+completely. Ross seems to still be following this path while Duncan thinks
+the future lies in compiling R.
+
 __Compiling R__ Duncan tries to push me towards this, but I keep balking.
 Why?
 
 - Julia and Python's numba already do it pretty well.
-- I don't see the resources in the R community to take it beyond an
-  experiment into a truly viable solution
+- It's hard. Ihaka describes R as [hostile to
+  compilation](https://www.stat.auckland.ac.nz/~ihaka/downloads/New-System.pdf)
+- I don't see the resources or motivation in the R community to take it
+  beyond an experiment into a truly viable solution
+
+__C/C++ generation__ This is something I've played a little with but found
+difficult to really get the hang of. It doesn't help that I have only a
+basic understanding of C.
 
 ## Next Steps
 
-I'm now considering shifting my research focus to Julia. I've considered it
-before- why didn't I do it?
+__DAG__ 
 
-- Duncan and Nick work in R
+__Julia__ I've considered moving my work to Julia before- why didn't I do
+it?
+
+- Duncan and Nick work in R.
+- It will take time for me to develop expertise.
+- Not much statistical functionality built out yet.
 - The language has been unstable, ie. names and functionality changing.
   This seems to be less of an issue as they move to version 1.0.
 - No standard solution for missing data such as R's `NA`. But now
@@ -87,3 +104,14 @@ before- why didn't I do it?
 - In a 2015 talk creator Jeff Bezanson didn't seem to think vectorization
   was important. But it's still there in the language, and doesn't seem to
   be going anywhere.
+
+
+## Miscellaneous notes
+
+Rather than writing a compiler, "_you should learn how to enhance whatever
+existing language you have with one or more preprocessors_" - Software
+Tools by Kernighan and Plauger.
+
+There's very little multicore in R's C code. In 2010 Luke Tierney added
+OpenMP to `colsums` in base R. `data.table` does all kinds of things in C
+code to get speed, and it's quite fast.
