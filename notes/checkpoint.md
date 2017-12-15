@@ -13,9 +13,7 @@ a general program transformation system.
 ## Done
 
 I've listed the more or less working ideas here with the most significant
-first. 
-
-The functions referenced below can be found in the `autoparallel`
+first.  The functions referenced below can be found in the `autoparallel`
 package.
 
 __R in Hive__ `write_udaf_scripts` provides a massive speedup
@@ -27,8 +25,9 @@ large data:
 
 This uses standard interfaces to allow R to process streaming data.  It
 mainly integrates existing technology in a useful way that's compatible
-with R's computational model. This doesn't analyze code, but it does
-generate code. The PEMS analysis demonstrates the practical value of this.
+with R's computational model, so it isn't really "new". This doesn't
+analyze code, but it does generate code. The PEMS analysis demonstrates the
+practical value of this.
 
 __Evolving Functions__ Let `f1(x)` and `f2(x)` be two different
 implementations for the same function. For example, one may be a parallel
@@ -41,7 +40,7 @@ the required run time. For more details refer to
 
 __Task Parallelism__ I've built some of the infrastructure and analysis
 here based on CodeDepends, but I haven't come across any compelling use
-cases to motivate an implementation with code generation of
+cases to motivate an actual implementation including code generation of
 `mcparallel` and `mccollect`. I've written this up in
 `phd_research/expression_graph` and implemented parts in
 `autoparallel/inst/beta/codegraph`.
@@ -51,22 +50,26 @@ find the set of columns that are used and transforms the code to a version
 that only reads and operates on this set of columns.
 
 __Basic Parallelism__ `parallelize` efficiently distributes a single large
-object `x` and executes code in parallel on it based on the presence of `x`
-in the code. `benchmark_transform` simply replaces `lapply` with
+object `x` and executes code in parallel based on the presence of the
+symbol `x` in the code. `benchmark_transform` simply replaces `lapply` with
 `parallel::mclapply` if benchmarks indicate it's faster based on a t test.
 
 ## Difficulties
 
 __Basic Parallelism__ It can be difficult, unnatural, and error prone to
-transform R code into a version that can run in parallel. The parallel
-versions are often slower.
+transform serial into parallel code. The parallel versions are often
+slower. This holds for all languages that I've used, not just R.
+
+__Analyzing R Code__ is sometimes difficult because often there are many
+different ways in R to do the same thing. Bring in external packages /
+other systems and it gets worse. Think about all the OO models, for example.
 
 I feel like R's C implementation puts a ceiling on the opportunities for
 metaprogramming / code analysis / compilation in R. The current state of
 the art is to write it in C or Rcpp to get speed. R's C code is hard to
 read and analyze programmatically because of all the macros. Rcpp provides
 an interface that's friendlier to programmers, but even more difficult for
-analysis because it does its own code generation.
+analysis because it generates its own code.
 
 Writing more C / Rcpp code ties us more tightly to R's current model and
 implementation. In 2008 Duncan and Ross Ihaka suggested replacing R
@@ -82,29 +85,52 @@ Why?
 - I don't see the resources or motivation in the R community to take it
   beyond an experiment into a truly viable solution
 
-__C/C++ generation__ This is something I've played a little with but found
-difficult to really get the hang of. It doesn't help that I have only a
-basic understanding of C.
+## Julia
 
-## Next Steps
+I can continue with what I've been doing with R, finding ways to analyze
+and transform code to marginally improve speed and scalability. Or I could
+move this parallel analysis to a different language.
 
-__DAG__ 
+Duncan critiques software that reimplements the same idea. For example,
+developers ported data frames from R to many languages. The Julia
+stats community could certainly use more contributors, but Duncan wouldn't
+like to see me reimplementing existing functionality. It would be
+educational for me, but not research.
 
-__Julia__ I've considered moving my work to Julia before- why didn't I do
-it?
+I've considered moving my work to Julia before. What appeals to me about
+Julia?
+
+- Designed for speed built off LLVM. Speed becomes more important with
+  large data. 
+- Modern design benefits from seeing seeing design choices in other
+  languages
+- No "two language" problem- therefore code analysis is potentially easier
+  and can go farther.
+
+What could I do in Julia that's qualitatively new? How does it go beyond R?
+
+- Use the speed to extend analysis to larger data sets.
+- Have an easier time running parallel stuff on the GPU, because more of
+  the infrastructure is in place.
+- It may be possible to tap into Julia's type inference data flow algorithms 
+  to construct more efficient parallel programs based on data flow.
+
+So why haven't I focused on Julia?
 
 - Duncan and Nick work in R.
-- It will take time for me to develop expertise.
-- Not much statistical functionality built out yet.
-- The language has been unstable, ie. names and functionality changing.
+- Takes time for me to develop expertise.
+- Lacks much of the statistical functionality that R has. Although
+  [JuliaStats on Github](https://github.com/JuliaStats) seems to be very
+  active.
+- Instability, ie. names and functionality changing.
   This seems to be less of an issue as they move to version 1.0.
 - No standard solution for missing data such as R's `NA`. But now
   the master branch has `missing`.
 - Mixed experiences interacting with Julia developers.
 - In a 2015 talk creator Jeff Bezanson didn't seem to think vectorization
-  was important. But it's still there in the language, and doesn't seem to
-  be going anywhere.
-
+  was important. But loop fusion [loop
+fusion](https://julialang.org/blog/2017/01/moredots) of vectorize funcs
+seems to work very well.
 
 ## Miscellaneous notes
 
