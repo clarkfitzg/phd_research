@@ -85,6 +85,40 @@ Why?
 - I don't see the resources or motivation in the R community to take it
   beyond an experiment into a truly viable solution
 
+## Future work in R
+
+The parallelism seems only capable of producing marginal gains. But there
+are other things to do with R:
+
+__R in databases__ The idea is to move code to the data and use R's
+vectorized computational model even if the database isn't columnar. It's a
+natural idea because R's data frame and a table in a relational database
+are essentially the same thing. This could build off Duncan's work with
+user defined R functions in SQLlite, and my work in Hive. Hannes Muehleisen
+has done work here in MonetDB. I can potentially use the code analysis
+here, finding efficient combinations of R and SQL code. For example, it's
+likely more efficent to express all the simple row filters in SQL so that R
+has less data to operate on.
+
+I won't find as many use cases in academia, because academics are more
+likely to analyze data in files than repeatedly run queries on a production
+database.  This work may require me to learn more about C level interfaces
+between databases and R.
+
+__Improving R code__ Much of the slow R code that I've seen "in the wild"
+is just badly written by researchers with no training in programming.
+Problems include:
+
+- Repeating code many times
+- Lack of modularity
+- Computing same quantity unnecessarily
+- Non idiomatic, ie. globals in the wrong place
+
+Rather than focusing on performance this is more about identifying and
+possibly fixing problems found in users code. In that sense it's like a
+linter. But it can be difficult, for example when someone rewrites R's
+`table()` or `cov2cor()`. This is very hard to detect.
+
 ## Julia
 
 I can continue with what I've been doing with R, finding ways to analyze
