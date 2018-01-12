@@ -1,0 +1,49 @@
+% A simple template for LaTeX documents
+% 
+% To produce pdf run:
+%   $ pdflatex paper.tex 
+%
+
+\documentclass[12pt]{article}
+
+% Change margin size
+\usepackage[margin=1in]{geometry}   
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\section{Literature Review}
+
+
+\subsection{SQL query optimization}
+
+SQL is nice because the unit of analysis is a single query. Thus the query
+optimizer only has to figure out how to do this one query efficiently,
+although nested subqueries could add complexity.
+
+\cite{Chaudhuri:1998:OQO:275487.275492} gives an overview of query
+optimization for relational databases. The execution plan is a description
+of the physical operators, ie. table scan, that takes one or more input
+data streams and outputs another stream.
+
+The author distinguishes Query optimization from execution. The former
+decides the execution plan, the latter executes it.
+
+Query optimization needs: a \textbf{search space} of possible solutions,
+\textbf{cost estimation} for each solution, and an \textbf{enumeration
+algorithm} to explore the different solutions.
+
+System R was an early database technology that introduced some of the
+query optimization techniques.
+
+\subsubsection{relation to my work}
+
+An R expression, particularly something like tables piped through dplyr, is
+like a query. If we have an expensive vectorized function \texttt{f} and a
+large data structure \texttt{x} then \texttt{f(head(x))} is semantically
+equivalent to, but much cheaper than \texttt{head(f(x))}. The reason is
+because the filtering happens first.
+
+\end{document}

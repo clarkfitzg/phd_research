@@ -1,3 +1,11 @@
+Thu Jan 11 11:13:52 PST 2018
+
+Is there a way to convert SQL to R code? R is generally more expressive, so
+this should be doable. Why do it? SQL engines already have query
+optimizers, and it's unlikely that turning it to R will make it work any
+better.
+
+
 Fri Dec  1 10:20:40 PST 2017
 
 Could I take profiling information as input to decide when and how to
