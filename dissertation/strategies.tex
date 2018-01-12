@@ -1,0 +1,36 @@
+% A simple template for LaTeX documents
+% 
+% To produce pdf run:
+%   $ pdflatex paper.tex 
+%
+
+\documentclass[12pt]{article}
+
+% Change margin size
+\usepackage[margin=1in]{geometry}   
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\section{Strategies}
+
+Consider the PEMS data analysis. It's essentially a group by followed by a
+map. The reduce just binds the rows of data together.
+
+The computational strategy may differ depending on several factors.
+
+\begin{itemize}
+    \item If the data are stored in files corresponding to groups and each
+        group fits in memory then I can \texttt{lapply} over the files.
+    \item If we have multiple cores we can use \texttt{mclapply}.
+    \item If the data doesn't fit in memory then I have to stream or map
+        reduce it.
+    \item If we can use command line tools to filter we can select the
+        columns to read that we need.
+    \item If we have a Hive cluster we can essentially let Hive do the file
+        group by and column selection.
+\end{itemize}
+
+\end{document}
