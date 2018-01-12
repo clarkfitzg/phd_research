@@ -28,4 +28,5 @@ t3 = system.time(data3 <- read.table(shellout, colClasses = rep("integer", lengt
 120 / 18.5
 # Therefore this is a valuable technique.
 
+t4
 unlink(tempfile)

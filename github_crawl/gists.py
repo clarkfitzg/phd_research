@@ -8,11 +8,14 @@ from lxml import html
 
 baseurl = "https://api.github.com"
 
-# This will get my gists, but it doesn't use the language filter
-response = requests.get(baseurl + "/users/clarkfitzg/gists",
+# This will fetch gists, but it doesn't use the language filter
+response = requests.get(baseurl + "/gists",
         {"language": "R"})
 
+
 gists = [x["files"].popitem()[1] for x in response.json()]
+
+
 
 
 # If I go on the website to search I can crawl these pages
