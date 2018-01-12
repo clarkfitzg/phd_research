@@ -10,3 +10,10 @@ Packages are less interesting because they typically just contain tools.
 Vignettes are interesting, and CRAN vignettes have the advantage of
 requiring that the code actually works. A disadvantage is that the package
 must be installed.
+
+Jan Vitek's group has a Docker image with all the R repositories.
+https://github.com/PRL-PRG/docker-r-full
+
+They also did a map of source code duplication in Github repos requiring a bunch of
+downloads: http://janvitek.org/pubs/oopsla17b.pdf
+Cool stuff.
