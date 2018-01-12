@@ -43,7 +43,23 @@ query optimization techniques.
 An R expression, particularly something like tables piped through dplyr, is
 like a query. If we have an expensive vectorized function \texttt{f} and a
 large data structure \texttt{x} then \texttt{f(head(x))} is semantically
-equivalent to, but much cheaper than \texttt{head(f(x))}. The reason is
+equivalent to, but much cheaper than, \texttt{head(f(x))}. The reason is
 because the filtering happens first.
+
+The example above suggests that we rewrite code such that all filtering
+happens as early as possible. We could also rewrite iterative filters in a
+way that removes the intermediate data structures, but I'm not sure that
+comes up enough to justify it. Then we need to look at some corpus of R
+code to see how people actually use it, instead of my ad hoc experience of
+how people use it.
+
+R differs from SQL because it is executable code rather than a declarative
+language. My work centers on modifying code for performance while
+preserving the semantics. What is the search space?  We can change
+\texttt{lapply} to \texttt{mclapply}. We can evaluate expressions
+asynchronously. We can use a database for the \texttt{split, apply,
+combine} paradigm as described in \cite{wickham2011split}. This paradigm is
+actually quite amenable to different computational approaches- the
+semantics are clear.
 
 \end{document}
