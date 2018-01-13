@@ -4,14 +4,11 @@ from lxml import html
 
 baseurl = "https://api.github.com"
 
-# I don't think this one is searching on language, because I've never
-# written Pascal
+# This finds me
 response = requests.get(baseurl + "/search/users",
-        {"q": "clarkfitzg", "language": "Pascal"})
+        {"q": "clark language:R"})
 
-response = requests.get(baseurl + "/search/users",
-        {"q": "clark+language:R"})
-
+print(response.url)
 
 logins = [x["login"] for x in response.json()["items"]]
 print(logins)

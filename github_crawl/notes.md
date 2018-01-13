@@ -17,3 +17,10 @@ https://github.com/PRL-PRG/docker-r-full
 They also did a map of source code duplication in Github repos requiring a bunch of
 downloads: http://janvitek.org/pubs/oopsla17b.pdf
 Cool stuff.
+
+Just messing around searching for my username- I found this repo:
+https://github.com/adamtclark/tradeoff_model. This is interesting because
+it has a bunch of R code that is not a package. It reminds me of Scott's
+code- highly repetitive. Github marks this as an R repository. So lets try
+to find all R repositories, download them, and then we can check to see
+which ones are valid packages.
