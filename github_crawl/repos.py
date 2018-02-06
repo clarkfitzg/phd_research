@@ -1,6 +1,9 @@
-import requests
 import json
 import time
+import os
+import subprocess
+
+import requests
 
 
 
@@ -41,6 +44,18 @@ if __name__ == "__main__":
         except KeyError:
             break
 
+    starting_dir = os.getcwd()
+    data_dir = os.path.expanduser("~/data/code/r_data_analysis/")
+    os.chdir(data_dir)
+
+    with open("meta.json", "w") as f:
+        json.dump(repos, f)
+
+    for url in (r["git_url"] for r in repos):
+        time.sleep(1)
+        subprocess.run(["git", "clone", url])
+
+    os.chdir(starting_dir)
 
 # 
 # r = download()
