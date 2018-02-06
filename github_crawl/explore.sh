@@ -7,18 +7,18 @@ dd="/home/clark/data/code/r_data_analysis"
 find $dd -path "*.R" -type f | wc -l
 
 # Which libraries are being used?
-# 843 calls, 201 different libraries.
-# And not a single call to 
-find $dd -path "*.R" -type f | \
-    xargs grep "library\(\K(\S+)\)" --no-filename -oP 2> /dev/null | \
+# 565 different libraries.
+find $dd -path "*.R" -type f -print0 | \
+    xargs -0 grep "library\(\K(\S+)\)" -oP --no-filename | \
     tr -d \'\"')' | \
     sort | \
     uniq -c | \
     sort -n | \
     #wc -l | \
-    grep "ggplot" | \
+    #grep "parallel" | \
     cat
 
+# Which ones use parallel?
 
 # How often are the apply families used?
 find $dd -path "*.R" -type f | \
