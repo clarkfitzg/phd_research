@@ -7,4 +7,5 @@ dd="/home/clark/data/code/r_data_analysis"
 find $dd -path "*.R" -type f | wc -l
 
 # Which libraries are being used?
-find $dd -path "*.R" -type f | xargs grep "library(" --only-matching --no-filename
+# Something around 843
+find $dd -path "*.R" -type f | xargs grep "library(\S" --no-filename -o
