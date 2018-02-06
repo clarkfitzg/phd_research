@@ -9,5 +9,5 @@ find $dd -path "*.R" -type f | wc -l
 # Which libraries are being used?
 # Something around 843
 find $dd -path "*.R" -type f | \
-    xargs grep "library(\S+)" --no-filename -oE | \
+    xargs grep "library\(\K(\S+)\)" --no-filename -oP | \
     cat
