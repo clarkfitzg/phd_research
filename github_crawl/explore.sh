@@ -10,4 +10,8 @@ find $dd -path "*.R" -type f | wc -l
 # Something around 843
 find $dd -path "*.R" -type f | \
     xargs grep "library\(\K(\S+)\)" --no-filename -oP | \
+    tr -d '")' | \
+    sort | \
+    uniq -c | \
+    sort -n | \
     cat
