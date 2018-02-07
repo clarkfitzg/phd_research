@@ -19,20 +19,38 @@ find $dd -path "*.R" -type f -print0 | \
     cat
 
 
-# Which ones use parallel?
+# Which ones use specific packages?
 find $dd -path "*.R" -type f -print0 | \
-    xargs -0 grep "library\([\"']?parallel" -oP | \
+    xargs -0 grep "library\([\"']?RPostgreSQL" -oP | \
     cut  -d "/" -f 7 | \
     sort | \
     uniq | \
     cat
 
-#BRC_SingleCell_LJames
-#DBDA2Eprograms
-#DBDA2E-utilities
-#gpseq-seq-gg
-#MetaAnalysisJaegerEngelmannVasishth2017
-#seq-lib-gg
+# RPostgreSQL
+############################################################
+# cona
+# NHL_regression
+# nyc-citibike-data
+
+# RMySQL
+############################################################
+# BRC_Keloid
+# BRC_SingleCell_LJames
+# DataAnalytics
+# HPRU_RSV
+# myTCGA
+# pullreqs-contributors
+# Schisto_medip
+
+# parallel
+############################################################
+# BRC_SingleCell_LJames
+# DBDA2Eprograms
+# DBDA2E-utilities
+# gpseq-seq-gg
+# MetaAnalysisJaegerEngelmannVasishth2017
+# seq-lib-gg
 
 apply="\K([sltv]apply|Map|Reduce|mclapply)" 
 

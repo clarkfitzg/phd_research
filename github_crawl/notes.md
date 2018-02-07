@@ -27,6 +27,8 @@ which ones are valid packages.
 
 Tue Feb  6 16:18:07 PST 2018
 
+`RMySQL` and `RPostgreSQL` are popular. What do people do with them?
+
 Checking to see how people actually use `parallel` out in the wild.
 
 Of the repos that I downloaded these ones use parallel:
