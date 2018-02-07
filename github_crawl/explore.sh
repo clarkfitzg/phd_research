@@ -19,6 +19,13 @@ find $dd -path "*.R" -type f -print0 | \
     cat
 
 # Which ones use parallel?
+find $dd -path "*.R" -type f -print0 | \
+    xargs -0 grep "library\([\"']?parallel" -oP | \
+    cut  -d "/" -f 7 | \
+    sort -n | \
+    uniq | \
+    cat
+
 
 # How often are the apply families used?
 find $dd -path "*.R" -type f | \
