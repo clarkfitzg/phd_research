@@ -32,6 +32,12 @@ elements, ie the `head()` separate and computing on that quickly. Let the
 user iteratively refine their code until it's correct on this part, and
 then run it on the whole thing.
 
+It can also be more efficient to run based on keeping the same processes
+around, rather than spawning new ones. This could integrate with make.
+
+I'm thinking of computations that take somewhere on the order of 10 seconds
+to a few minutes. This should be long enough to justify the overhead.
+
 ## Design
 
 
