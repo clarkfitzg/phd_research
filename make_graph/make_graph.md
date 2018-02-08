@@ -22,10 +22,14 @@ different blocks define a variable called `x` that needs to be be used
 later then those better be two different objects on disk.
 
 This disk based approach could also overcome some of the difficulties with
-out of memory errors. For example, if `x` is a large vector, say 50% of available
-memory, and we call a vectorized function `y = f(x)` then this may not
-work. But we can make it work by chunking through `x` on disk. This also
-allows parallelism. This is somewhat like the ddR approach.
+out of memory errors. For example, if `x` is a large vector, say 50% of
+available memory, and we call a vectorized function `y = f(x)` then this
+may not work. But we can make it work by chunking through `x` on disk. This
+also allows parallelism. It's what Hadoop and Spark do. This is also somewhat
+like the ddR approach.
+
+So what would this approach with R offer that Hadoop and Spark don't?
+Lighter weight is nice.
 
 We can even get some level of interactivity by keeping the first few
 elements, ie the `head()` separate and computing on that quickly. Let the
@@ -40,4 +44,8 @@ to a few minutes. This should be long enough to justify the overhead.
 
 ## Design
 
-
+This overlaps with Norm's Software Alchemy. What I really need are ways to
+perform the reduce. And so does Software Alchemy.  The data structure
+should be reduced from O(n) to O(1) for it to be worth it.  The standard
+method to reduce in SA is to average the estimates and covariances, ie.
+through `coef()` and `vcov`.

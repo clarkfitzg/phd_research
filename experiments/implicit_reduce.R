@@ -23,7 +23,7 @@ y = apply(probs, 1, function(p) sample(c(TRUE, FALSE), size = 1, prob = p))
 # But y, x are really big so this line takes forever.
 fit = glm(y ~ x, family = binomial())
 
-summary(fit)
+estimates = coef(summary(fit))
 
 # This large size is a real problem. We need to be reducing the size of the
 # data.
@@ -60,7 +60,7 @@ fits = Map(glmlite, xc, yc)
 
 # Here's the crucial part. Need a way to reduce arbitrary objects.  I'm not
 # sure to what extent this can be done. In some sense it's the most
-# critical part, since the mapping part is relatively simple. Like Norm
+# interesting part, since the mapping part is relatively simple. Like Norm
 # said :) We can do basic ones, but with more stats this may not be
 # trivial.
 Reduce.glmlite = function(fit1, fit2)
