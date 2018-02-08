@@ -45,7 +45,8 @@ to a few minutes. This should be long enough to justify the overhead.
 ## Design
 
 This overlaps with Norm's Software Alchemy. What I really need are ways to
-perform the reduce. And so does Software Alchemy.  The data structure
-should be reduced from O(n) to O(1) for it to be worth it.  The standard
-method to reduce in SA is to average the estimates and covariances, ie.
-through `coef()` and `vcov`.
+perform the reduce. And so does Software Alchemy. The memory footprint of
+the data structure should be reduced from O(n) to O(1) for it to be worth
+it. The standard method to reduce in SA is to average the estimates and
+covariances, ie.  through `coef()` and `vcov()`. But a reduce is more general
+in that it allows reduction of arbitrary objects.

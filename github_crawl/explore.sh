@@ -83,3 +83,16 @@ find $dd -path "*.R" -type f -print0 | \
     uniq | \
     wc -l | \
     cat
+
+# Which files use these two function calls in a row?
+find $dd -path "*.R" -type f > rfiles.txt
+
+# 21
+./seq_calls.py "lm(" "coef(" | \
+    #wc -l | \
+    cat
+
+# 2. So this doesn't happen enough to build infrastructure for it.
+./seq_calls.py "lm(" "vcov(" | \
+    wc -l | \
+    cat

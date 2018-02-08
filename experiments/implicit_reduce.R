@@ -18,12 +18,17 @@ y = apply(probs, 1, function(p) sample(c(TRUE, FALSE), size = 1, prob = p))
 
 
 # High level task to do in parallel:
+#
+# Fit a model and extract either the coefficients or vcov. Does this
+# pattern appear in user code?
 ############################################################
 
 # But y, x are really big so this line takes forever.
 fit = glm(y ~ x, family = binomial())
 
-estimates = coef(summary(fit))
+beta = coef(fit)
+beta_var = vcov(fit)
+
 
 # This large size is a real problem. We need to be reducing the size of the
 # data.
