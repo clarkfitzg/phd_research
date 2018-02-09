@@ -81,7 +81,7 @@ find $dd -path "*.R" -type f -print0 | \
     cut  -d "/" -f 7 | \
     sort | \
     uniq | \
-    wc -l | \
+    #wc -l | \
     cat
 
 # Which files use these two function calls in a row?
@@ -92,7 +92,7 @@ find $dd -path "*.R" -type f > rfiles.txt
     #wc -l | \
     cat
 
-# 2. So this doesn't happen enough to build infrastructure for it.
+# 2. So this doesn't happen enough for it to be a motivating use case.
 ./seq_calls.py "lm(" "vcov(" | \
     wc -l | \
     cat
