@@ -31,9 +31,9 @@ only focuses on one, sometimes two tables.
 
 Going off the retail data idea. Suppose we have these tables:
 
-`line_item` with columns: `order, product, price, returned`. The
-first two are join keys to the other tables. `Price` is what they paid
-for the item and `Returned` is logical indicating whether they have
+`line_item` with columns: `order_id, product_id, price, returned`. The
+first two are join keys to the other tables. `price` is what they paid
+for the item and `returned` is logical indicating whether they have
 returned the item.
 
 The following tables are keyed on their name, and there's a one to many
@@ -41,14 +41,16 @@ relationship between these tables and the `line_item`, ie. there's only
 one entry for each order in the `order` table, and it may contain
 many items.
 
-`order` has columns such as `customer, time_ordered, ship_zip_code,
-coupon_code` and computed columns such as `total_order_value`.
+`order` is keyed on `order_id` and has columns such as `customer_id,
+time_ordered, ship_zip_code, coupon_code` and computed columns such as
+`total_order_value`.
 
-`customer` has columns such as `name, email` and computed columns such as
-`number_orders, total_dollars_spent, total_dollars_returned`.
+`customer` is keyed on `customer_id` has columns such as `name, email` and
+computed columns such as `number_orders, total_dollars_spent,
+total_dollars_returned`.
 
-`product` has columns such as `color`, `size`, and computed columns such as
-`number_sold`.
+`product` is keyed on `product_id` and has columns such as `color`, `size`,
+and computed columns such as `number_sold`.
 
 A natural join across all four tables will produce a table with the same
 number of rows as the `line_item`, and number of columns = 2 + the total
@@ -62,6 +64,21 @@ interesting, and that comes from a join on `Order`.
 The premise is that all the tables together will fit in memory, but if we
 join them then they won't. But we would like to compute on them as if they
 were held in memory. So we think of it as an "abstract data frame".
+
+We need to clearly specify how to join these tables to make the view. In
+SQL that would look something like:
+
+```
+
+CREATE VIEW line_item_full AS
+SELECT * 
+FROM line_item l, order o, customer c, product p
+WHERE l.product_id = p.product_id
+AND l.order_id = o.order_id
+AND o.customer_id = c.customer_id
+;
+
+```
 
 Suppose we want to check how the item return rate varies based on the hour of
 the day that the order was placed. Here's a reasonably efficient way to do
@@ -78,12 +95,48 @@ hour_return = merge(line_item[, c("order", "returned")]
     , all.y = FALSE
     )
 
+# This also can be much more efficient if hour is a categorical
+# variable. Just make the table and use that.
+fit = glm(returned ~ hour, data = hour_return, family = binomial())
+
 ```
 
 This should be more efficient in terms of run time because we compute the function
 `extract_hour()` on the smaller `order` table rather than on the larger
 `line_item` table. If on average there are `p` items per order then this
-saves time by a factor of `p` for this function call.
+saves time by a factor of `p` for this function call. This is kind of like
+caching the result of a function, but it doesn't have to check the
+arguments every time.
 
 It's also more efficient in terms of memory usage because it won't create
 the unnecessary vector of `time_ordered` in the `hour_return` table.
+
+This example isn't terribly difficult to reason about and express in R, but
+add a couple more joins and intermediate computations and it will become
+difficult. This is why we would like a system to manage it for us.
+Thus we would rather write:
+
+```{R}
+
+line_item_full$hour = extract_hour(line_item_full$time_ordered) 
+
+fit = glm(returned ~ hour, data = line_item_full, family = binomial())
+
+```
+
+These two lines are specific to the computation at hand, while the
+`merge()` call in the previous example can be inferred.
+
+The system must infer that `returned, time_ordered` are the two necessary columns,
+and then figure out an efficient way to make the join. I'm sure there's all
+kinds of stuff in the DB literature on how to make efficient joins.
+
+## Caching
+
+This problem assumes that we have limited memory. The system should use as
+much of that memory as possible. Although we may not be able to keep
+`line_item_full` in memory it should be possible to keep some of the
+columns around, or even subsets of the rows. When memory becomes
+constrained we can eject the least recently used pieces and write them to
+disk. Although it may be faster to recreate them by performing the join
+again rather than reading from disk.
