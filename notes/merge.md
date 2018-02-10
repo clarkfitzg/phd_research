@@ -27,6 +27,40 @@ H. Wickham's tidy data idea is Codd's 3rd normal form. He shows how it
 can lead to a more coherent view of computations on data. But it really
 only focuses on one, sometimes two tables.
 
+Wikipedia has some interesting [material on natural
+joins](https://en.wikipedia.org/wiki/Join_(SQL)#Natural_join). They claim
+natural joins are not practical in real world databases because there might
+be thousands of tables so it's hard to even narrow down the column names.
+Ie. many tables can have a `price` column which isn't a join key. But for
+stats this idea of a natural join could be really useful. The question is:
+give us everything that can possibly be of interest for the observational
+unit in some particular table. Then we keep left joining to that table!
+
+Here's the algorithm:
+
+__Assumptions__
+- Column names match if and only if they can be used as a join between
+  tables.
+- It only makes sense to join if the `target_table` has a one to one or
+  many to one relationship with `table`. Otherwise if it has something like
+  a one to many relationship then we don't know which rows to bring over for
+  the observational unit.
+
+__Input__
+- `db` table name of interest, ie. 1 row is 1 observational unit
+- `target_table` table name of interest, ie. 1 row is 1 observational unit
+
+```
+while True:
+    for table in db:
+        if table can be joined to target_table:
+            target_table = left join target_table to table
+    if no table could be joined on the for loop:
+        break, we're done
+```
+
+
+
 ## Use case
 
 Going off the retail data idea. Suppose we have these tables:
