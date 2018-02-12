@@ -166,6 +166,52 @@ The system must infer that `returned, time_ordered` are the two necessary column
 and then figure out an efficient way to make the join. I'm sure there's all
 kinds of stuff in the DB literature on how to make efficient joins.
 
+
+### Out of memory
+
+If the full tables don't fit in memory but each column fits in memory we
+can do something like this:
+
+```
+
+# The order of this script is very important- the ordering can minimize the
+# memory required.
+
+# "order" is a table stored on disk.
+# read_columns extracts columns that it needs.
+# Since it's two columns it's a data.frame
+order = read_columns(name = "order", column = c("order", "time_ordered"))
+
+order$hour = extract_hour(order$time_ordered)
+
+# Free the memory, since we know this will not be used again.
+order$time_ordered = NULL 
+
+line_item = read_columns(name = "line_item", column = "order")
+# Single column starts as a vector
+line_item = as(line_item, "data.frame")
+
+hour_return = merge(line_item
+    , order
+    , all.x = TRUE
+    , all.y = FALSE
+    , sort = FALSE
+    )
+
+rm(line_item)
+hour_return$order = NULL 
+
+hour_return$returned = read_columns(name = "line_item", column = "returned")
+
+fit = glm(returned ~ hour, data = hour_return, family = binomial())
+
+```
+
+The principles at work in this code are:
+- Wait until the last possible moment to read something into memory.
+- Remove objects as soon as they are no longer needed.
+
+
 ## Caching
 
 This problem assumes that we have limited memory. The system should use as
@@ -175,3 +221,6 @@ columns around, or even subsets of the rows. When memory becomes
 constrained we can eject the least recently used pieces and write them to
 disk. Although it may be faster to recreate them by performing the join
 again rather than reading from disk.
+
+
+## Code Analysis Tasks
