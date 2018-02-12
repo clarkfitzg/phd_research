@@ -59,6 +59,7 @@ while True:
         break, we're done
 ```
 
+Can we think of this as a graph traversal?
 
 
 ## Use case
@@ -159,7 +160,7 @@ fit = glm(returned ~ hour, data = line_item_full, family = binomial())
 ```
 
 These two lines are specific to the computation at hand, while the
-`merge()` call in the previous example can be inferred.
+`merge()` call in the previous example can be inferred given the schema.
 
 The system must infer that `returned, time_ordered` are the two necessary columns,
 and then figure out an efficient way to make the join. I'm sure there's all
