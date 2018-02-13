@@ -251,4 +251,20 @@ x2 = 100 * x
 plot(x2)
 ```
 
-This would let me cache everything on disk and pick up where I left off.
+This would let me cache everything on disk and pick up where I left off. If
+we overwrite variables then we need to go back further. It's also
+less ambiguous.
+
+I would also like single static assignment for data frame columns. 
+In some sense data frames are acting conceptually like environments
+containing columns which are variables. Thus we can consider something like
+`df$x` as just an extended variable name. Lists aren't the main focus, but
+if we have a solution that gets them for free, then that's fine and good.
+
+```{R}
+df$x = 1:10
+df$x2 = 100 * df$x
+plot(df$x2)
+```
+
+
