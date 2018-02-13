@@ -222,5 +222,33 @@ constrained we can eject the least recently used pieces and write them to
 disk. Although it may be faster to recreate them by performing the join
 again rather than reading from disk.
 
+What intermediate data structures do we really need to make a join?
+
+The core thing is a table describing which rows to keep from the left table
+and which to keep from the right table. A natural way to do this is a table
+containing integer indices. These can be stored as two vectors on disk. I
+wonder how much memory / time this would save?
+To answer this I'll need to carefully check the memory usage of `merge()`.
+
 
 ## Code Analysis Tasks
+
+This is a wishlist of things that I would like a static R Code analyzer to do.
+
+Single static assignment in place.
+
+```{R}
+x = 1:10
+x = 100 * x
+plot(x)
+```
+
+will become:
+
+```{R}
+x = 1:10
+x2 = 100 * x
+plot(x2)
+```
+
+This would let me cache everything on disk and pick up where I left off.
