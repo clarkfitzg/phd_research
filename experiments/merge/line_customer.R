@@ -4,8 +4,15 @@
 #
 # These will be used to benchmark / profile merge versus loading from disk.
 
-n_items = 1e9
-n_orders = 100e6
-n_customers = 10e6
+DATADIR = "~/data/sales/"
+
+n_item = 1e9
+n_order = 100e6
+n_customer = 10e6
 
 
+write_rand_col = function(file, n, size, key = FALSE)
+{
+    data = if(key) seq(n), else sample.int(n, size, replace = True)
+    saveRDS(data, paste0(DATADIR, file))
+}
