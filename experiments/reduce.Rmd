@@ -77,7 +77,8 @@ predict(fit, data.frame(x = 1))
 
 This is the same thing that software alchemy does. But putting it in the
 more general framework of `reduce` allows us to do new things. For example,
-we can use it on streaming data.
+we can use it on streaming data. We could also think about doing `update()`
+and `downdate()` operations then.
 
 
 ## Related ideas
