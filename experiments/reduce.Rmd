@@ -1,0 +1,88 @@
+Wed Feb 14 08:18:28 PST 2018
+
+Detect splittable objects:
+- list
+- vector
+- rows of a data frame
+
+Can we detect the implicit use of a reduce, such that we can parallelize
+the operation?
+
+```{R}
+
+# Working data
+n = 100
+x = runif(n)
+y = 1 + 2*x + rnorm(n)
+
+```
+
+Start with the following script:
+
+```{R}
+
+fit = lm(y ~ x)
+
+predict(fit, data.frame(x = 1))
+
+```
+
+Suppose we have a `reduce` method to create objects of class `reduce.lm`
+and `predict.reduce.lm` to make predictions from these objects. Below are
+some skeleton implementations just to illustrate the basic idea. They are
+not generally correct.
+
+```{R}
+
+reduce = function(...) UseMethod("reduce")
+
+reduce.lm = function(...)
+{
+    models = list(...)
+    coefs = do.call(rbind, lapply(models, coef))
+    avg = colMeans(coefs)
+    class(avg) = c("reduce.lm", "reduce", "lm", class(avg))
+    avg
+}
+
+predict.reduce.lm = function(object, ...)
+{
+    x = list(...)[[1]][, 1]
+    sum(object * c(1, x))
+}
+
+print.reduce = function(x, ...)
+{
+    print.default(x, ...)
+}
+
+```
+
+The code analysis then goes through
+and replaces the line `fit = lm(y ~ x)` with equivalent `split, map,
+reduce` code, for example:
+
+```{R}
+
+ncl = 2
+indices = parallel::splitIndices(length(y), ncl)
+
+fits = lapply(indices, function(idx) lm(y[idx] ~ x[idx]))
+
+fit = do.call(reduce, fits)
+
+predict(fit, data.frame(x = 1))
+
+```
+
+This is the same thing that software alchemy does. But putting it in the
+more general framework of `reduce` allows us to do new things. For example,
+we can use it on streaming data.
+
+
+## Related ideas
+
+We should carry on a few attributes with objects produced from `reduce()`,
+such as `exact = TRUE` if it's the same as the full computation on all the
+data and `N = 500` or whatever to show how many units have contributed to
+the object so that we can give appropriate weight.
