@@ -8,10 +8,18 @@ library(rstatic)
 
 node0 = quote_ast({
     x = data.frame(a = 1:10, b = letters[1:10])
-    x$c = rnorm(10)
+    x[, "c"] = rnorm(10)
     sum(x$a)
     head(x)
 })
+
+# This works fine
+#node0 = quote_ast({
+#    x = 1:10
+#    x = rnorm(10)
+#    sum(x)
+#    head(x)
+#})
 
 # We can evaluate this.
 eval(to_r(node0))

@@ -27,6 +27,13 @@ H. Wickham's tidy data idea is Codd's 3rd normal form. He shows how it
 can lead to a more coherent view of computations on data. But it really
 only focuses on one, sometimes two tables.
 
+John Mount's new `rquery` package takes a single query based on Codd's
+relational operators and generates SQL targeting Postgres and Spark. This
+limits it to only doing things that one can do in SQL. They acknowledge
+that queries can be optimized before SQL generation, but it doesn't seem
+that they try to optimize them directly. The dplyr SQL generation approach
+is pretty similar.
+
 Wikipedia has some interesting [material on natural
 joins](https://en.wikipedia.org/wiki/Join_(SQL)#Natural_join). They claim
 natural joins are not practical in real world databases because there might

@@ -53,7 +53,7 @@ system.time({
 # I'm surprised that this approach is about 2x as fast as data.table's
 # merge. Although the latter is certainly more general and robust.
 
-# How about using the data.table version?
+# How about using the data.table language version?
 # Takes 5.1 seconds, ie. much more efficent
 system.time({
     item2 = item[o2, , on = "order"]
