@@ -6,6 +6,8 @@ Large delimited text file
 - Pems
 - Airline delays (Kane)
 
+Fit large glm
+
 System bound task
 - Web Scraping - bounded by network. Could do this for LuLu's, might be a
   nice conversation piece. Understand the pricing models for their

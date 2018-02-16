@@ -1,3 +1,43 @@
+
+If I restrict the scope of code analysis to data frames then there are 3 DSL's:
+
+- data.table
+- dplyr
+- [rquery](https://winvector.github.io/rquery/) (new package, but designed
+  with this sort of optimization in mind)
+
+I call them DSL's because they're all similar to SQL type queries on
+tables. What I'm thinking about doing then is a sort of global script
+optimization on these languages, which is sort of like PL/SQL.
+
+
+## Run once then modify
+
+Fri Feb 16 15:13:49 PST 2018
+
+Suppose we observe the actual code as it runs, so that we know everything
+we like:
+
+- The dimensions, class, and object size of every object
+- How long each statement takes to execute
+- All side effects
+
+Then we can create a version that will be faster, or at least not slower,
+by using parallelism. I'm thinking of two transformations:
+
+- Replace apply family functions with their parallel equivalents if we
+  think it will be faster, based on previous timings on that particular machine.
+- Task parallelism by calling some groups of statements within
+  `mcparallel()`, returning the objects to the main process when necessary.
+
+This will work for multicore, single machine. It should also work for SNOW.
+But how extensible will it be?
+
+Does this use any code analysis? No. It just needs to look at the state of
+the global variables before and after. But it does incorporate knowledge of
+the data.
+
+
 Fri Feb 16 10:07:15 PST 2018
 
 The more we know about the data and the operations we may be able to skip

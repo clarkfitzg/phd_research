@@ -62,7 +62,6 @@ __Bioconductor__ has 1500 packages with easily accessible vignettes.
 vignette](https://www.bioconductor.org/packages/release/bioc/vignettes/apComplex/inst/doc/apComplex.R)
 Code will be pretty similar to CRAN, and some packages may well be on both.
 
-
 __Github__ The Github search API provides at most 1,000 results per query. I
 can potentially obtain more by designing queries that are mutually
 exclusive. I could also just ask them to make an exception and give me the
@@ -83,26 +82,18 @@ Precisely define what a data description consists of, which I'll
 focus on, and how they can be extended. This makes the starting point of
 my research much more concrete.
 
-Represent R code as a data structure that reveals the ideal parallelism,
-ie. both statements that can run in parallel and map type code.
+Files and databases seem like the most commonly used sources of data in my
+experience. I've already looked at these in the sense of Hive databases and
+flat text files.
 
 
-## 3 Run once then modify
+## 2 Parallel data structure for code
 
-Suppose we observe the actual code as it runs, so that we know everything
-we like:
+Represent R code in a data structure that exposes the ideal parallelism
+in terms of both data and task parallelism. The task parallelism and the
+data flows come through the expression graph.
 
-- The dimensions and object size of every object
-- How long each statement takes to execute
-- All side effects
+This milestone would be greatly simplified if I narrow down and focus on a
+subset of the language. For example, I should probably be sticking to pure
+functions.
 
-Then we can create a version that will be faster, or at least not slower,
-by using parallelism. I'm thinking of two transformations:
-
-- Replace apply family functions with their parallel equivalents if we
-  think it will be faster, based on previous timings on that particular machine.
-- Task parallelism by calling some groups of statements within
-  `mcparallel()`, returning the objects to the main process if necessary.
-
-This will work for multicore, single machine. It should also work for SNOW.
-But how extensible will it be?
