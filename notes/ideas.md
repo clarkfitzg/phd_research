@@ -1,3 +1,19 @@
+Fri Feb 16 10:07:15 PST 2018
+
+The more we know about the data and the operations we may be able to skip
+some condition checking. For example, if we know ahead of time that `x` is
+not `NULL` then if we call `f(x)` where `f` has the line:
+```
+if(is.null(x)) ...
+```
+then we can replace `f` with a version `f'` that removes this line.
+
+More generally if we know that the data isn't going to affect the value of
+any conditional statements then we can replace `f` with a
+new version that doesn't check those conditions and only includes the
+actual code statements that will run.
+
+
 Thu Jan 11 11:13:52 PST 2018
 
 Is there a way to convert SQL to R code? R is generally more expressive, so
