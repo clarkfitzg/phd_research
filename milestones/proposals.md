@@ -33,6 +33,9 @@ parallel. Examples of side effects we would like to capture include:
 - reference classes (requires knowing the class of objects- maybe difficult)
 - manipulating environments (need to know class)
 
+__split apply functions__ are also interesting, ie. `split, by, aggregate`.
+We may be able to split the data structure before sending it in.
+
 __task parallelism__ This means representing the statements of the code,
 say a function body or a script, as a directed acyclic graph based on the
 implied dependencies. For a more complete description see my [writeup on
@@ -78,6 +81,7 @@ the query "R data analysis".
 
 ## 2 Data Description
 
+For this milestone I'll define precisely what I mean by a data description.
 Precisely define what a data description consists of, which I'll
 focus on, and how they can be extended. This makes the starting point of
 my research much more concrete.
@@ -86,6 +90,8 @@ Files and databases seem like the most commonly used sources of data in my
 experience. I've already looked at these in the sense of Hive databases and
 flat text files.
 
+One general form of data is just text coming through UNIX `stdin`. This equates to a
+`read.table()` or `scan()`. It's the same interface that Hive uses.
 
 ## 2 Parallel data structure for code
 
@@ -97,3 +103,4 @@ This milestone would be greatly simplified if I narrow down and focus on a
 subset of the language. For example, I should probably be sticking to pure
 functions.
 
+Streaming data in chunks is highly related to the parallel problems.
