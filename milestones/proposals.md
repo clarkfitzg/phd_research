@@ -101,6 +101,22 @@ data flows come through the expression graph.
 
 This milestone would be greatly simplified if I narrow down and focus on a
 subset of the language. For example, I should probably be sticking to pure
-functions.
+functions. If I'm thinking about pushing it into SQL then I should probably
+be focusing on methods for data frames.
 
-Streaming data in chunks is highly related to the parallel problems.
+I need to clearly specify the set of optimizations / code transformations
+under consideration, and then design the data structure with this
+in mind. This set should also be extensible, ie. we can add more
+transformations / backends later. Possible transformations include:
+
+- rewrite vectorized code as `lapply`
+- run `lapply()` in parallel
+- stream through chunks of the data
+- pipeline parallelism, related to streaming chunks
+- chunk data at the source so we can run in parallel
+- task parallelism
+- push some operations from the R code into an underlying SQL database
+
+The Hive idea essentially does the last one- it pushes the column selection
+into the DB query and reorganizes the data so that it can be run with
+streaming chunks.
