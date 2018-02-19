@@ -1,3 +1,9 @@
+Mon Feb 19 10:26:01 PST 2018
+
+Blog post: Any vectorized R function can be pretty easily made parallel.
+
+
+Fri Feb 16 15:13:49 PST 2018
 
 If I restrict the scope of code analysis to data frames then there are 3 DSL's:
 

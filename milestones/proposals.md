@@ -3,8 +3,8 @@ Fri Feb 16 09:15:45 PST 2018
 # Milestones
 
 The central idea of my thesis is to be able to take information on (code,
-data, platform) and describing or possibly producing a strategy to execute
-it, with a focus on acceleration through parallelism. 
+data, platform) and describe or produce a strategy to execute it, with a
+focus on acceleration through parallelism. 
 
 In the interest of making progress on my thesis this is a list of potential
 milestones.  Each one should be take around 1 month to complete.
@@ -13,19 +13,33 @@ milestones.  Each one should be take around 1 month to complete.
 ## 1. Parallel data structure for code
 
 Represent R code in a data structure that exposes the ideal parallelism in
-terms of both data and task parallelism. The task parallelism and the data
-flows come through the 
-
-so I would essentially build on this. The data structure should capture the
-semantics of the input R code. We should be able to make round trip
+terms of both data and task parallelism. The data structure should capture
+the semantics of the input R code. We should be able to make round trip
 transformations: input R code -> parallel data structure -> output R code.
 It's not necessary that input and output R code match. Indeed, the purpose
-of the data structure is to make the output R code more efficient in
-some way.
+of the data structure is to change the output R code to make it more
+efficient in some way.
 
-This would be a useful conceptual tool because
+This would be a useful conceptual tool because it shows all possible ways
+to make high level code parallel. We can think of it as an intermediate
+representation of the code.
 
-This can build on the following existing work:
+Requirements listed in order of priority:
+1. Robust- Read any R code without parsing errors, and also write it out.
+1. Task graph- Capable of representing statement dependencies, ie.
+   statement 9 depends on the result of statement 5.
+1. Extensible- can add extra information, ie. timings, classes and sizes of
+   objects
+1. Extensible- supports optimization passes
+
+Non-requirements:
+1. Control flow- I'm happy to leave loops as single nodes representing
+   function calls. They can be modified in optimization passes if
+   necessary.
+
+### Prerequisites
+
+This can potentially build on the following existing work:
 - __rstatic__ provides type inference and data flow information through SSA .
 - __CodeDepends__ makes it easy to grab the functions that I'm looking for
   through the function handlers, but I've also written my own code to do
@@ -34,16 +48,26 @@ This can build on the following existing work:
   previously](https://github.com/clarkfitzg/phd_research/blob/master/expression_graph/expression_graph.tex)
 show the task parallelism.
 
-Static analysis using any of the above can't _actually_ show if parallel
+### Description
+
+Static analysis of the code by itself can't _actually_ show if parallel
 will be more efficient, because we don't know how large the data is and how
 long anything will take to run.  What I would really like is some kind of
 class and dimension inference, but this seems like wishful thinking.
 
-But if we run it once then we can "fill in" everything that we would like
+If we run the code once then we can "fill in" everything that we would like
 to know in the parallel data structure: classes, object sizes, timings for
-each function and method call, etc.
+each function and method call, etc. It doesn't seem unreasonable to require
+one run; if the user hasn't run it then how do they know that it's slow?
+The other standard advice for slow code is to profile it, which again
+requires running it.
 
-This milestone would be greatly simplified if I narrow down and focus on a
+This data structure should be extensible in the sense that we can make
+"optimization passes" on it, ie. to eliminate unnecessary code or to
+transform a `for` loop into an `lapply` as described in the Code Analysis
+project Nick, Duncan, Matt and I worked on in the fall of 2017.
+
+This milestone might be might simplified if I narrow down and focus on a
 subset of the language. For example, I should probably be sticking to pure
 functions. If I'm thinking about pushing it into SQL then I should probably
 be focusing on methods for data frames. There aren't too many of them:
@@ -66,7 +90,7 @@ be focusing on methods for data frames. There aren't too many of them:
 I need to clearly specify the set of optimizations / code transformations
 under consideration, and then design the data structure with this
 in mind. This set should also be extensible, ie. we can add more
-transformations / backends later. Possible transformations include:
+transformations later. Possible transformations include:
 
 - rewrite vectorized code as `lapply`
 - run `lapply()` in parallel
@@ -80,16 +104,44 @@ The Hive idea essentially does the last one- it pushes the column selection
 into the DB query and reorganizes the data so that it can be run with
 streaming chunks.
 
-## 1 Examine large corpus of code
+One idea that might be too specific is detecting several iterated
+vectorized function calls followed by a reduce, ie. `sum(f(g(h(x))))`.
+
+
+## 2. Data Description
+
+For this milestone I'll define precisely what a data description consists
+of, which I'll focus on, and how they can be extended. This makes the
+starting point of my research much more concrete.
+
+Files and databases seem like the most commonly used sources of data in my
+experience. I've already looked at these in the sense of Hive databases and
+flat text files.
+
+One general form of data is just text coming through UNIX `stdin`. This
+equates to a `read.table()` or `scan()`. It's the same interface that Hive
+uses.
+
+R Consortium has refined the DBI specification recently. That could provide
+a starting point for thinking about data coming from a database. One way to
+get parallelism is through multiple clients:
+https://www.percona.com/blog/2014/01/07/increasing-slow-query-performance-with-parallel-query-execution/
+
+## 2. Examine large corpus of code
 
 For this milestone I would systematically examine a more extensive corpus
 of R code to detect and quantify empirical patterns in how programmers use
 various idioms and language features that are or are not amenable to
 parallelization.
-
 If we can show that some fraction of the code can potentially benefit from
 a particular code analysis / transformation then this demonstrates
 relevance.
+
+### Prerequisites
+
+The data structure for parallelism would be very useful, because it more
+systematically describes the structure in the code that I'm looking for
+compared to ad hoc methods like "grep".
 
 ### What to look for
 
@@ -152,24 +204,4 @@ the query "R data analysis".
 - Git repos allow us to see how code has evolved over time
 - Need to be careful about including homework assignments for various
   courses
-
-
-## 2 Data Description
-
-For this milestone I'll define precisely what a data description consists
-of, which I'll focus on, and how they can be extended. This makes the
-starting point of my research much more concrete.
-
-Files and databases seem like the most commonly used sources of data in my
-experience. I've already looked at these in the sense of Hive databases and
-flat text files.
-
-One general form of data is just text coming through UNIX `stdin`. This
-equates to a `read.table()` or `scan()`. It's the same interface that Hive
-uses.
-
-R Consortium has refined the DBI specification recently. That could provide
-a starting point for thinking about data coming from a database. One way to
-get parallelism is through multiple clients:
-https://www.percona.com/blog/2014/01/07/increasing-slow-query-performance-with-parallel-query-execution/
 
