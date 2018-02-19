@@ -9,6 +9,77 @@ it, with a focus on acceleration through parallelism.
 In the interest of making progress on my thesis this is a list of potential
 milestones.  Each one should be take around 1 month to complete.
 
+
+## 1. Parallel data structure for code
+
+Represent R code in a data structure that exposes the ideal parallelism in
+terms of both data and task parallelism. The task parallelism and the data
+flows come through the 
+
+so I would essentially build on this. The data structure should capture the
+semantics of the input R code. We should be able to make round trip
+transformations: input R code -> parallel data structure -> output R code.
+It's not necessary that input and output R code match. Indeed, the purpose
+of the data structure is to make the output R code more efficient in
+some way.
+
+This would be a useful conceptual tool because
+
+This can build on the following existing work:
+- __rstatic__ provides type inference and data flow information through SSA .
+- __CodeDepends__ makes it easy to grab the functions that I'm looking for
+  through the function handlers, but I've also written my own code to do
+  this.
+- __expression graph__ that [I worked on
+  previously](https://github.com/clarkfitzg/phd_research/blob/master/expression_graph/expression_graph.tex)
+show the task parallelism.
+
+Static analysis using any of the above can't _actually_ show if parallel
+will be more efficient, because we don't know how large the data is and how
+long anything will take to run.  What I would really like is some kind of
+class and dimension inference, but this seems like wishful thinking.
+
+But if we run it once then we can "fill in" everything that we would like
+to know in the parallel data structure: classes, object sizes, timings for
+each function and method call, etc.
+
+This milestone would be greatly simplified if I narrow down and focus on a
+subset of the language. For example, I should probably be sticking to pure
+functions. If I'm thinking about pushing it into SQL then I should probably
+be focusing on methods for data frames. There aren't too many of them:
+
+```
+> methods(class = "data.frame")
+ [1] [             [[            [[<-          [<-           $
+ [6] $<-           aggregate     anyDuplicated as.data.frame as.list
+[11] as.matrix     by            cbind         coerce        dim
+[16] dimnames      dimnames<-    droplevels    duplicated    edit
+[21] format        formula       head          initialize    is.na
+[26] Math          merge         na.exclude    na.omit       Ops
+[31] plot          print         prompt        rbind         row.names
+[36] row.names<-   rowsum        show          slotsFromS3   split
+[41] split<-       stack         str           subset        summary
+[46] Summary       t             tail          transform     unique
+[51] unstack       within
+```
+
+I need to clearly specify the set of optimizations / code transformations
+under consideration, and then design the data structure with this
+in mind. This set should also be extensible, ie. we can add more
+transformations / backends later. Possible transformations include:
+
+- rewrite vectorized code as `lapply`
+- run `lapply()` in parallel
+- stream through chunks of the data
+- pipeline parallelism, related to streaming chunks
+- chunk data at the source so we can run in parallel
+- task parallelism
+- push some operations from the R code into an underlying SQL database
+
+The Hive idea essentially does the last one- it pushes the column selection
+into the DB query and reorganizes the data so that it can be run with
+streaming chunks.
+
 ## 1 Examine large corpus of code
 
 For this milestone I would systematically examine a more extensive corpus
@@ -33,14 +104,18 @@ parallel. Examples of side effects we would like to capture include:
 - reference classes (requires knowing the class of objects- maybe difficult)
 - manipulating environments (need to know class)
 
+CodeDepends captures side effects, so hopefully we can integrate and build
+upon it.
+
 __split apply functions__ are also interesting, ie. `split, by, aggregate`.
-We may be able to split the data structure before sending it in.
+It may be possible to split the data at the source and then compute on it
+in parallel. For example, we can break a large file into many separate
+files.
 
 __task parallelism__ This means representing the statements of the code,
 say a function body or a script, as a directed acyclic graph based on the
-implied dependencies. For a more complete description see my [writeup on
-expression
-graphs](https://github.com/clarkfitzg/phd_research/blob/master/expression_graph/expression_graph.tex).
+implied dependencies. 
+
 For this task I need to characterize the expression graph based on the
 potential theoretical parallelism. There are two extreme cases:
 
@@ -61,8 +136,8 @@ with toy / example data to avoid depending on external data sets.
 - Compiled code is more likely to be here than anywhere else
 
 __Bioconductor__ has 1500 packages with easily accessible vignettes.
-[Example
-vignette](https://www.bioconductor.org/packages/release/bioc/vignettes/apComplex/inst/doc/apComplex.R)
+[(Example
+vignette)](https://www.bioconductor.org/packages/release/bioc/vignettes/apComplex/inst/doc/apComplex.R)
 Code will be pretty similar to CRAN, and some packages may well be on both.
 
 __Github__ The Github search API provides at most 1,000 results per query. I
@@ -81,42 +156,20 @@ the query "R data analysis".
 
 ## 2 Data Description
 
-For this milestone I'll define precisely what I mean by a data description.
-Precisely define what a data description consists of, which I'll
-focus on, and how they can be extended. This makes the starting point of
-my research much more concrete.
+For this milestone I'll define precisely what a data description consists
+of, which I'll focus on, and how they can be extended. This makes the
+starting point of my research much more concrete.
 
 Files and databases seem like the most commonly used sources of data in my
 experience. I've already looked at these in the sense of Hive databases and
 flat text files.
 
-One general form of data is just text coming through UNIX `stdin`. This equates to a
-`read.table()` or `scan()`. It's the same interface that Hive uses.
+One general form of data is just text coming through UNIX `stdin`. This
+equates to a `read.table()` or `scan()`. It's the same interface that Hive
+uses.
 
-## 2 Parallel data structure for code
+R Consortium has refined the DBI specification recently. That could provide
+a starting point for thinking about data coming from a database. One way to
+get parallelism is through multiple clients:
+https://www.percona.com/blog/2014/01/07/increasing-slow-query-performance-with-parallel-query-execution/
 
-Represent R code in a data structure that exposes the ideal parallelism
-in terms of both data and task parallelism. The task parallelism and the
-data flows come through the expression graph.
-
-This milestone would be greatly simplified if I narrow down and focus on a
-subset of the language. For example, I should probably be sticking to pure
-functions. If I'm thinking about pushing it into SQL then I should probably
-be focusing on methods for data frames.
-
-I need to clearly specify the set of optimizations / code transformations
-under consideration, and then design the data structure with this
-in mind. This set should also be extensible, ie. we can add more
-transformations / backends later. Possible transformations include:
-
-- rewrite vectorized code as `lapply`
-- run `lapply()` in parallel
-- stream through chunks of the data
-- pipeline parallelism, related to streaming chunks
-- chunk data at the source so we can run in parallel
-- task parallelism
-- push some operations from the R code into an underlying SQL database
-
-The Hive idea essentially does the last one- it pushes the column selection
-into the DB query and reorganizes the data so that it can be run with
-streaming chunks.
