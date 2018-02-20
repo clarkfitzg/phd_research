@@ -12,25 +12,34 @@ milestones.  Each one should be take around 1 month to complete.
 
 ## 1. Parallel data structure for code
 
-Represent R code in a data structure that exposes the ideal parallelism in
-terms of both data and task parallelism. The data structure should capture
+The idea is to represent R code in a data structure that exposes the ideal
+parallelism in terms of both data and task parallelism. We can think of
+this as an augmented abstract syntax tree (AST), so I'll refer to it here
+as the AAST.
+
+Potential uses: 
+1. Detect and quantify possible levels of parallelism in large corpus of R
+   code.
+2. Use to generate parallel code from serial.
+
+The data structure should capture
 the semantics of the input R code. We should be able to make round trip
 transformations: input R code -> parallel data structure -> output R code.
-It's not necessary that input and output R code match. Indeed, the purpose
-of the data structure is to change the output R code to make it more
+It's not necessary that input and output R code match. Indeed, the primary
+use of the data structure is to change the output R code to make it more
 efficient in some way.
 
 This would be a useful conceptual tool because it shows all possible ways
-to make high level code parallel. We can think of it as an intermediate
-representation of the code.
+to make high level code parallel. 
 
-Requirements listed in order of priority:
+Requirements in order of priority:
 1. Robust- Read any R code without parsing errors, and also write it out.
 1. Task graph- Capable of representing statement dependencies, ie.
-   statement 9 depends on the result of statement 5.
-1. Extensible- can add extra information, ie. timings, classes and sizes of
+   statement 9 uses variable `x` which was defined in statement 5.
+1. Extensible- possible to add extra information, ie. timings, classes and sizes of
    objects
-1. Extensible- supports optimization passes
+1. Extensible- supports language optimization passes, ie. transforming a
+   `for` loop into an `lapply()`.
 
 Non-requirements:
 1. Control flow- I'm happy to leave loops as single nodes representing
@@ -39,14 +48,13 @@ Non-requirements:
 
 ### Prerequisites
 
-This can potentially build on the following existing work:
-- __rstatic__ provides type inference and data flow information through SSA .
-- __CodeDepends__ makes it easy to grab the functions that I'm looking for
-  through the function handlers, but I've also written my own code to do
-  this.
-- __expression graph__ that [I worked on
-  previously](https://github.com/clarkfitzg/phd_research/blob/master/expression_graph/expression_graph.tex)
-show the task parallelism.
+This can build on the _expression graph_ that [I worked on
+previously.](https://github.com/clarkfitzg/phd_research/blob/master/expression_graph/expression_graph.tex)
+`CodeDepends` provides the basic static analysis functionality.
+
+`rstatic` seems less suited to the basic requirements above, since it's
+designed for lower level tasks related to compilation. The SSA information is
+appealing though.
 
 ### Description
 
