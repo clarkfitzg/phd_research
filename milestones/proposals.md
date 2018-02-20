@@ -20,14 +20,14 @@ as the AAST.
 Potential uses: 
 1. Detect and quantify possible levels of parallelism in large corpus of R
    code.
-2. Use to generate parallel code from serial.
+1. Optimization passes at the R language level, ie. transforming a
+   `for` loop into an `lapply()`.
+2. Generate parallel code from serial.
 
-The data structure should capture
-the semantics of the input R code. We should be able to make round trip
-transformations: input R code -> parallel data structure -> output R code.
-It's not necessary that input and output R code match. Indeed, the primary
-use of the data structure is to change the output R code to make it more
-efficient in some way.
+The AAST should capture the semantics of the input R code. We should be
+able to make round trip transformations: input R code -> AAST -> output R
+code. It's not necessary that input and output R code match, but they must
+produce the same results, ie. the same plots or the same output files.
 
 This would be a useful conceptual tool because it shows all possible ways
 to make high level code parallel. 
@@ -38,13 +38,14 @@ Requirements in order of priority:
    statement 9 uses variable `x` which was defined in statement 5.
 1. Extensible- possible to add extra information, ie. timings, classes and sizes of
    objects
-1. Extensible- supports language optimization passes, ie. transforming a
-   `for` loop into an `lapply()`.
 
 Non-requirements:
 1. Control flow- I'm happy to leave loops as single nodes representing
    function calls. They can be modified in optimization passes if
    necessary.
+2. Language independence- The goal is not to reinvent
+   [LLVM](https://llvm.org/docs/LangRef.html#abstract). This is just
+   a fancier version of the R AST.
 
 ### Prerequisites
 
