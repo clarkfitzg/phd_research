@@ -9,7 +9,9 @@ focus on acceleration through parallelism.
 In the interest of making progress on my thesis this is a list of potential
 milestones. Each one should be take around 1 month to complete.
 The common theme of these initial milestones is to establish the scope of
-the project. In the past it has been too general to be helpful.
+the project. In the past the scope has been too general to be helpful- it's
+not realistic to handle any R code with any data and any platform, even though
+this is the grand ambition.
 
 
 ## 1. Parallel data structure for code
@@ -17,7 +19,11 @@ the project. In the past it has been too general to be helpful.
 __Outcome__:
 _Represent R code in a data structure that exposes high level parallelism_
 
-We can think of this as an augmented abstract syntax tree (AST) in the
+This data structure should show what _can_ be done. Later we can use it to
+show what _should_ be done to execute as efficiently as possible in the
+context of some particular platform and data. This is a different milestone.
+
+We can think of the data structure as an augmented abstract syntax tree (AST) in the
 sense that I'm just thinking about taking the AST as produced by R's
 `parse()` function and adding more information to it. I'll refer to it
 here as the AAST.
@@ -27,6 +33,8 @@ __Potential uses:__
    code.
 1. Optimization passes at the R language level, ie. transforming a
    `for` loop into an `lapply()`.
+2. Identify patterns in code that would be served by data reorganization,
+   ie. splitting into groups and doing the same thing.
 2. Generate parallel code from serial.
 
 The AAST should capture the semantics of the input R code. We should be
