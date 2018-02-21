@@ -17,7 +17,7 @@ parallelism in terms of both data and task parallelism. We can think of
 this as an augmented abstract syntax tree (AST), so I'll refer to it here
 as the AAST.
 
-Potential uses: 
+__Potential uses:__ 
 1. Detect and quantify possible levels of parallelism in large corpus of R
    code.
 1. Optimization passes at the R language level, ie. transforming a
@@ -29,17 +29,18 @@ able to make round trip transformations: input R code -> AAST -> output R
 code. It's not necessary that input and output R code match, but they must
 produce the same results, ie. the same plots or the same output files.
 
-This would be a useful conceptual tool because it shows all possible ways
-to make high level code parallel. 
+This would be a useful conceptual tool because it shows direct ways
+to make high level code parallel. Low level ways include replacing
+individual functions or BLAS with parallel implementations.
 
-Requirements in order of priority:
+__Requirements__ in order of priority:
 1. Robust- Read any R code without parsing errors, and also write it out.
 1. Task graph- Capable of representing statement dependencies, ie.
    statement 9 uses variable `x` which was defined in statement 5.
 1. Extensible- possible to add extra information, ie. timings, classes and sizes of
    objects
 
-Non-requirements:
+__Non-requirements:__
 1. Control flow- I'm happy to leave loops as single nodes representing
    function calls. They can be modified in optimization passes if
    necessary.
@@ -119,13 +120,65 @@ vectorized function calls followed by a reduce, ie. `sum(f(g(h(x))))`.
 
 ## 2. Data Description
 
-For this milestone I'll define precisely what a data description consists
-of, which I'll focus on, and how they can be extended. This makes the
-starting point of my research much more concrete.
+__Outcome__ _Precise definition of what a data description consists
+of, which data sources I'll focus on, and how they can be extended._
 
-Files and databases seem like the most commonly used sources of data in my
-experience. I've already looked at these in the sense of Hive databases and
-flat text files.
+This will make the starting point of my research much more concrete.
+I currently have in mind the vague idea that every interesting statistic
+related to the data description has been computed and is available ahead of
+time.
+
+### Prerequisites
+
+Analyzing a corpus of R code would help justify the data sources that I
+choose to focus on. It would also show me the dominant patterns in data
+access, ie. how many people actually iterate through a database cursor?
+How much R code is focused on data frames and how much is focused on
+matrices? How do the programs use the structure in their data, and what can
+be prepared ahead of time?
+
+On the other hand, a corpus of open source R code is a biased sample,
+because private code is probably much more likely to access private data
+warehouses.
+
+### Description
+
+For parallel programming on large data sets we would like to know physical
+characteristics of the system:
+
+- __IO throughput__ How many MB/sec can the source deliver the data?
+- __IO latency__ How long does it take before the source begins to deliver
+  the data?
+- __Splittable__ Can the source provide the data split up in chunks?
+- __Parallel__ Does the support multiple parallel read requests?
+
+
+Flat files and databases seem like the most commonly used sources of large
+tabular data in my experience. I've already looked at these in the sense of
+Hive databases and flat text files. For tabular data, we would like to
+know:
+
+- __dimensions__ the number of rows and columns. Then we can determine
+   whether there will be obvious memory issues and preallocate arrays.
+- __data types__ boolean, float, character, etc. Specifying this avoids errors
+   that can rise when inferring from text.
+- __factor levels__ possible values for categorical data.
+   Then we can preserve this information even if one value is rare and
+   doesn't always appear in the data.
+- __randomization__ has the data already been intentionally randomized?
+   If it's random then we can easily statistically sample by reading
+   the first rows.
+- __sorted__ is the data sorted on a column? This allows
+   streaming computations based on groups of this column.
+- __layout__ are multiple files used? If each file stores
+   data corresponding to some unit, ie. one file per day and we do a
+   computation for each day then parallelization is natural across
+   files.
+- __index__ does data come from a database with an index?
+   Then data elements can be efficiently acccessed by index.
+- __offsets__ knowing a numeric array with `n` rows and `p`
+   columns is stored in column major order potentially allows more
+   efficient reads of subsets of the data.
 
 One general form of data is just text coming through UNIX `stdin`. This
 equates to a `read.table()` or `scan()`. It's the same interface that Hive
@@ -136,23 +189,33 @@ a starting point for thinking about data coming from a database. One way to
 get parallelism is through multiple clients:
 https://www.percona.com/blog/2014/01/07/increasing-slow-query-performance-with-parallel-query-execution/
 
-## 2. Examine large corpus of code
+In my experience most data analysis R code reads all the data into memory,
+and then computes on it.  One related thing I've been particularly
+interested in is taking R code that assumes data will fit into memory, and
+then modifying it to process data that won't fit into memory.
 
-For this milestone I would systematically examine a more extensive corpus
-of R code to detect and quantify empirical patterns in how programmers use
-various idioms and language features that are or are not amenable to
-parallelization.
-If we can show that some fraction of the code can potentially benefit from
-a particular code analysis / transformation then this demonstrates
-relevance.
+## 3. Examine large corpus of code
+
+__Outcome__: _Quantify empirical patterns in how programmers use various
+idioms and language features that are more or less amenable to
+parallelization_
+
+If we can show that some fraction of the code can
+potentially benefit from a particular code analysis / transformation then
+this demonstrates relevance.
 
 ### Prerequisites
 
-The data structure for parallelism would be very useful, because it more
-systematically describes the structure in the code that I'm looking for
-compared to ad hoc methods like "grep".
+Jan Vitek's group has done quite a bit of work in this area, and I may be
+able to borrow all or part of their corpus.
 
-### What to look for
+The data structure for parallelism would be very useful, because it more
+systematically describes the structure in the code
+compared to ad hoc methods like `grep`.
+
+### Description
+
+We would look for usage of the following functions:
 
 __apply functions__ This is the set of functions in base R that can be readily
 parallelized. It includes `apply, lapply, sapply, tapply, vapply,
@@ -192,9 +255,9 @@ realistic data analysis examples, but probably generally uses more literals
 with toy / example data to avoid depending on external data sets.
 
 - Typically code was written by more advanced users, ie. advanced enough to
-  write a package
-- Package code likely does more checking than typical data analysis code
-- Compiled code is more likely to be here than anywhere else
+  write a package.
+- Package code likely does more condition checking than code used for data analysis.
+- Compiled code is more likely to be here than anywhere else.
 
 __Bioconductor__ has 1500 packages with easily accessible vignettes.
 [(Example
