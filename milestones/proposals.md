@@ -12,7 +12,7 @@ milestones.  Each one should be take around 1 month to complete.
 
 ## 1. Parallel data structure for code
 
-__Outcome__ 
+__Outcome__:
 _Represent R code in a data structure that exposes high level parallelism_
 
 We can think of this as an augmented abstract syntax tree (AST), so I'll
@@ -48,7 +48,7 @@ __Non-requirements:__
    necessary.
 2. Language independence- The goal is not to reinvent
    [LLVM](https://llvm.org/docs/LangRef.html#abstract). This is just
-   a fancier version of the R AST.
+   a fancier version of R's AST.
 
 ### Prerequisites
 
@@ -68,61 +68,45 @@ long anything will take to run.  What I would really like is some kind of
 class and dimension inference, but this seems like wishful thinking.
 
 If we run the code once then we can "fill in" everything that we would like
-to know in the parallel data structure: classes, object sizes, timings for
+to know in the AAST: classes, object sizes, timings for
 each function and method call, etc. It doesn't seem unreasonable to require
-one run; if the user hasn't run it then how do they know that it's slow?
-The other standard advice for slow code is to profile it, which again
-requires running it.
+one run. If the user hasn't run the program once then how do they know that
+it's slow?  The other standard advice for slow code is to profile it, which
+again requires running it.
 
-This data structure should be extensible in the sense that we can make
-"optimization passes" on it, ie. to eliminate unnecessary code or to
+The AAST should support
+"optimization passes", ie. to eliminate unnecessary code or to
 transform a `for` loop into an `lapply` as described in the Code Analysis
 project Nick, Duncan, Matt and I worked on in the fall of 2017.
 
 This milestone might be might simplified if I narrow down and focus on a
-subset of the language. For example, I should probably be sticking to pure
-functions. If I'm thinking about pushing it into SQL then I should probably
-be focusing on methods for data frames. There aren't too many of them:
-
-```
-> methods(class = "data.frame")
- [1] [             [[            [[<-          [<-           $
- [6] $<-           aggregate     anyDuplicated as.data.frame as.list
-[11] as.matrix     by            cbind         coerce        dim
-[16] dimnames      dimnames<-    droplevels    duplicated    edit
-[21] format        formula       head          initialize    is.na
-[26] Math          merge         na.exclude    na.omit       Ops
-[31] plot          print         prompt        rbind         row.names
-[36] row.names<-   rowsum        show          slotsFromS3   split
-[41] split<-       stack         str           subset        summary
-[46] Summary       t             tail          transform     unique
-[51] unstack       within
-```
+subset of the language. For example, if I'm thinking about pushing it into
+SQL then I should be thinking about the 52 methods for data frames.
 
 I need to clearly specify the set of optimizations / code transformations
 under consideration, and then design the data structure with this
 in mind. This set should also be extensible, ie. we can add more
 transformations later. Possible transformations include:
 
+- removal of unnecessary code
+- replacement of duplicated code with a variable
 - rewrite vectorized code as `lapply`
 - run `lapply()` in parallel
 - stream through chunks of the data
 - pipeline parallelism, related to streaming chunks
 - chunk data at the source so we can run in parallel
 - task parallelism
-- push some operations from the R code into an underlying SQL database
+- push some operations from the R code into an underlying SQL database, or
+  some other preprocessor ie. `pipe(cut -d , -f 1,2 big_file.csv)`
 
 The Hive idea essentially does the last one- it pushes the column selection
 into the DB query and reorganizes the data so that it can be run with
 streaming chunks.
 
-One idea that might be too specific is detecting several iterated
-vectorized function calls followed by a reduce, ie. `sum(f(g(h(x))))`.
-
 
 ## 2. Data Description
 
-__Outcome__ _Precise definition of what a data description consists
+__Outcome__: _Precise definition of what a data description consists
 of, which data sources I'll focus on, and how they can be extended._
 
 This will make the starting point of my research much more concrete.
@@ -130,11 +114,16 @@ I currently have in mind the vague idea that every interesting statistic
 related to the data description has been computed and is available ahead of
 time.
 
+I'm most interested in tabular data from flat text files and databases,
+because these are the most common large sources of data that I've seen.
+
+A possible generalization is key value stores.
+
 ### Prerequisites
 
 Analyzing a corpus of R code would help justify the data sources that I
 choose to focus on. It would also show me the dominant patterns in data
-access, ie. how many people actually iterate through a database cursor?
+access, ie. how do people actually iterate through database cursors?
 How much R code is focused on data frames and how much is focused on
 matrices? How do the programs use the structure in their data, and what can
 be prepared ahead of time?
@@ -146,41 +135,27 @@ warehouses.
 ### Description
 
 For parallel programming on large data sets we would like to know physical
-characteristics of the system:
+characteristics of the system delivering the data:
 
 - __IO throughput__ How many MB/sec can the source deliver the data?
-- __IO latency__ How long does it take before the source begins to deliver
-  the data?
+- __IO latency__ How long does it take after a request before the source
+  begins to deliver the data?
 - __Splittable__ Can the source provide the data split up in chunks?
-- __Parallel__ Does the support multiple parallel read requests?
+- __Parallel__ Can we give multiple parallel read requests?
 
+For tables we would like to know:
 
-Flat files and databases seem like the most commonly used sources of large
-tabular data in my experience. I've already looked at these in the sense of
-Hive databases and flat text files. For tabular data, we would like to
-know:
+- __dimensions__ the number of rows and columns. Then we can potentially
+  determine whether there will be memory issues.
 
-- __dimensions__ the number of rows and columns. Then we can determine
-   whether there will be obvious memory issues and preallocate arrays.
-- __data types__ boolean, float, character, etc. Specifying this avoids errors
-   that can rise when inferring from text.
-- __factor levels__ possible values for categorical data.
-   Then we can preserve this information even if one value is rare and
-   doesn't always appear in the data.
-- __randomization__ has the data already been intentionally randomized?
-   If it's random then we can easily statistically sample by reading
-   the first rows.
+- __data types__ boolean, float, character, etc. Specifying this avoids
+  inference errors and speeds up `read.table`.
+
 - __sorted__ is the data sorted on a column? This allows
    streaming computations based on groups of this column.
-- __layout__ are multiple files used? If each file stores
-   data corresponding to some unit, ie. one file per day and we do a
-   computation for each day then parallelization is natural across
-   files.
+
 - __index__ does data come from a database with an index?
    Then data elements can be efficiently acccessed by index.
-- __offsets__ knowing a numeric array with `n` rows and `p`
-   columns is stored in column major order potentially allows more
-   efficient reads of subsets of the data.
 
 One general form of data is just text coming through UNIX `stdin`. This
 equates to a `read.table()` or `scan()`. It's the same interface that Hive
