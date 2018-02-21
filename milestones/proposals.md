@@ -12,10 +12,11 @@ milestones.  Each one should be take around 1 month to complete.
 
 ## 1. Parallel data structure for code
 
-The idea is to represent R code in a data structure that exposes the ideal
-parallelism in terms of both data and task parallelism. We can think of
-this as an augmented abstract syntax tree (AST), so I'll refer to it here
-as the AAST.
+__Outcome__ 
+_Represent R code in a data structure that exposes high level parallelism_
+
+We can think of this as an augmented abstract syntax tree (AST), so I'll
+refer to it here as the AAST.
 
 __Potential uses:__ 
 1. Detect and quantify possible levels of parallelism in large corpus of R
@@ -30,8 +31,9 @@ code. It's not necessary that input and output R code match, but they must
 produce the same results, ie. the same plots or the same output files.
 
 This would be a useful conceptual tool because it shows direct ways
-to make high level code parallel. Low level ways include replacing
-individual functions or BLAS with parallel implementations.
+to make high level code parallel. Low level methods include replacing
+individual functions or BLAS with parallel implementations. The focus is
+not on this low level parallelism.
 
 __Requirements__ in order of priority:
 1. Robust- Read any R code without parsing errors, and also write it out.
