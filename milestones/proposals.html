@@ -1,0 +1,133 @@
+<p>Fri Feb 16 09:15:45 PST 2018</p>
+<h1 id="milestones">Milestones</h1>
+<p>The central idea of my thesis is to be able to take information on (code, data, platform) and describe or produce a strategy to execute it, with a focus on acceleration through parallelism.</p>
+<p>In the interest of making progress on my thesis this is a list of potential milestones. Each one should take around 1 month to complete. The common theme of these initial milestones is to establish the scope of the project. In the past the scope has been too general- it’s not realistic to handle any R code with any data and any platform, even though this is the grand ambition.</p>
+<h2 id="parallel-data-structure-for-code">1. Parallel data structure for code</h2>
+<p><strong>Outcome</strong>: <em>Represent R code in a data structure that exposes high level parallelism</em></p>
+<p>This data structure should show what <em>can</em> be done relatively easily to make the code parallel. Later we can use it to show what <em>should</em> be done to execute more efficiently in the context of some particular platform and data. This is a different milestone.</p>
+<p><strong>Potential uses:</strong></p>
+<ol type="1">
+<li>Detect and quantify possible levels of parallelism in a large corpus of R code.</li>
+<li>Optimization passes at the R language level, ie. transforming a <code>for</code> loop into an <code>lapply()</code>.</li>
+<li>Identify patterns in code that would be served by data reorganization, ie. having a sorted file on disk.</li>
+<li>Generate parallel code from serial.</li>
+</ol>
+<p>We can think of the data structure as an augmented abstract syntax tree (AST) in the sense that I’m just thinking about taking the AST as produced by R’s <code>parse()</code> function and adding more information to it. I’ll refer to it here as the AAST. It should capture the semantics of the input R code. We should be able to make round trip transformations: input R code -&gt; AAST -&gt; output R code. It’s not necessary that input and output R code match, but they must produce the same results, ie. the same plots or the same output files.</p>
+<p><strong>Requirements</strong> in order of priority:</p>
+<ol type="1">
+<li>Robust- Read any R code without parsing errors, and also write it out.</li>
+<li>Task graph- Capable of representing statement dependencies, ie. statement 9 uses variable <code>x</code> which was defined in statement 5.</li>
+<li>Extensible- possible to add extra information, ie. timings, classes and sizes of objects</li>
+</ol>
+<p><strong>Non-requirements:</strong></p>
+<ol type="1">
+<li>Control flow- I’m happy to leave loops as single nodes representing function calls. They can be modified in optimization passes if necessary.</li>
+<li>Language independence- The goal is not to reinvent <a href="https://llvm.org/docs/LangRef.html#abstract">LLVM</a>. This is just a fancier version of R’s AST.</li>
+<li>Low level parallelism- We’re not going to rewrite C code, although we should be able to drop in an equivalent parallel implementation if we have one and it makes sense.</li>
+</ol>
+<h3 id="prerequisites">Prerequisites</h3>
+<p>This can build on the <em>expression graph</em> that <a href="https://github.com/clarkfitzg/phd_research/blob/master/expression_graph/expression_graph.tex">I worked on previously.</a> <code>CodeDepends</code> provides the basic static analysis functionality.</p>
+<p><code>rstatic</code> seems less suited to the basic requirements above, since it’s designed for lower level tasks related to compilation. The SSA information is appealing though.</p>
+<h3 id="description">Description</h3>
+<p>Static analysis of the code by itself can’t <em>actually</em> show if parallel will be more efficient, because we don’t know how large the data is and how long anything will take to run. What I would really like is some kind of class and dimension inference, but this seems like wishful thinking.</p>
+<p>If we run the code once then we can “fill in” everything that we would like to know in the AAST: classes, object sizes, timings for each function and method call, etc. It doesn’t seem unreasonable to require one run. If the user hasn’t run the program once then how do they know that it’s slow? The other standard advice for slow code is to profile it, which again requires running it.</p>
+<p>The AAST should support “optimization passes”, ie. to eliminate unnecessary code or to transform a <code>for</code> loop into an <code>lapply</code> as described in the Code Analysis project Nick, Duncan, Matt and I worked on in the fall of 2017.</p>
+<p>This milestone might be might simplified if I narrow down and focus on a subset of the language. For example, if I’m thinking about pushing it into SQL then I should be thinking about the 52 methods for data frames.</p>
+<p>I need to clearly specify the set of optimizations / code transformations under consideration, and then design the data structure with this in mind. This set should also be extensible, ie. we can add more transformations later. Possible transformations include:</p>
+<ul>
+<li>removal of unnecessary code</li>
+<li>replacement of duplicated code with a variable</li>
+<li>rewrite vectorized code as <code>lapply</code></li>
+<li>run <code>lapply()</code> in parallel</li>
+<li>stream through chunks of the data</li>
+<li>pipeline parallelism, related to streaming chunks</li>
+<li>reorganize data at the source so we can run in parallel</li>
+<li>task parallelism</li>
+<li>push some operations from the R code into an underlying SQL database, or some other preprocessor</li>
+</ul>
+<p>The Hive idea essentially does the last one- it pushes the column selection into the DB query which reorganizes the data so that it can be run with streaming chunks.</p>
+<h2 id="data-description">2. Data Description</h2>
+<p><strong>Outcome</strong>: <em>Precise definition of what a data description consists of for the purposes of my research.</em></p>
+<p>I’ll specify the following aspects:</p>
+<ul>
+<li>data sources to focus on: i.e. tables in files and databases</li>
+<li>preprocessing steps to allow, ie. reorganization on disk to facilitate particular computations</li>
+<li>how data description can be extended</li>
+</ul>
+<p>This will make the starting point of my research much more concrete. I currently have in mind the vague idea that relevant statistics related to the data description are available because they have been computed ahead of time.</p>
+<p>I’m most interested in tabular data from flat text files and databases, because these are the most common large sources of data that I’ve seen. R scripts that analyze tabular data typically begin by reading all the data into a data frame in memory. This code to read it in is essentially an implementation detail that can range from simple loading of a serialized R object in a local file to complex stream processing of a database. For large data sets this code can impact performance by orders of magnitude. To what extent can we automate the generation of the data loading code based on static analysis of the remaining code in the script?</p>
+<p>Let’s consider column selection of a file on disk as a potential use case. The following naive code selects the first two columns:</p>
+<pre class="{r}"><code>x = read.csv(&quot;x.csv&quot;)
+x = x[, 1:2]</code></pre>
+<p>A more sophisticated approach uses pipeline parallelism to select the columns from within a shell preprocessing step:</p>
+<pre class="{r}"><code>x = read.csv(pipe(&quot;cut -d , -f 1,2 x.csv&quot;))</code></pre>
+<p>It’s not too difficult to analyze the naive version to determine the desired semantics: “save the first two columns of the table <code>x.csv</code> into a data frame called <code>x</code>”. I’ve done this type of column use inference. Once we know this we could generate the sophisticated version. If we start with the sophisticated version these semantics are much more difficult to statically infer, because we need to parse and understand the shell command. In general a shell command could call any program and do anything.</p>
+<p>The case with SQL queries is similar. If we know the target semantics then we can generate basic SQL that complies with R’s DBI package, but if we start with SQL then we need the ability to parse and semantically analyze the SQL. This is a complex task.</p>
+<p>I would prefer to separate the code that initially loads the external data from the remainder of the script. We can replace this code with more efficient code given knowledge of the data. For example, we might use the <code>pipe(&quot;cut...</code> approach above if we know:</p>
+<ul>
+<li><code>x.csv</code> has 10 million rows, 100 columns</li>
+<li>We’re running on a POSIX system that has <code>cut</code>.</li>
+<li>There are no factor or character columns, so string escaping and newlines won’t cause <code>cut</code> to fail.</li>
+<li>We can’t use <code>data.table::fread(&quot;x.csv&quot;, select = 1:2)</code> because it’s not installed.</li>
+</ul>
+<h3 id="prerequisites-1">Prerequisites</h3>
+<p>Analyzing a corpus of R code would help justify the data sources that I choose to focus on. It would also show me the dominant patterns in data access, ie. how do people actually iterate through database cursors? How much R code is focused on data frames and how much is focused on matrices? How do the programs use the structure in their data, and what can be prepared ahead of time?</p>
+<p>On the other hand, a corpus of open source R code is a biased sample, because private code is probably much more likely to access private data warehouses.</p>
+<p>I need to look into how other systems store their metadata, for example parquet and other tools in the Hadoop ecosystem.</p>
+<h3 id="description-1">Description</h3>
+<p>This should result in some standardized description of the data which allows us to automatically generate efficient code.</p>
+<p>One general form of data is just text coming through UNIX <code>stdin</code>. It’s the same interface that Hive uses, and it can be hooked up with other forms of coarse parallelism ie. GNU make calling a script.</p>
+<p>For tables we would like to know:</p>
+<ul>
+<li><strong>dimensions</strong> the number of rows and columns. Then we can potentially determine whether there will be memory issues.</li>
+<li><strong>data types</strong> boolean, float, character, etc. Specifying this avoids inference errors and speeds up <code>read.table</code>.</li>
+<li><strong>sorted</strong> is the data sorted on a column? This allows streaming computations based on groups of this column.</li>
+<li><strong>index</strong> does data come from a database with an index? Then data elements can be efficiently acccessed by index.</li>
+</ul>
+<p>More generally for large data sets we would like to know physical characteristics of the system delivering the data:</p>
+<ul>
+<li><strong>IO throughput</strong> How many MB/sec can the source deliver the data?</li>
+<li><strong>IO latency</strong> How long does it take after a request before the source begins to deliver the data?</li>
+<li><strong>Splittable</strong> Can the source provide the data split up in chunks?</li>
+<li><strong>Parallel</strong> Can we send multiple parallel read requests?</li>
+</ul>
+<p>A related aspect I’ve been particularly interested in is taking R code that assumes data will fit into memory, and then modifying it to process data that won’t fit into memory.</p>
+<h2 id="examine-large-corpus-of-code">3. Examine large corpus of code</h2>
+<p><strong>Outcome</strong>: <em>Quantify empirical patterns in how programmers use various idioms and language features that are more or less amenable to parallelization</em></p>
+<p>If we can show that some fraction of the code can potentially benefit from a particular code analysis / transformation then this demonstrates relevance.</p>
+<h3 id="prerequisites-2">Prerequisites</h3>
+<p>Jan Vitek’s group has done quite a bit of work in this area, and hopefully I can build on this.</p>
+<p>The data structure for parallelism would be very useful, because it more systematically describes the structure in the code compared to ad hoc methods like <code>grep</code>.</p>
+<h3 id="description-2">Description</h3>
+<p>We would look for usage of the following functions:</p>
+<p><strong>apply functions</strong> This is the set of functions in base R that can be readily parallelized. It includes <code>apply, lapply, sapply, tapply, vapply, rapply, mapply, Map, eapply</code>. We also would like to know which functions are being called, and if they have side effects that prevent them from running in parallel. Examples of side effects we would like to capture include:</p>
+<ul>
+<li>using <code>&lt;&lt;-</code> or <code>assign()</code></li>
+<li>appending to a file</li>
+<li>reference classes (requires knowing the class of objects- maybe difficult)</li>
+<li>manipulating environments (need to know class)</li>
+</ul>
+<p>CodeDepends captures side effects, so hopefully we can integrate and build upon it.</p>
+<p><strong>split apply functions</strong> are also interesting, ie. <code>split, by, aggregate</code>. It may be possible to split the data at the source and then compute on it in parallel. For example, we can break a large file into many separate files.</p>
+<p><strong>task parallelism</strong> This means representing the statements of the code, say a function body or a script, as a directed acyclic graph based on the implied dependencies.</p>
+<p>For this task I need to characterize the expression graph based on the potential theoretical parallelism. There are two extreme cases:</p>
+<ul>
+<li>Every statement depends on the previous one so no parallelism is possible</li>
+<li>Every statement is independent so we get an n fold speedup</li>
+</ul>
+<p>Most should be somewhere in the middle.</p>
+<h3 id="where-to-look">Where to look</h3>
+<p><strong>CRAN</strong> has about 10,000 packages. The code in the vignettes may have realistic data analysis examples, but probably generally uses more literals with toy / example data to avoid depending on external data sets.</p>
+<ul>
+<li>Typically code was written by more advanced users, ie. advanced enough to write a package.</li>
+<li>Package code likely does more condition checking than code used for data analysis.</li>
+<li>Compiled code is more likely to be here than anywhere else.</li>
+</ul>
+<p><strong>Bioconductor</strong> has 1500 packages with easily accessible vignettes. <a href="https://www.bioconductor.org/packages/release/bioc/vignettes/apComplex/inst/doc/apComplex.R">(Example vignette)</a> Code will be pretty similar to CRAN, and some packages may well be on both.</p>
+<p><strong>Github</strong> The Github search API provides at most 1,000 results per query. I can potentially obtain more by designing queries that are mutually exclusive. I could also just ask them to make an exception and give me the full result set- I think there were about 15,000 repos matching some form of the query “R data analysis”.</p>
+<ul>
+<li>Users of all skill levels</li>
+<li>Data analysis repositories may offer a realistic view of how end users actually use packages and language features</li>
+<li>Git repos allow us to see how code has evolved over time</li>
+<li>Need to be careful about including homework assignments for various courses</li>
+</ul>

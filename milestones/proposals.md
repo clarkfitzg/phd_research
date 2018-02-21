@@ -7,9 +7,9 @@ data, platform) and describe or produce a strategy to execute it, with a
 focus on acceleration through parallelism. 
 
 In the interest of making progress on my thesis this is a list of potential
-milestones. Each one should be take around 1 month to complete.
+milestones. Each one should take around 1 month to complete.
 The common theme of these initial milestones is to establish the scope of
-the project. In the past the scope has been too general to be helpful- it's
+the project. In the past the scope has been too general- it's
 not realistic to handle any R code with any data and any platform, even though
 this is the grand ambition.
 
@@ -19,35 +19,32 @@ this is the grand ambition.
 __Outcome__:
 _Represent R code in a data structure that exposes high level parallelism_
 
-This data structure should show what _can_ be done. Later we can use it to
-show what _should_ be done to execute as efficiently as possible in the
-context of some particular platform and data. This is a different milestone.
-
-We can think of the data structure as an augmented abstract syntax tree (AST) in the
-sense that I'm just thinking about taking the AST as produced by R's
-`parse()` function and adding more information to it. I'll refer to it
-here as the AAST.
+This data structure should show what _can_ be done relatively easily to
+make the code parallel. Later we can use it to show what _should_ be done
+to execute more efficiently in the context of some particular
+platform and data. This is a different milestone.
 
 __Potential uses:__ 
+
 1. Detect and quantify possible levels of parallelism in a large corpus of R
    code.
 1. Optimization passes at the R language level, ie. transforming a
    `for` loop into an `lapply()`.
 2. Identify patterns in code that would be served by data reorganization,
-   ie. splitting into groups and doing the same thing.
+   ie. having a sorted file on disk.
 2. Generate parallel code from serial.
 
-The AAST should capture the semantics of the input R code. We should be
-able to make round trip transformations: input R code -> AAST -> output R
-code. It's not necessary that input and output R code match, but they must
-produce the same results, ie. the same plots or the same output files.
-
-This would be a useful conceptual tool because it shows direct ways
-to make high level code parallel. Low level methods include replacing
-individual functions or BLAS with parallel implementations. The focus is
-not on this low level parallelism.
+We can think of the data structure as an augmented abstract syntax tree
+(AST) in the sense that I'm just thinking about taking the AST as produced
+by R's `parse()` function and adding more information to it. I'll refer to
+it here as the AAST.  It should capture the semantics of the input R code.
+We should be able to make round trip transformations: input R code -> AAST
+-> output R code. It's not necessary that input and output R code match,
+but they must produce the same results, ie. the same plots or the same
+output files.
 
 __Requirements__ in order of priority:
+
 1. Robust- Read any R code without parsing errors, and also write it out.
 1. Task graph- Capable of representing statement dependencies, ie.
    statement 9 uses variable `x` which was defined in statement 5.
@@ -55,12 +52,16 @@ __Requirements__ in order of priority:
    objects
 
 __Non-requirements:__
+
 1. Control flow- I'm happy to leave loops as single nodes representing
    function calls. They can be modified in optimization passes if
    necessary.
 2. Language independence- The goal is not to reinvent
    [LLVM](https://llvm.org/docs/LangRef.html#abstract). This is just
    a fancier version of R's AST.
+3. Low level parallelism- We're not going to rewrite C code, although we
+   should be able to drop in an equivalent parallel implementation if we
+   have one and it makes sense.
 
 ### Prerequisites
 
@@ -106,13 +107,13 @@ transformations later. Possible transformations include:
 - run `lapply()` in parallel
 - stream through chunks of the data
 - pipeline parallelism, related to streaming chunks
-- chunk data at the source so we can run in parallel
+- reorganize data at the source so we can run in parallel
 - task parallelism
 - push some operations from the R code into an underlying SQL database, or
   some other preprocessor
 
 The Hive idea essentially does the last one- it pushes the column selection
-into the DB query and reorganizes the data so that it can be run with
+into the DB query which reorganizes the data so that it can be run with
 streaming chunks.
 
 
@@ -140,8 +141,8 @@ into a data frame in memory. This code to read it in is essentially an
 implementation detail that can range from simple loading of a serialized R
 object in a local file to complex stream processing of a database. For
 large data sets this code can impact performance by orders of magnitude. To
-what extent can we automate the generation of this code based on static
-analysis of the remaining code in the script?
+what extent can we automate the generation of the data loading code based
+on static analysis of the remaining code in the script?
 
 Let's consider column selection of a file on disk as a potential use case.
 The following naive code selects the first two columns:
@@ -226,7 +227,7 @@ characteristics of the system delivering the data:
 - __IO latency__ How long does it take after a request before the source
   begins to deliver the data?
 - __Splittable__ Can the source provide the data split up in chunks?
-- __Parallel__ Can we give multiple parallel read requests?
+- __Parallel__ Can we send multiple parallel read requests?
 
 A related aspect I've been particularly interested in is taking R code that
 assumes data will fit into memory, and then modifying it to process data
@@ -282,8 +283,8 @@ implied dependencies.
 For this task I need to characterize the expression graph based on the
 potential theoretical parallelism. There are two extreme cases:
 
-    - Every statement depends on the previous one so no parallelism is possible
-    - Every statement is independent so we get an n fold speedup
+- Every statement depends on the previous one so no parallelism is possible
+- Every statement is independent so we get an n fold speedup
 
 Most should be somewhere in the middle.
 
@@ -315,4 +316,3 @@ the query "R data analysis".
 - Git repos allow us to see how code has evolved over time
 - Need to be careful about including homework assignments for various
   courses
-
