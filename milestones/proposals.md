@@ -15,11 +15,13 @@ milestones.  Each one should be take around 1 month to complete.
 __Outcome__:
 _Represent R code in a data structure that exposes high level parallelism_
 
-We can think of this as an augmented abstract syntax tree (AST), so I'll
-refer to it here as the AAST.
+We can think of this as an augmented abstract syntax tree (AST) in the
+sense that I'm just thinking about taking the AST as produced by R's
+`parse()` function and adding more information to it. I'll refer to it
+here as the AAST.
 
 __Potential uses:__ 
-1. Detect and quantify possible levels of parallelism in large corpus of R
+1. Detect and quantify possible levels of parallelism in a large corpus of R
    code.
 1. Optimization passes at the R language level, ie. transforming a
    `for` loop into an `lapply()`.
@@ -97,7 +99,7 @@ transformations later. Possible transformations include:
 - chunk data at the source so we can run in parallel
 - task parallelism
 - push some operations from the R code into an underlying SQL database, or
-  some other preprocessor ie. `pipe(cut -d , -f 1,2 big_file.csv)`
+  some other preprocessor
 
 The Hive idea essentially does the last one- it pushes the column selection
 into the DB query and reorganizes the data so that it can be run with
@@ -107,39 +109,30 @@ streaming chunks.
 ## 2. Data Description
 
 __Outcome__: _Precise definition of what a data description consists
-of, which data sources I'll focus on, and how they can be extended._
+of for the purposes of my research._
+
+- data sources I'll focus on: i.e. tables in files and databases
+- preprocessing steps I'll allow, ie. reorganization on disk to
+  facilitate particular computations
+- how they can be extended
 
 This will make the starting point of my research much more concrete.
 I currently have in mind the vague idea that relevant statistics related to
 the data description are available because they have been computed ahead of
 time.
 
-### Prerequisites
-
-Analyzing a corpus of R code would help justify the data sources that I
-choose to focus on. It would also show me the dominant patterns in data
-access, ie. how do people actually iterate through database cursors?
-How much R code is focused on data frames and how much is focused on
-matrices? How do the programs use the structure in their data, and what can
-be prepared ahead of time?
-
-On the other hand, a corpus of open source R code is a biased sample,
-because private code is probably much more likely to access private data
-warehouses.
-
-### Description
-
 I'm most interested in tabular data from flat text files and databases,
-because these are the most common large sources of data that I've seen. To
-analyze tabular data an R script typically begins by reading all the data
+because these are the most common large sources of data that I've seen.
+R scripts that analyze tabular data typically begin by reading all the data
 into a data frame in memory. This code to read it in is essentially an
 implementation detail that can range from simple loading of a serialized R
 object in a local file to complex stream processing of a database. For
 large data sets this code can impact performance by orders of magnitude. To
-what extent can we automate the generation of this code?
+what extent can we automate the generation of this code based on static
+analysis of the remaining code in the script?
 
-Let's consider column selection as a potential use case. The following
-naive code selects the first two columns:
+Let's consider column selection of a file on disk as a potential use case.
+The following naive code selects the first two columns:
 
 ```{R}
 x = read.csv("x.csv")
@@ -178,6 +171,25 @@ efficient code given knowledge of the data. For example, we might use the
 - We can't use `data.table::fread("x.csv", select = 1:2)` because it's
   not installed.
 
+### Prerequisites
+
+Analyzing a corpus of R code would help justify the data sources that I
+choose to focus on. It would also show me the dominant patterns in data
+access, ie. how do people actually iterate through database cursors?
+How much R code is focused on data frames and how much is focused on
+matrices? How do the programs use the structure in their data, and what can
+be prepared ahead of time?
+
+On the other hand, a corpus of open source R code is a biased sample,
+because private code is probably much more likely to access private data
+warehouses.
+
+### Description
+
+One general form of data is just text coming through UNIX `stdin`. This
+equates to a `read.table()` or `scan()`. It's the same interface that Hive
+uses.
+
 For tables we would like to know:
 
 - __dimensions__ the number of rows and columns. Then we can potentially
@@ -189,10 +201,6 @@ For tables we would like to know:
 - __index__ does data come from a database with an index?
    Then data elements can be efficiently acccessed by index.
 
-One general form of data is just text coming through UNIX `stdin`. This
-equates to a `read.table()` or `scan()`. It's the same interface that Hive
-uses.
-
 More generally for large data sets we would like to know physical
 characteristics of the system delivering the data:
 
@@ -202,10 +210,10 @@ characteristics of the system delivering the data:
 - __Splittable__ Can the source provide the data split up in chunks?
 - __Parallel__ Can we give multiple parallel read requests?
 
+A related aspect I've been particularly interested in is taking R code that
+assumes data will fit into memory, and then modifying it to process data
+that won't fit into memory.
 
-A related aspect I've been particularly
-interested in is taking R code that assumes data will fit into memory, and
-then modifying it to process data that won't fit into memory.
 
 ## 3. Examine large corpus of code
 
