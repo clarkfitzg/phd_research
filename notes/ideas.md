@@ -1,3 +1,5 @@
+
+
 Mon Feb 19 10:26:01 PST 2018
 
 Blog post: Any vectorized R function can be pretty easily made parallel.

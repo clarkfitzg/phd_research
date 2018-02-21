@@ -110,14 +110,9 @@ __Outcome__: _Precise definition of what a data description consists
 of, which data sources I'll focus on, and how they can be extended._
 
 This will make the starting point of my research much more concrete.
-I currently have in mind the vague idea that every interesting statistic
-related to the data description has been computed and is available ahead of
+I currently have in mind the vague idea that relevant statistics related to
+the data description are available because they have been computed ahead of
 time.
-
-I'm most interested in tabular data from flat text files and databases,
-because these are the most common large sources of data that I've seen.
-
-A possible generalization is key value stores.
 
 ### Prerequisites
 
@@ -134,7 +129,71 @@ warehouses.
 
 ### Description
 
-For parallel programming on large data sets we would like to know physical
+I'm most interested in tabular data from flat text files and databases,
+because these are the most common large sources of data that I've seen. To
+analyze tabular data an R script typically begins by reading all the data
+into a data frame in memory. This code to read it in is essentially an
+implementation detail that can range from simple loading of a serialized R
+object in a local file to complex stream processing of a database. For
+large data sets this code can impact performance by orders of magnitude. To
+what extent can we automate the generation of this code?
+
+Let's consider column selection as a potential use case. The following
+naive code selects the first two columns:
+
+```{R}
+x = read.csv("x.csv")
+x = x[, 1:2]
+```
+
+A more sophisticated approach uses pipeline parallelism to select the
+columns from within a shell preprocessing step:
+
+```{R}
+x = read.csv(pipe("cut -d , -f 1,2 x.csv"))
+```
+
+It's not too difficult to analyze the naive version to determine the
+desired semantics: "save the first two columns of the table `x.csv` into a
+data frame called `x`". I've done this type of column use inference. Once
+we know this we could generate the sophisticated version. If we start with
+the sophisticated version these semantics are much more difficult to
+statically infer, because we need to parse and understand the shell
+command. In general a shell command could call any program and do anything.
+
+The case with SQL queries is similar. If we know the target semantics then
+we can generate basic SQL, but if we start with SQL then we need the
+ability to parse and semantically analyze the SQL. This is a
+complex task.
+
+I would prefer to separate the code that initially loads the external data
+from the remainder of the script. We can replace this code with more
+efficient code given knowledge of the data. For example, we might use the
+`pipe("cut...` approach above if we know:
+
+- `x.csv` has 10 million rows, 100 columns
+- We're running on a POSIX system that has `cut`.
+- There are no factor or character columns, so string escaping and newlines
+  won't cause `cut` to fail.
+- We can't use `data.table::fread("x.csv", select = 1:2)` because it's
+  not installed.
+
+For tables we would like to know:
+
+- __dimensions__ the number of rows and columns. Then we can potentially
+  determine whether there will be memory issues.
+- __data types__ boolean, float, character, etc. Specifying this avoids
+  inference errors and speeds up `read.table`.
+- __sorted__ is the data sorted on a column? This allows
+   streaming computations based on groups of this column.
+- __index__ does data come from a database with an index?
+   Then data elements can be efficiently acccessed by index.
+
+One general form of data is just text coming through UNIX `stdin`. This
+equates to a `read.table()` or `scan()`. It's the same interface that Hive
+uses.
+
+More generally for large data sets we would like to know physical
 characteristics of the system delivering the data:
 
 - __IO throughput__ How many MB/sec can the source deliver the data?
@@ -143,31 +202,8 @@ characteristics of the system delivering the data:
 - __Splittable__ Can the source provide the data split up in chunks?
 - __Parallel__ Can we give multiple parallel read requests?
 
-For tables we would like to know:
 
-- __dimensions__ the number of rows and columns. Then we can potentially
-  determine whether there will be memory issues.
-
-- __data types__ boolean, float, character, etc. Specifying this avoids
-  inference errors and speeds up `read.table`.
-
-- __sorted__ is the data sorted on a column? This allows
-   streaming computations based on groups of this column.
-
-- __index__ does data come from a database with an index?
-   Then data elements can be efficiently acccessed by index.
-
-One general form of data is just text coming through UNIX `stdin`. This
-equates to a `read.table()` or `scan()`. It's the same interface that Hive
-uses.
-
-R Consortium has refined the DBI specification recently. That could provide
-a starting point for thinking about data coming from a database. One way to
-get parallelism is through multiple clients:
-https://www.percona.com/blog/2014/01/07/increasing-slow-query-performance-with-parallel-query-execution/
-
-In my experience most data analysis R code reads all the data into memory,
-and then computes on it.  One related thing I've been particularly
+A related aspect I've been particularly
 interested in is taking R code that assumes data will fit into memory, and
 then modifying it to process data that won't fit into memory.
 
@@ -183,8 +219,8 @@ this demonstrates relevance.
 
 ### Prerequisites
 
-Jan Vitek's group has done quite a bit of work in this area, and I may be
-able to borrow all or part of their corpus.
+Jan Vitek's group has done quite a bit of work in this area, and hopefully
+I can build on this.
 
 The data structure for parallelism would be very useful, because it more
 systematically describes the structure in the code
