@@ -7,7 +7,9 @@ data, platform) and describe or produce a strategy to execute it, with a
 focus on acceleration through parallelism. 
 
 In the interest of making progress on my thesis this is a list of potential
-milestones.  Each one should be take around 1 month to complete.
+milestones. Each one should be take around 1 month to complete.
+The common theme of these initial milestones is to establish the scope of
+the project. In the past it has been too general to be helpful.
 
 
 ## 1. Parallel data structure for code
@@ -111,10 +113,12 @@ streaming chunks.
 __Outcome__: _Precise definition of what a data description consists
 of for the purposes of my research._
 
-- data sources I'll focus on: i.e. tables in files and databases
-- preprocessing steps I'll allow, ie. reorganization on disk to
+I'll specify the following aspects:
+
+- data sources to focus on: i.e. tables in files and databases
+- preprocessing steps to allow, ie. reorganization on disk to
   facilitate particular computations
-- how they can be extended
+- how data description can be extended
 
 This will make the starting point of my research much more concrete.
 I currently have in mind the vague idea that relevant statistics related to
@@ -155,9 +159,9 @@ statically infer, because we need to parse and understand the shell
 command. In general a shell command could call any program and do anything.
 
 The case with SQL queries is similar. If we know the target semantics then
-we can generate basic SQL, but if we start with SQL then we need the
-ability to parse and semantically analyze the SQL. This is a
-complex task.
+we can generate basic SQL that complies with R's DBI package, but if we
+start with SQL then we need the ability to parse and semantically analyze
+the SQL. This is a complex task.
 
 I would prefer to separate the code that initially loads the external data
 from the remainder of the script. We can replace this code with more
@@ -184,11 +188,17 @@ On the other hand, a corpus of open source R code is a biased sample,
 because private code is probably much more likely to access private data
 warehouses.
 
+I need to look into how other systems store their metadata, for example
+parquet and other tools in the Hadoop ecosystem.
+
 ### Description
 
-One general form of data is just text coming through UNIX `stdin`. This
-equates to a `read.table()` or `scan()`. It's the same interface that Hive
-uses.
+This should result in some standardized description of the data which
+allows us to automatically generate efficient code.
+
+One general form of data is just text coming through UNIX `stdin`. It's the
+same interface that Hive uses, and it can be hooked up with other forms of
+coarse parallelism ie. GNU make calling a script.
 
 For tables we would like to know:
 
