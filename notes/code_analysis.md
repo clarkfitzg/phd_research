@@ -6,12 +6,15 @@ little scattered.
 High level question:
 What features make R code more or less easy to analyze?
 
+
+## SQL Example
+
 I would like to treat the code as orthogonal to the data. This is what SQL
 does. SQL is declarative, it describes what to do. To actually execute the
 query a database must parse the SQL and compile it into physical operators that run
 in that database. SQL generally separates the data loading steps from the query.
 
-Attractive features of SQL:
+Some attractive features of SQL:
 
 - Queries don't utilize physical structure of data (although indexes do,
   but this is really just for performance tuning).
@@ -30,3 +33,21 @@ We can evaluate a domain specific language (DSL) like SQL using several criteria
 - Flexibility to express more complex tasks using the DSL
 - Ability for a system to map (or compile) the DSL into efficient physical
   instructions
+
+
+## R data frame
+
+Some of the dplyr stuff maps R to SQL
+
+If I restrict the scope of code analysis to data frames then there are 3 DSL's:
+
+- data.table
+- dplyr
+- [rquery](https://winvector.github.io/rquery/) (new package, but designed
+  with this sort of optimization in mind)
+
+I call them DSL's because they're all similar to SQL type queries on
+tables. What I'm thinking about doing then is a sort of global script
+optimization on these languages, which is sort of like PL/SQL.
+
+
