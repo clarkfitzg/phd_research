@@ -47,45 +47,125 @@ popular ways to do this:
 - data.table
 - dplyr
 
-They are not mutually exclusive, ie one might mix two of them.
-We can refer to these as DSL's because they're all similar to SQL type
-queries on tables. 
+They are not mutually exclusive, ie one might mix two of them. We can refer
+to these as DSL's because they all offer distinct syntax to perform
+operations that are similar to SQL type queries on tables. They go beyond
+SQL since they support general R functions. I'm thinking about doing some
+sort of global script optimization for code written using these packages.
 
-[rquery](https://winvector.github.io/rquery/) is a promising new package
-distinguished in being designed to support some query optimizations, but it
-doesn't have the popularity of the others.
+I'm interested in these DSL's for the purpose of code analysis and
+code transformations. So I want to start with the
+one that's easiest to analyze. If we restrict ourselves to the class of
+operations on tables that they all do well and easily then it may be
+possible to convert all of them to and from a common intermediate
+representation that captures the desired semantics. We could even go beyond
+the R language into say Python pandas and SQL.
 
-I'm thinking about doing some sort of global script
-optimization for code on these languages.
+Here's a simple example of the syntax using an example borrowed from the
+[dplyr
+documentation](https://cran.r-project.org/web/packages/dplyr/vignettes/dplyr.html):
+
+
+### base R
+
+Base R lets us build a logical vector to filter the rows in a couple different ways.
+
+```{R}
+
+library(nycflights13)
+
+month_var = "month"
+day_var = "day"
+
+# standard evaluation:
+condition = flights[, month_var] == 1 & flights[, day_var] == 1
+
+# NSE in `$`
+condition = flights$month == 1 & flights$day == 1
+
+# NSE using `with` to scope inside the data frame
+condition = with(flights, month == 1 & day == 1)
+
+```
+
+Once we have the logical vector for the filter we can use it directly, or
+we can use nonstandard evaluation in subset.
+
+```{R}
+
+# standard evaluation
+f11 = flights[condition, ]
+
+# NSE in `subset`
+f11 = subset(flights, month == 1 & day == 1)
+
+```
+
+
+## dplyr
+
+```{R}
+
+library(dplyr)
+library(rlang)
+
+# Doesn't work
+f11 = filter(flights, !!condition)
+
+# NSE implicitly scoping inside data frame
+f11 = filter(flights, month == 1 & day == 1)
+
+# NSE implicitly scoping inside data frame with implicit `&`
+f11 = filter(flights, month == 1, day == 1)
+
+
+# dplyr explicitly scoping inside flights
+f11 = filter(flights, .data$month == 1, .data$day == 1)
+
+# dplyr using tidyeval framework
+# https://stackoverflow.com/questions/24569154/use-variable-names-in-functions-of-dplyr
+month_quo = quo(month)
+day_quo = quo(day)
+f11 = filter(flights, (!!month_quo) == 1, (!!day_quo) == 1)
+
+```
+
+
+## data.table
+
+data.table will use standard evaluation in the special case when there is a
+single symbol in the first argument.
+
+```{R}
+
+library(data.table)
+fd = data.table(flights)
+
+# standard evaluation
+f11 = fd[condition, ]
+
+# NSE implicitly scoping inside data frame
+f11 = fd[month == 1 & day == 1, ]
+
+```
+
+
+dplyr has other variations in how to program
+http://dplyr.tidyverse.org/articles/programming.html
+
+
+## Extra
+
+Not sure where to put this in the narrative
 
 Some of the dplyr stuff maps R to SQL
-
-
-Thu Feb 22 10:40:21 PST 2018
-
-Forgot to push the commit, but mostly remember what I'm working on.
-
-Computational Model
-Domain
-Ease of use
-Flexibility
-Compilation
-
-Comparing three popular ways to write R code operating on data frames: Base
-R's `data.frame`, `data.table`, and `dplyr`. These are all very popular
-ways to do similar operations on tabular data. They go beyond SQL since
-they allow us to use general R functions.
 
 Of these three I would say base R provides the most flexibility, since we
 can do anything in the R language.
 
-However, I'm interested in these DSL's for the purpose of compilation
-and code analysis. So I want to start with the one that's easiest to
-analyze. If we restrict ourselves to the class of operations on tables that
-they all do well and easily then it may be possible to convert all of them
-to and from a common intermediate representation that captures the desired
-semantics. We could even go beyond the R language into say Python pandas
-and SQL.
+[rquery](https://winvector.github.io/rquery/) is a promising new package
+distinguished in being designed to support some query optimizations, but it
+doesn't have the popularity of the others.
 
 Base R uses nonstandard evaluation (NSE) in `subset`
 data.table and dplyr use NSE extensively.
@@ -97,33 +177,4 @@ Matt Dowle released __data.table__ on CRAN in 2006. The core syntax is
 
 Hadley Wickham released __dplyr__ on CRAN in 2014. 
 
-Here's a simple example of the syntax using an example borrowed from the
-[dplyr
-documentation](https://cran.r-project.org/web/packages/dplyr/vignettes/dplyr.html):
-
-```{R}
-
-library(nycflights13)
-library(data.table)
-fd = data.table(flights)
-
-# base R no NSE
-f11 = flights[flights[, "month"] == 1 & flights[, "day"] == 1, ]
-
-# base R using NSE in `$`
-f11 = flights[flights$month == 1 & flights$day == 1, ]
-
-# base R using NSE in `with`. A variation puts `with` on the outside
-f11 = flights[with(flights, month == 1 & day == 1), ]
-
-# base R using NSE in `subset`
-f11 = subset(flights, month == 1 & day == 1)
-
-# dplyr
-f11 = dplyr::filter(flights, month == 1, day == 1)
-
-# data.table
-f11 = fd[month == 1 & day == 1, ]
-
-```
 
