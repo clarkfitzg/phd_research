@@ -19,3 +19,9 @@ Nick's rstatic do this sort of analysis?
 
 Need to focus on understanding code, and do some actual symbolic
 computations.
+
+Clark is interested in focusing on computations around data frames because
+of the possibilities to interact with underlying data bases.
+
+Duncan is interested in a broader system that can be extended to work with
+any code.
