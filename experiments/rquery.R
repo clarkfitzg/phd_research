@@ -46,3 +46,21 @@ methods(class = class(dq))
 tables_used(dq)
 
 columns_used(dq)
+
+
+# I'd like to manipulate the operators without any physical data.
+# Here's an imaginary table called 'flights' with three columns.
+ts = table_source("flights", columns = c("month", "day", "number"))
+
+ts2 = ts %.>%
+    select_rows_nse(., month == 1 & day == 1) %.>%
+    select_columns(., "month")
+
+# knows that it doesn't need the "number" column, good.
+columns_used(ts2)
+
+db = DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+
+ts2 %.>% to_sql(., db) %.>% writeLines(.)
+
+

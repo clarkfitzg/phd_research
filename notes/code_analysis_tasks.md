@@ -68,6 +68,28 @@ algebra](https://en.wikipedia.org/wiki/Selection_(relational_algebra).
 The more we know about the semantics of the desired operation the more we
 can use this knowledge to evaluate the code in a different way. 
 
+Can we capture the semantics of the query into an intermediate data
+structure that's modular to the language? That would be super cool, because
+we could optimize that object directly. We could translate it to and from
+any language we like. The trouble I have with the rquery package is that
+it's tied to tightly to R, when it has no reason to be.
+
+This is really exciting to me.
+
+This reminds me of how the snowlake database keeps the queries in something
+standard like JSON.
+
+Jake Vanderplas did something similar with [plotting in Python's
+altair](https://github.com/altair-viz/altair) that implements plotting
+based on the [Vega
+specification](https://vega.github.io/vega/examples/bar-chart/).
+
+It's also similar to LLVM providing a more modular framework for compilers.
+
+Googling around here is some work that appears relevant:
+https://arxiv.org/abs/1607.04197
+
+
 ## More Technical
 
 __Reorder code in an efficient way__
