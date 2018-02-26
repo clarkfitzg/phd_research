@@ -74,17 +74,19 @@ Base R lets us build a logical vector to filter the rows in a couple different w
 
 library(nycflights13)
 
+flights_df = as.data.frame(flights)
+
 month_var = "month"
 day_var = "day"
 
 # standard evaluation:
-condition = flights[, month_var] == 1 & flights[, day_var] == 1
+condition = flights_df[, month_var] == 1 & flights_df[, day_var] == 1
 
 # NSE in `$`
-condition = flights$month == 1 & flights$day == 1
+condition = flights_df$month == 1 & flights_df$day == 1
 
 # NSE using `with` to scope inside the data frame
-condition = with(flights, month == 1 & day == 1)
+condition = with(flights_df, month == 1 & day == 1)
 
 ```
 
@@ -94,59 +96,72 @@ we can use nonstandard evaluation in subset.
 ```{R}
 
 # standard evaluation
-f11 = flights[condition, ]
+f11 = flights_df[condition, ]
 
-# NSE in `subset`
-f11 = subset(flights, month == 1 & day == 1)
-
-```
-
-
-## dplyr
-
-```{R}
-
-library(dplyr)
-library(rlang)
-
-# Doesn't work
-f11 = filter(flights, !!condition)
-
-# NSE implicitly scoping inside data frame
-f11 = filter(flights, month == 1 & day == 1)
-
-# NSE implicitly scoping inside data frame with implicit `&`
-f11 = filter(flights, month == 1, day == 1)
-
-
-# dplyr explicitly scoping inside flights
-f11 = filter(flights, .data$month == 1, .data$day == 1)
-
-# dplyr using tidyeval framework
-# https://stackoverflow.com/questions/24569154/use-variable-names-in-functions-of-dplyr
-month_quo = quo(month)
-day_quo = quo(day)
-f11 = filter(flights, (!!month_quo) == 1, (!!day_quo) == 1)
+# NSE includes column names in scope
+f11 = subset(flights_df, month == 1 & day == 1)
 
 ```
-
 
 ## data.table
 
-data.table will use standard evaluation in the special case when there is a
+data.table is similar to base R.
+It will use standard evaluation in the special case when there is a
 single symbol in the first argument.
 
 ```{R}
 
 library(data.table)
-fd = data.table(flights)
+flights_dt = data.table(flights)
 
 # standard evaluation
-f11 = fd[condition, ]
+f11 = flights_dt[condition, ]
 
-# NSE implicitly scoping inside data frame
-f11 = fd[month == 1 & day == 1, ]
+# NSE includes column names in scope
+f11 = flights_dt[month == 1 & day == 1, ]
 
+```
+
+## dplyr
+
+The use c
+
+```{R}
+
+library(dplyr)
+library(rlang)
+flights_tbl = flights
+
+# standard evaluation
+f11 = filter(flights_tbl, condition)
+
+# NSE includes column names in scope
+f11 = filter(flights_tbl, month == 1 & day == 1)
+
+# NSE includes column names in scope and using `&` on args
+f11 = filter(flights_tbl, month == 1, day == 1)
+
+# NSE explicitly scoping inside flights_tbl
+f11 = filter(flights_tbl, .data$month == 1, .data$day == 1)
+
+# tidyeval framework with quoting
+# https://stackoverflow.com/questions/24569154/use-variable-names-in-functions-of-dplyr
+month_quo = quo(month)
+day_quo = quo(day)
+f11 = filter(flights_tbl, (!!month_quo) == 1, (!!day_quo) == 1)
+
+# tidyeval framework with a string
+month_quo = new_quosure(as.symbol(month_var))
+day_quo = new_quosure(as.symbol(day_var))
+f11 = filter(flights_tbl, (!!month_quo) == 1, (!!day_quo) == 1)
+
+```
+
+dplyr also has a deprecated form of standard evaluation, which basically
+takes a string and does nonstandard evaluation with it:
+
+```{R}
+f11 = filter_(flights_tbl, "month == 1 & day == 1")
 ```
 
 
