@@ -60,10 +60,11 @@ filter(flights, month == 1 & day == 1)      # dplyr
 ```
 
 Because the semantics are the same it should be possible to represent these
-semantics in a way that's independent of the language. Indeed, if the rows
+semantics in a way that's independent of the syntax. Indeed, if the rows
 are unique the code above is
 equivalent to [selection in relational
-algebra](https://en.wikipedia.org/wiki/Selection_(relational_algebra).
+algebra](https://en.wikipedia.org/wiki/Selection_(relational_algebra) or
+just a simple SQL query.
 
 The more we know about the semantics of the desired operation the more we
 can use this knowledge to evaluate the code in a different way. 
@@ -72,17 +73,18 @@ Can we capture the semantics of the query into an intermediate data
 structure that's modular to the language? That would be super cool, because
 we could optimize that object directly. We could translate it to and from
 any language we like. The trouble I have with the rquery package is that
-it's tied to tightly to R, when it has no reason to be.
+it's tied to tightly to R, when I see no reason for it to be.
 
 This is really exciting to me.
 
-This reminds me of how the snowlake database keeps the queries in something
-standard like JSON.
+This reminds me of the queries I saw at work that are represented with some
+JSON.
 
 Jake Vanderplas did something similar with [plotting in Python's
 altair](https://github.com/altair-viz/altair) that implements plotting
 based on the [Vega
 specification](https://vega.github.io/vega/examples/bar-chart/).
+So I'm thinking about a similar specification for data analysis.
 
 It's also similar to LLVM providing a more modular framework for compilers.
 
@@ -90,10 +92,11 @@ Googling around here is some work that appears relevant:
 https://arxiv.org/abs/1607.04197
 
 What might it look like? It should be as close to SQL as possible.
-Basically I'm thinking of it as machine readable SQL.
+Basically I'm thinking of it as machine readable SQL, or SQL that takes no
+effort to parse.
 
 ```
-{
+{"query": {
     "FROM": "flights",
     "SELECT": ["a", "b", "c"],
     "WHERE": [
@@ -107,7 +110,8 @@ And then we want to be able to extend it, for example apply a user defined R
 function (UDF) to one of the columns:
 
 ```
-{
+
+{"query": {
     "FROM": "flights",
     "SELECT": ["a", 
         {"UDF": {"language": R,
@@ -117,9 +121,40 @@ function (UDF) to one of the columns:
         "AS": "fx"
         }
     ]
-}
+}}
+
 ```
 
+## data
+
+We can represent metadata along with the data in a similar way. We can
+build a data description that allows us to generate code that doesn't
+require any inference. Granted, many packages do a great job at inference,
+but we can generate more specific code and remove assumptions if we don't
+have to do this inference.
+
+WHOA- crazy idea. We could generate and use compiled code. Not sure that it
+would be any faster than `iotools` or `data.table` though.
+
+Suppose flights is a table in a text file. Here's what the metadata might
+look like:
+
+```
+
+{"data": {
+    "path": "/users/clark/data/flights.csv",
+    "text": true,
+    "delimiter": ",",
+    "header": false,
+    "column_names": ["day", "month", "a", "b", "c"],
+    "column_types": ["INT", "INT", "VARCHAR(200)", "FLOAT", "BOOLEAN"],
+    "rows": 10000,
+}}
+
+```
+
+
+## Related
 
 From the Python [Ibis docs](http://docs.ibis-project.org/design.html):
 
