@@ -89,6 +89,35 @@ It's also similar to LLVM providing a more modular framework for compilers.
 Googling around here is some work that appears relevant:
 https://arxiv.org/abs/1607.04197
 
+What might it look like?
+
+```
+{
+    "FROM": "flights",
+    "SELECT": ["a", "b", "c"],
+    "WHERE": [
+        ["=", "month", 1],
+        ["=", "day", 1]
+        ],
+}
+
+```
+
+From the Python [Ibis docs](http://docs.ibis-project.org/design.html):
+
+```
+The main pieces of a SELECT statement are:
+The set of column expressions (select_set)
+WHERE clauses (where)
+GROUP BY clauses (group_by)
+HAVING clauses (having)
+LIMIT clauses (limit)
+ORDER BY clauses (order_by)
+DISTINCT clauses (distinct)
+```
+
+So we would probably want to do all these things.
+
 
 ## More Technical
 
