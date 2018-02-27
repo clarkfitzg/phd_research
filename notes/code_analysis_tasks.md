@@ -89,7 +89,8 @@ It's also similar to LLVM providing a more modular framework for compilers.
 Googling around here is some work that appears relevant:
 https://arxiv.org/abs/1607.04197
 
-What might it look like?
+What might it look like? It should be as close to SQL as possible.
+Basically I'm thinking of it as machine readable SQL.
 
 ```
 {
@@ -98,10 +99,27 @@ What might it look like?
     "WHERE": [
         ["=", "month", 1],
         ["=", "day", 1]
-        ],
+    ],
 }
+```
+
+And then we want to be able to extend it, for example apply a user defined R
+function (UDF) to one of the columns:
 
 ```
+{
+    "FROM": "flights",
+    "SELECT": ["a", 
+        {"UDF": {"language": R,
+                "code": "function(x) x + 2",
+                "vectorized": true},
+        "SELECT": "x"
+        "AS": "fx"
+        }
+    ]
+}
+```
+
 
 From the Python [Ibis docs](http://docs.ibis-project.org/design.html):
 
