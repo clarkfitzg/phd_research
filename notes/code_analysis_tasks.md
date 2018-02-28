@@ -80,7 +80,8 @@ __When is it necessary to keep the names__
 
 I've ran into this as a particular problem- a default was to compute the
 names so the code took an order of magnitude longer than it should have.
-If the remainder of the code doesn't need the 
+If the remainder of the code doesn't use the names then we don't ever need
+to do any operations on the names.
 
 __Statements that can be made more efficient by data reorganization__
 
