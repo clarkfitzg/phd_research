@@ -193,3 +193,58 @@ Matt Dowle released __data.table__ on CRAN in 2006. The core syntax is
 Hadley Wickham released __dplyr__ on CRAN in 2014. 
 
 
+
+## High level Questions / Tasks
+
+__Cloud Computing__
+
+If we pay for computation and storage then we can do things based on cost.
+We have access to a potentially limitless amount of computing power.
+Things we might like to do when evaluating a particular piece of code on a
+particular data set:
+
+- Minimize cost
+- Minimize time
+- Minimize cost such that the computation takes no more than `h` hours
+- Minimize time such that the computation costs no more than `d` dollars
+
+Mon Feb 26 13:25:22 PST 2018
+
+Following meeting with Duncan on Friday I'm writing down questions to
+answer with code analysis.
+
+Duncan's use case: people come him with code to make faster. They often
+give him the whole data set which may take days to run. It would be neat to
+look at the code and then artificially create a data set that is similar to
+the large one. This must be similar to generated tests that aim to explore
+every branch.
+
+## Outcomes
+
+What are my high level goals?
+
+__Speed__
+
+Take code that runs in 20 minutes and make it run in 10 minutes. There are
+many ways to do this: detecting programming mistakes, compilation,
+parallelism, dropping in more efficient implementations, etc.
+
+__Memory__
+
+Take code that requires 5 GB, and run it in a way that requires only 2 GB,
+or even just 10 MB. This may be possible with streaming computations.
+
+__Data Abstraction__
+
+Take code that runs on a local data frame and evaluate it efficiently on
+any tabular data source. The data could be a table in a database, a bunch
+of files in a local directory, or a file on Amazon's S3.
+
+
+
+
+## More Technical
+
+What else do I want from the R code analysis? 
+
+What kind of data frame will a function call generate? Column 

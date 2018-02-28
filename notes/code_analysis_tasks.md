@@ -1,69 +1,23 @@
-Mon Feb 26 13:25:22 PST 2018
+Wed Feb 28 09:56:47 PST 2018
 
-Following meeting with Duncan on Friday I'm writing down questions to
-answer with code analysis.
+Meeting with Nick
 
-Duncan's use case: people come him with code to make faster. They often
-give him the whole data set which may take days to run. It would be neat to
-look at the code and then artificially create a data set that is similar to
-the large one. This must be similar to generated tests that aim to explore
-every branch.
+# Code analysis 
 
-## Outcomes
-
-What are my high level goals?
-
-__Speed__
-
-Take code that runs in 20 minutes and make it run in 10 minutes. There are
-many ways to do this: detecting programming mistakes, compilation,
-parallelism, dropping in more efficient implementations, etc.
-
-__Memory__
-
-Take code that requires 5 GB, and run it in a way that requires only 2 GB,
-or even just 10 MB. This may be possible with streaming computations.
-
-__Data Abstraction__
-
-Take code that runs on a local data frame and evaluate it efficiently on
-any tabular data source. The data could be a table in a database, a bunch
-of files in a local directory, or a file on Amazon's S3.
-
-
-There are three distinct things we can do with code:
+We can do a few different things with code:
 
 - __static analysis__ inspect and describe it
 - __dynamic analysis__ run some portion of the code and see what happens
-- __modify the code__ change the code to make it more efficient in some way
+- __transpile__ modify the code to make it more efficient while staying in
+  the same language.
+- __compile__ compile into machine code.
+
+I'm interested in analyzing data analysis scripts that are roughly
+somewhere between 10 and 1000 lines of code.
 
 Most of the analysis tasks I have in mind have are motivated by the
 potential to do some kind of modification. This is a different use case
 than seeking purely to understand the code.
-
-
-## What would I like a general code analysis system to do?
-
-__Tell when a function is vectorized or scalar valued.__
-
-Then we can better infer the sizes of the data that pass through.
-
-__Identify and group the statements in data analysis code that actually
-produce output.__
-
-If these statements execute, ie. build a plot or save some result to a
-file, then the script has run successfully. 
-
-__Identify unnecessary statements.__
-
-Then we can remove them.
-
-__Identify the earliest place to run subset operations.__
-
-If we only need a subset of rows and columns to do the required task then
-we can filter the data early, even at the source. This saves memory and
-time for intermediate computations.
-
 
 ## What should a general R code analysis framework look like?
 
@@ -71,26 +25,64 @@ I like the notion of "optimization passes", meaning that we walk through the
 code and make one type of change. For example, an early optimization pass
 might be removing all unnecessary code.
 
-
-## High level Questions / Tasks
-
-__Cloud Computing__
-
-If we pay for computation and storage then we can do things based on cost.
-We have access to a potentially limitless amount of computing power.
-Things we might like to do when evaluating a particular piece of code on a
-particular data set:
-
-- Minimize cost
-- Minimize time
-- Minimize cost such that the computation takes no more than `h` hours
-- Minimize time such that the computation costs no more than `d` dollars
+It should be extensible in the sense that I would like to add information
+after profiling / running the code.
 
 
+## What would I like a general static code analysis system to identify?
 
+__Vectorized and scalar valued functions__
 
-## More Technical
+Then we can better infer the sizes of the data that pass through.
 
-What else do I want from the R code analysis? 
+__Group semantic units__
 
-What kind of data frame will a function call generate? Column 
+Gather together code that must always run together. For example, to
+produce a plot we need all the plotting calls between `pdf("myplot.pdf")`
+and `dev.off()`.
+
+__Statements or semantic units in data analysis code that actually produce
+output.__
+
+If these statements execute, ie. build a plot or save some result to a
+file, then the script has run successfully. 
+
+__Unnecessary statements__
+
+Then we can remove them.
+
+__Earliest place to run subset operations__
+
+If we only need a subset of rows and columns to do the required task then
+we can filter the data early, even at the source. This saves memory and
+time for intermediate computations.
+
+__Calls / statements likely to be slow__
+
+Think about machine learning for code- code and data sizes should be able
+to predict the timings / profiling information.
+
+__How much memory any statement will consume__
+
+Memory use and copying is notoriously hard to predict in R.
+
+__When will a variable be copied__
+
+__The random number generator is called__
+
+This requires special handling for parallel applications.
+
+__Variable lifetimes__
+
+For example, the remainder of the code doesn't use `x` so we can safely `rm(x)`.
+
+__When is it necessary to keep the names__
+
+I've ran into this as a particular problem- a default was to compute the
+names so the code took an order of magnitude longer than it should have.
+If the remainder of the code doesn't need the 
+
+__Statements that can be made more efficient by data reorganization__
+
+For example, `group by` operations can be done streaming if the data
+has been grouped at the source.
