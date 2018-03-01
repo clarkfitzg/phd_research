@@ -139,9 +139,9 @@ It seems like we have to explicitly list the semantics of a `for` loop if
 we do this.
 
 Line 9 tests for the end of the for loop. It is special because it is the
-only statement that can GOTO two different places in the code. I'm not sure
-if the two column approach here is the best way, but we need to allow for
-it somehow. Is it possible to have a three way branch for control flow?
+only statement that can GOTO two different places in the code. The two
+column approach here won't work if there are three or more places where
+control can flow, for example with `switch()`.
 
 Talking to Duncan, this representation of the code might be good for
 certain tasks, while the AST might be better for others. One example: if
