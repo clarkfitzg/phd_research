@@ -1,3 +1,10 @@
+Thu Mar  1 11:46:53 PST 2018
+
+Hmm, I wonder if it's ever possible to more quickly combine multiple
+logical conditions? We could use [short-circuit
+evaluation](https://en.wikipedia.org/wiki/Short-circuit_evaluation).
+Suppose you're doing `x == 5 & y == 6`. Then you can instead do `c1 =
+which(x == 5)` then somehow pull the result from `y[c1] == 6`.
 
 
 Mon Feb 19 10:26:01 PST 2018
