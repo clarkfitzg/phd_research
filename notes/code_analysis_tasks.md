@@ -87,3 +87,10 @@ __Statements that can be made more efficient by data reorganization__
 
 For example, `group by` operations can be done streaming if the data
 has been grouped at the source.
+
+__How often special statements are used__
+
+Language aspects such as control flow, superassignment, and nonstandard
+evaluation in general make code analysis more difficult. If we can know
+that code does or doesn't use it then we can use specialized versions of
+the code analysis.
