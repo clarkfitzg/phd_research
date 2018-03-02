@@ -18,7 +18,7 @@ A single unit of work consists of these steps:
    the value of the current statement.
 2. R identifies all symbols used in the call.
 3. For each symbol, R checks the variable store to see if it contains the
-   value, and loads it into the workspace if found.
+   value, and loads it into the workspace if found. Otherwise it's a lib
 4. R evaluates the function call.
 5. R saves the result of the function call into the variable in the
    variable store.
@@ -35,8 +35,12 @@ This approach has many disadvantages. The two that come to mind first are
 that it will slow R down and make it more difficult to debug.
 Critics claim R is slow, and this will make R much slower.
 
-The only advantage I see is that R will use less memory than it would
-otherwise.
+I can see these as advantages:
+- R will use less memory than it would otherwise, since at any given time
+  only the variables that are strictly necessary are in the workspace.
+- The system can time exactly how long each statement takes. Otherwise when
+  profiling the timing is sometimes incorrect because of lazy evaluation.
+
 
 ## Refinements
 

@@ -1,3 +1,8 @@
+Fri Mar  2 14:51:37 PST 2018
+
+Translate R code into tensorflow.
+
+
 Thu Mar  1 11:46:53 PST 2018
 
 Hmm, I wonder if it's ever possible to more quickly combine multiple
