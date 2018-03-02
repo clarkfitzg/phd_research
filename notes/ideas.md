@@ -1,3 +1,12 @@
+Fri Mar  2 15:14:03 PST 2018
+
+I go along and write R code in an interactive session, experimenting with all
+manner of different things. I decide that the last line I entered shows a
+meaningful result, so I do something like `CodeAnalysis::keep_last()`. This
+goes through the history and pulls out all the relevant commands I need to
+successfully execute my last command.
+
+
 Fri Mar  2 14:51:37 PST 2018
 
 Translate R code into tensorflow.

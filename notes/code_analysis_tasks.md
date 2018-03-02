@@ -31,6 +31,10 @@ after profiling / running the code.
 
 ## What would I like a general static code analysis system to identify?
 
+I'll order these by priority. Then I can start thinking about the data
+structure I want for code analysis. In the below I see quite a bit about
+reorganizing code to some logical structure.
+
 __Vectorized and scalar valued functions__
 
 Then we can better infer the sizes of the data that pass through.
