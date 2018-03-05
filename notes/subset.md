@@ -44,4 +44,31 @@ the full data in `iris`. We also need to chase down the
 `species_of_interest` variable. This will fail if it's not a literal in the
 code.
 
+When I do this I often filter a data set down in several steps with
+intermediate variables. For example:
+
+```{R}
+iris2 = subset(iris, Species == species_of_interest)
+iris3 = iris2[, c("Sepal.Length", "Petal.Width")]
+...
+```
+
+We need to capture this use case too.
+
 ## Code Analysis
+
+The task then is to statically analyze the code to discover which subset is
+necessary. In the fall I did the columns in a somewhat ad hoc way. To do it
+comprehensively I need to account for assignments to new variables as
+described above. Also I should separate the data read step- that is
+something different.
+
+__Inputs__
+
+- R script, with every statement strictly necessary.
+- Final output?
+
+__Outputs__
+
+- Character vector of necessary columns
+- Symbolic computations on columns
