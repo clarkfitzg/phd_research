@@ -16,7 +16,7 @@ I'm interested in analyzing data analysis scripts that are roughly
 somewhere between 10 and 1000 lines of code.
 
 Most of the analysis tasks I have in mind have are motivated by the
-potential to do some kind of modification. This is a different use case
+potential to do some kind of transpiling. This is a different use case
 than seeking purely to understand the code.
 
 ## What should a general R code analysis framework look like?
@@ -26,7 +26,9 @@ code and make one type of change. For example, an early optimization pass
 might be removing all unnecessary code.
 
 It should be extensible in the sense that I would like to add information
-after profiling / running the code.
+after profiling / running the code. The data structure should support this.
+We could potentially do this with attributes, but Nick pointed out one
+technical limitation that symbols cannot have attributes.
 
 
 ## What would I like a general static code analysis system to identify?
@@ -35,9 +37,11 @@ I'll order these by priority. Then I can start thinking about the data
 structure I want for code analysis. In the below I see quite a bit about
 reorganizing code to some logical structure.
 
-__Vectorized and scalar valued functions__
+__Earliest place to run subset operations__
 
-Then we can better infer the sizes of the data that pass through.
+If we only need a subset of rows and columns to do the required task then
+we can filter the data early, even at the source. This saves memory and
+time for intermediate computations.
 
 __Group semantic units__
 
@@ -55,11 +59,9 @@ __Unnecessary statements__
 
 Then we can remove them.
 
-__Earliest place to run subset operations__
+__Vectorized and scalar valued functions__
 
-If we only need a subset of rows and columns to do the required task then
-we can filter the data early, even at the source. This saves memory and
-time for intermediate computations.
+Then we can better infer the sizes of the data that pass through.
 
 __Calls / statements likely to be slow__
 

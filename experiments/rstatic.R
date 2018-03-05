@@ -13,6 +13,12 @@ node0 = quote_ast({
     head(x)
 })
 
+# Can we add arbitrary attributes to the graph?
+attr(node0$body[[4]], "time") = Sys.time()
+
+# Yes we can.
+attr(node0$body[[4]], "time")
+
 # This works fine
 #node0 = quote_ast({
 #    x = 1:10
@@ -27,6 +33,12 @@ eval(to_r(node0))
 node = to_cfg(node0)
 
 #rstatic:::to_ssa(node)
+
+# Are the attributes still around?
+# No, doesn't look like it.
+attr(node$body$body[[4]], "time")
+attr(node$body$body[[4]]$read, "time")
+
 
 node$ssa
 
