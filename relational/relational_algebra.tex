@@ -103,6 +103,13 @@ Does Calcite use true relational algebra or the multiset version as in SQL,
 which allows duplicate rows? More likely the latter. I should find out
 with an experiment. This will make me more familiar with the library, too.
 
+Questions for Calcite mailing list:
+
+- What kind of user defined functions can I represent in Calcite? Ie.
+scalar -> scalar, vector -> vector, table -> table?
+
+The docs for function say \emph{The result may be a relation, and so might
+any of the parameters.}
 
 
 Thinking about translating R into relational algebra.
@@ -131,15 +138,18 @@ Otherwise everything is ad hoc rules.
     \textbf{operation} & \textbf{relational algebra} & \textbf{R language}
     \\
 \hline
-    union   & $D \cup E$
-        & \texttt{rbind(D, E)}
-    \\ iterated union  & $\bigcup_{i=1}^n D_i$
+    \\ union  & $\bigcup_{i=1}^n D_i$
         & \texttt{rbind(D1, ..., Dn)}
     \\ cartesian product   & $D \times E$
         & \texttt{merge(D, E, by = c())}
     \\ project & ${\displaystyle \Pi _{a_{1},\ldots ,a_{n}}(D)}$
         & \texttt{D[, c("a1", ..., "an")]}
-    \\
+    \\ selection / propositional logic & $\sigma_{a < 20} (D)$
+        & \texttt{subset(D, a < 20)}
+    \\ rename & $\rho_{a / b}(R)$
+        & \texttt{colnames(D)[colnames(D) == "a"] <- "b"}
+    \\ natural join & $D \Join E$
+        & \texttt{merge(D, E)}
 \end{tabular}
 \end{table}
 
