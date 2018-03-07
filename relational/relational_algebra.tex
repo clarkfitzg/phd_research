@@ -81,7 +81,7 @@ consistency and mental model of dplyr.  On the other hand, if they're doing
 the same thing then there's redundancy here.  Why not share implementation?
 We should use the fastest one available, especially for large data sets.
 
-I see all these big highly engineered data processing systems mostly coming
+I see all these big highly engineered data processing systems
 from Apache: Hive, Spark, Cassandra, etc. Then there's R, which is
 expressive and fast on data that fits in memory on a single machine.
 I'm interested in having the best of both worlds. I want the expressiveness
@@ -89,9 +89,10 @@ of R code and the scale of these big systems.
 
 Most academic researchers don't have the opportunity to work with
 these kinds of large systems. It often takes significant effort to
-configure and maintain them, and it's probably not worth it until you're
-trying to analyze TB of data.
+configure and maintain them, and it's probably not worth it unless you're
+analyzing TB of data.
 
+The other motivation to put it in a standard form is to 
 
 \section{Introduction}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -123,14 +124,22 @@ Otherwise everything is ad hoc rules.
 
 \begin{table}[]
 \centering
-    \caption{Correspondence between R data frame functions and relational algebra}
+    \caption{Correspondence between R data frame functions and relational
+    algebra}
 \label{tab-correspond}
-\begin{tabular}{llll}
-    \textbf{relational algebra} & \textbf{R language}
+\begin{tabular}{lll}
+    \textbf{operation} & \textbf{relational algebra} & \textbf{R language}
     \\
 \hline
-    $A \cup B$              & \texttt{rbind(A, B)}  \\
-    $\bigcup_{i=1}^n A_i$   & \texttt{rbind(A1, ..., An)}   \\
+    union   & $D \cup E$
+        & \texttt{rbind(D, E)}
+    \\ iterated union  & $\bigcup_{i=1}^n D_i$
+        & \texttt{rbind(D1, ..., Dn)}
+    \\ cartesian product   & $D \times E$
+        & \texttt{merge(D, E, by = c())}
+    \\ project & ${\displaystyle \Pi _{a_{1},\ldots ,a_{n}}(D)}$
+        & \texttt{D[, c("a1", ..., "an")]}
+    \\
 \end{tabular}
 \end{table}
 
