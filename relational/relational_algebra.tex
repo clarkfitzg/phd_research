@@ -99,29 +99,6 @@ The other motivation to put it in a standard form is to
 
 Wed Mar  7 09:37:11 PST 2018
 
-Does Calcite use true relational algebra or the multiset version as in SQL,
-which allows duplicate rows? More likely the latter. I should find out
-with an experiment. This will make me more familiar with the library, too.
-
-Questions for Calcite mailing list:
-
-- What kind of user defined functions can I represent in Calcite? Ie.
-scalar -> scalar, vector -> vector, table -> table?
-
-The docs for function say \emph{The result may be a relation, and so might
-any of the parameters.}
-
-Insights listening to Julian Hyde's talks.
-Intermediate data frames that aren't saved are pretty much like views.
-Caching / precomputing results can save enormous amounts of time.
-
-Calcite seems pretty flexible in optimizing queries across different
-systems- key value stores and nested data. Which makes me think it may
-generalize to R objects beyond just data frames.
-
-We could apply this to a single R computation- the idea is iterative
-development.
-
 Thinking about translating R into relational algebra.
 This abstracts R code into a semantic representation with some well
 developed theory behind it.
