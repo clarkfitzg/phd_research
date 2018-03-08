@@ -1,3 +1,42 @@
+Wed Mar  7 16:14:14 PST 2018
+
+When is it legal to exchange operations to make them faster?
+For example:
+
+```{R}
+x = 1:100   # Need a bigger number of different op for this to make sense.
+x[1] + 5    # Faster
+(x + 5)[1]  # Slower
+```
+
+To get from the slow to the fast you push the selection through the binary
+operation. How far will this idea go?
+
+
+Wed Mar  7 16:06:10 PST 2018
+
+Caching / precomputing results can save enormous amounts of time.
+
+We could apply this to a single R computation- the idea is iterative
+development. For example, you write a bunch of code and then you make a
+small change. This is basically the same idea as make, drake, and all that
+though.
+
+Here's a simple example:
+
+```{R}
+diag(solve(X))
+```
+
+and then you change the code to:
+
+```{R}
+diag(solve(X) + 1)
+```
+
+It would be nice if we didn't have to do `solve(X)` again. This code
+motivates another idea, see above.
+
 Fri Mar  2 15:14:03 PST 2018
 
 I go along and write R code in an interactive session, experimenting with all
