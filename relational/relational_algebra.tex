@@ -115,6 +115,10 @@ Insights listening to Julian Hyde's talks.
 Intermediate data frames that aren't saved are pretty much like views.
 Caching / precomputing results can save enormous amounts of time.
 
+Calcite seems pretty flexible in optimizing queries across different
+systems- key value stores and nested data. Which makes me think it may
+generalize to R objects beyond just data frames.
+
 We could apply this to a single R computation- the idea is iterative
 development.
 
@@ -127,7 +131,7 @@ data frame and a table in relational algebra are:
 
 \begin{enumerate}
     \item R data frame has ordered columns and rows (unlike SQL)
-    \item R data frame allows duplicate rows (like SQL)
+    \item R data frame allows duplicate rows (like most SQL implementations)
 \end{enumerate}
 
 To do symbolic manipulation of code we really need some kind of algebra.
@@ -148,7 +152,7 @@ Otherwise everything is ad hoc rules.
         & \texttt{rbind(D1, ..., Dn)}
     \\ cartesian product   & $D \times E$
         & \texttt{merge(D, E, by = c())}
-    \\ project & ${\displaystyle \Pi _{a_{1},\ldots ,a_{n}}(D)}$
+    \\ project & $\Pi _{a_{1},\ldots ,a_{n}}(D)$
         & \texttt{D[, c("a1", ..., "an")]}
     \\ selection / propositional logic & $\sigma_{a < 20} (D)$
         & \texttt{subset(D, a < 20)}
@@ -159,6 +163,16 @@ Otherwise everything is ad hoc rules.
 \end{tabular}
 \end{table}
 
+R gives us a parser. How can we walk over that parse tree to build up the
+relational algebra? Here's an R expression: 
+\verb$subset(D, a < 20 & b < 30, c("a", "b", "c"))$.
+The corresponding relational algebra is $\sigma_{a < 20 \^ b < 30} \Pi _{a,
+b, c} (D)$. The subset function uses nonstandard evaluation which allows us
+to directly map R predicate logic into that of relational algebra. But
+there could be one or more levels of indirection, ie $a < C$ for some
+variable $C$. $C$ could be a literal, ie $C = 3$, or it could be computed
+dynamically. In this dynamic case we may be able to still optimize things
+once $C$ becomes known.
 
 Cite sqldf, relation and rquery packages
 
