@@ -143,13 +143,13 @@ Otherwise everything is ad hoc rules.
 R gives us a parser. How can we walk over that parse tree to build up the
 relational algebra? Here's an R expression: 
 \verb$subset(D, a < 20 & b < 30, c("a", "b", "c"))$.
-The corresponding relational algebra is $\sigma_{a < 20 \^ b < 30} \Pi _{a,
+The corresponding relational algebra is $\sigma_{a < 20 \wedge b < 30} \Pi _{a,
 b, c} (D)$. The subset function uses nonstandard evaluation which allows us
 to directly map R predicate logic into that of relational algebra. But
-there could be one or more levels of indirection, ie $a < C$ for some
-variable $C$. $C$ could be a literal, ie $C = 3$, or it could be computed
+there could be one or more levels of indirection, ie $a < e$ for some
+variable $e$. $e$ could be a literal, ie $e = 3$, or it could be computed
 dynamically. In this dynamic case we may be able to still optimize things
-once $C$ becomes known.
+once $e$ becomes known.
 
 Cite sqldf, relation and rquery packages
 
