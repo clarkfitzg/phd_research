@@ -11,7 +11,7 @@ Broader Impact
 - TA for 2 classes
 - 20 blog posts
 - tutor veterans center
-- student seminar now in 5th quarter
+- organized student seminar in Fall, student seminar now in 5th quarter
 - SWC in Jan with Easton White, instructor training in March
 
 
