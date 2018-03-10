@@ -94,17 +94,22 @@ concepts. Basically I need to be doing a whole lot more writing. Then I can
 send it to Duncan a couple days before I'm ready for feedback.
 
 Focusing on tables and relational algebra is acceptable, as long as it's
-somewhat general.  It can't just be "we can handle this one type of
+somewhat general. It can't just be "we can handle this one type of
 expression and only on Hive".  Duncan is less excited about this than I am.
-We need to say why this is relevant, talk to people. Musing, who might I
-talk to? Noam Ross, Simon Urbanek, Mike Kane, contacts at Stitchfix and
-Google.
+We need to say why this is relevant, talk to people. Who wants to run R
+code on a big system? Don't they just pull out a subset of the data,
+figure out what they want to do, and then implement the whole thing in a
+lower level language?
+
+Musing, who might I talk to for use cases? Noam Ross, Simon Urbanek, Mike
+Kane, contacts at Stitchfix and Google.
 
 Don't let the tail wag the dog with the software. For good design we think
 about what it should do, what you want. Say "these are the concepts we need
 to represent", so that the design comes down from the top level. The wrong
 way is to look at a related package and say "this is what it does so we
-should fit ourselves to it."
+should fit ourselves to it." There's a significant cost for me to learn Java
+and the Calcite model and API.
 
 What am I going to do in the next couple weeks? Explicitly describe what I
 hope to get from mapping R code to relational algebra and __how__ I plan to
