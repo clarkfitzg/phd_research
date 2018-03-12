@@ -94,11 +94,25 @@ since then I don't have to deal with nesting.
 ### Ryan's example
 
 Today (12 Mar 18) Ryan Peek showed me a use case for source filtering
-on genomic data. His use case consists of the following steps:
+on genomic data. His analysis consists of the following steps:
 
-- read in a 155K x 1141 flat text file
-- transform it using dplyr (all stuff that could be done in DB)
-- produce a much smaller table for plotting
+- read in a 155K x 1141 flat text file of sequencing data
+- transform it using dplyr (mostly column selection, renaming)
+- joins along with some other metadata
+- produce a much smaller table for plotting, ie. 700 x 2 or something like
+  that
+
+One difficult part in the transformation is pivoting the table from wide to
+long.
+
+After reading in the raw text data he saves it in a binary format using the
+fst package so that it will be faster to load for subsequent iterative
+development.
+
+One reason his use case is interesting is because the size of the data
+pushes R near the edge of what it can handle in memory. Then he has to
+switch to a completely different approach once it exceeds memory.
+
 
 
 ### Scratch
