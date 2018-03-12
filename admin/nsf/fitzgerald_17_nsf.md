@@ -1,18 +1,58 @@
-Please write a 2-3 paragraph SUMMARY of your fellowship activities and major accomplishments within the last year.
+# NSF GRFP Fellowship Report
+
+## 17-18 Richard Clark Fitzgerald
+
+> Please write a 2-3 paragraph SUMMARY of your fellowship activities and
+> major accomplishments within the last year. This should be written for the
+> public, and should address both the Intellectual Merit and the Broader
+> Impact of your work.
 
 
-This should be written for the public, and should address both the Intellectual Merit and the Broader Impact of your work.
+This past year I've written about both basic and research topics in
+parallel computing in 25 posts in my blog "Data Programming" which can be
+found at http://clarkfitzg.github.io/.
 
+Fall 2017 marked the opening of the UC Davis Veterans Success Center, a
+dedicated space in the campus Memorial Union "providing services to the
+student veterans, service members and dependents of the Armed Services".
+Since the opening I've worked closely with the coordinator Earl Raehsler to
+volunteer weekly tutoring student veterans in mathematics and statistics.
 
-Enter the summary below (1000-5000 characters) OR attach a one page document (1 page limit).
+In Fall 2017 I took another turn as the organizer of the statistics student
+seminar that a fellow student and I initiated in fall of 2016. We have
+successful transitioned the responsibility of organizing the seminar, which
+is now in its 5th quarter.
+
+In January 2018 I volunteered as an instructor at a 2 day Software
+Carpentry workshop. Later in March I will attend a 2 day Software
+Carpentry instructor training.
+
+Intellectual front
+
+The general theme of my research is to take relatively simple code and
+transform it so that it can run more efficiently on larger data sets or in
+parallel. I was able to do this successfully for one of the original
+motivating problems for 3 billion data points of traffic sensor data. 
+By running the program on an Apache Hive cluster the program run time went
+from an estimated several days to 12 minutes.
+Processing the entire data set allows us to go beyond a simple
+parametric fundamental diagram to a nonparametric model based on
+dynamically binned means.
+
+In January I worked on a 
+
+My experiments with R and Apache Hive led to the development of code
+generation software 
+
+which can be found online at 
+
+I solved the This paper demonstrated a technique for efficiently combining
+existing data analysis technologies to analyze data that will not fit in
+memory. 
 
 Broader Impact
 
 - TA for 2 classes
-- 20 blog posts
-- tutor veterans center
-- organized student seminar in Fall, student seminar now in 5th quarter
-- SWC in Jan with Easton White, instructor training in March
 
 
 Intellectual Merit
