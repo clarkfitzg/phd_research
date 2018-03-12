@@ -7,34 +7,52 @@
 > public, and should address both the Intellectual Merit and the Broader
 > Impact of your work.
 
+During the last year I've volunteered as a tutor, seminar organizer, and
+programming instructor. 2017 marked the opening of the new UC Davis
+Veterans Success Center. I continue to work closely with the coordinator, Earl
+Raehsler, as a weekly tutor in mathematics and statistics for student
+veterans. Last fall I took another turn as the organizer of the
+statistics student seminar that a fellow student and I initiated in 2016.
+We successfully transitioned the organizer role between students, and the
+seminar is now in its 5th quarter.  In January 2018 I co-instructed a 2 day
+Software Carpentry workshop catered towards graduate students in the life
+sciences. Later in March I will attend a 2 day Software Carpentry
+instructor training so that I can improve my skills in technical
+communication.
 
-This past year I've written about both basic and research topics in
-parallel computing in 25 posts in my blog "Data Programming" which can be
-found at http://clarkfitzg.github.io/.
+The general theme of my research is to take computer code that analyzes
+data, understand the code, and find ways to automatically make it more
+efficient. In June 2017 I passed my PhD oral qualifying exam by presenting
+a talk titled "Parallel Computing Through Code Analysis". I described a
+motivating application to traffic engineering of a qualitatively new kind
+of analysis that requires processing 3 billion data points. In the fall I
+completed this analysis, demonstrating how to generate code to efficiently combine several
+specific technologies. I'm currently focusing how to generalize the code
+analysis techniques. Along the way I've learned much
+about parallel computing and was able to contribute to an article "The R
+Language: A Powerful Tool for Taming Big Data" which will be published in
+the "Encyclopedia of Big Data Technologies" this year.
 
-Fall 2017 marked the opening of the UC Davis Veterans Success Center, a
-dedicated space in the campus Memorial Union "providing services to the
-student veterans, service members and dependents of the Armed Services".
-Since the opening I've worked closely with the coordinator Earl Raehsler to
-volunteer weekly tutoring student veterans in mathematics and statistics.
+I've made my results available to a broader audience through software and a
+blog. This past year I've written about both basic and research topics in
+data intensive computing in 25 posts in my blog "Data Programming" which can be
+found at http://clarkfitzg.github.io/. The techniques for parallelism
+are available in the `autoparallel` package at
+https://github.com/clarkfitzg/autoparallel.
 
-In Fall 2017 I took another turn as the organizer of the statistics student
-seminar that a fellow student and I initiated in fall of 2016. We have
-successful transitioned the responsibility of organizing the seminar, which
-is now in its 5th quarter.
+For the majority of my research time I've focused on developing and
+describing methods to 
 
-In January 2018 I volunteered as an instructor at a 2 day Software
-Carpentry workshop. Later in March I will attend a 2 day Software
-Carpentry instructor training.
-
-Intellectual front
-
-The general theme of my research is to take relatively simple code and
-transform it so that it can run more efficiently on larger data sets or in
-parallel. I was able to do this successfully for one of the original
+I was able to do this successfully for one of the original
 motivating problems for 3 billion data points of traffic sensor data. 
-By running the program on an Apache Hive cluster the program run time went
-from an estimated several days to 12 minutes.
+
+
+By running the program on an Apache Hive cluster the program execution time went
+from an estimated several days to 12 minutes. In this case processing the entire data
+set was key 
+
+qualitatively new types of analysis 
+
 Processing the entire data set allows us to go beyond a simple
 parametric fundamental diagram to a nonparametric model based on
 dynamically binned means.

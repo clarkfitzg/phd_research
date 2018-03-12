@@ -15,7 +15,7 @@ or more data frames followed by computations in R. Then we can arrange to
 filter the data frames before loading the data into R.
 
 
-## Illustrative Example
+## Hypothetical Example
 
 Here's some hypothetical code that Duncan and I were talking about:
 
@@ -89,6 +89,16 @@ inferring this?
 
 Actually might be useful here to use Nick's idea of "flattening" the code,
 since then I don't have to deal with nesting.
+
+
+### Ryan's example
+
+Today (12 Mar 18) Ryan Peek showed me a use case for source filtering
+on genomic data. His use case consists of the following steps:
+
+- read in a 155K x 1141 flat text file
+- transform it using dplyr (all stuff that could be done in DB)
+- produce a much smaller table for plotting
 
 
 ### Scratch
