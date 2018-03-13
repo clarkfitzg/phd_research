@@ -100,7 +100,8 @@ annot$SampleID <- factor(annot$SampleID)
 # DATA GROUPING/FILTERING -------------------------------------------------
 
 # make long
-# OP: Convert from wide to long and rename columns. Most subtle part.
+# OP: Convert table 1 from wide to long - Most subtle part
+# OP: Rename columns
 dat_geno2 <- gather(dat_geno, key = sample, value = geno, rabo_X5:hybrid_X1137) %>% 
   mutate(chromo_pos =  paste0(chromo, "_", position), # combine chromo_pos
          spp = substr(sample, 1, 4)) # add spp col

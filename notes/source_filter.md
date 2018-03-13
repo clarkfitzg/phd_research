@@ -143,3 +143,4 @@ Related idea: data virtualization.
 Idea: list different ways to integrate data from two sources in one R computation.
 
 Idea: row / column filters in iotools
+
