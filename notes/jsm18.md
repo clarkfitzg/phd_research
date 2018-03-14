@@ -7,7 +7,7 @@ challenges or "this is what we should do".
 
 What key points do I want to convey in the talk?
 
-- When the data gets big and complex we should first try to leverage
+- For seriously large data and computations we should try to leverage
   and integrate with existing technologies rather than reinventing them.
 - We can use R code to directly generate code that integrates with
   a larger system.
@@ -37,14 +37,14 @@ The code above has the following characteristics:
 We can slightly generalize this by adding a row filter in the first step,
 ie. analyzing `subset()`. We can generalize it further by letting the
 `data` argument to `by()` be a more general query- then we probably want to
-leverage existing SQL generation tools.
+leverage existing SQL generation tools. 
 
 I assume that we start with the code. We can query the schema of the
 database to find out the column names and classes of `pems`.  Then the code
 analysis needs to infer the following things:
 
 - `cluster_by = "station"`
-      Comes from analyzing by(), could be multiple columns
+      Comes from analyzing `INDICES` argument to `by()`, could be multiple columns
 - `input_table = "pems"`
       A free variable we're treating as a data frame
 - `input_cols = c("station", "flow2", "occupancy2")`
@@ -55,6 +55,14 @@ analysis needs to infer the following things:
       From analyzing the return value of npbin
 - `output_classes = c("integer", "numeric", "numeric", "numeric", "integer")`
       Need general type inference for this
+
+SQL generation, type inference- we can do these things. They may not be
+fully mature technologies in R, but they're not that far out either. If we
+assume that we have these capabilities then what can we say? Then we don't
+have to worry about generating the SQL for `pems[, c("station", "flow2",
+"occupancy2")]`- it's a different problem. But it matters here, because
+we're generating the SQL for the `CLUSTER BY`, so we have to at least be
+able to compose the SQL at the right place.
 
 
 ## dplyr
