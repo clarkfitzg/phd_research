@@ -15,9 +15,15 @@ What key points do I want to convey in the talk?
 ## PEMS as example
 
 I plan on talking about the PEMS analysis. So I should at least fully
-describe that use case in terms of the automatic parallelization.
-I didn't want to generate the SQL before because it seemed too
-specific. 
+describe that use case in terms of the automatic parallelization. When I
+was working on this in the fall I stopped after the code generation in
+`autoparallel::write_udaf_scripts` because I felt like anything further
+would be too specific, ie make too many assumptions about the program.
+
+To claim that we're "automatically" handling the parallelism based on the R
+code I need to do more- analyze the code to generate and then call the
+lower level `autoparallel::write_udaf_scripts`.
+
 
 Here is the code to analyze:
 
@@ -63,6 +69,35 @@ have to worry about generating the SQL for `pems[, c("station", "flow2",
 "occupancy2")]`- it's a different problem. But it matters here, because
 we're generating the SQL for the `CLUSTER BY`, so we have to at least be
 able to compose the SQL at the right place.
+
+
+## interface
+
+The high level idea is to take R code and run it on data that's stored in
+Hive. In this way we bring the code to the data and operate in place, which
+is a big win. But how do we actually realize this goal? What's the right
+interface?
+
+How much does this generalize? What other classes of computations can we
+handle with the same approach?
+
+- group by: `new_table = by(hive_table, hive_table[, columns], FUN)`
+- vectorized functions: `hive_table$ab = hive_table$a * hive_table$b`
+
+And how do we know that funcs are vectorized? Vectorized funcs are closed
+under composition. So maybe start with a base case of vectorized functions
+in R and infer about it from there. This is pretty similar to the dimension
+inference that Duncan, Nick and I were discussing.
+
+I shouldn't be in the business of generating SQL, because it's
+already commonly done, and hence not research. How do I delegate it to a
+different package? We could let dplyr (or anything else) generate a view,
+and then work off that. Can we infer columns and types for a view? Because
+I need that to generate the code.
+
+Speaking of views, we could allow every intermediate data frame variable in
+an R script to be a view, and then execute just one final query allowing
+whatever optimizations to happen.
 
 
 ## dplyr
