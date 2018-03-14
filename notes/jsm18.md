@@ -22,9 +22,14 @@ fd_shape = by(data = pems[, c("station", "flow2", "occupancy2")]
 
 The code above has the following characteristics: 
 
-- selects columns from table in the database
-- groups by one or more of these column
-- apply an R function that produces a data frame
+1. selects columns from table in the database
+2. groups by one or more columns
+3. apply an R function that produces a data frame
+
+We can slightly generalize this by adding a row filter in the first step,
+ie. analyzing `subset()`. We can generalize it further by letting the
+`data` argument to `by()` be a more general query- then we probably want to
+leverage existing SQL generation tools.
 
 I assume that we start with the the code. We can query the schema of the
 database to find out the column names and classes of `pems`.  Then the code
@@ -47,6 +52,7 @@ Can I leverage [dbplyr](http://dbplyr.tidyverse.org/articles/dbplyr.html)
 to generate the SQL? Let me try:
 
 ```{R}
+
 library(dplyr)
 library(dbplyr)
 con <- DBI::dbConnect(RSQLite::SQLite(), path = ":memory:")
@@ -67,7 +73,7 @@ show_query(groups)
 
 fd_shape = do(groups, head(., 2))
 
-# Doesn't work, because it's computed
+# Doesn't work, presumably because the `do()` causes it to actually be computed
 # show_query(fd_shape)
 ```
 
@@ -117,6 +123,23 @@ Error in rsqlite_send_query(conn@ptr, statement) :
   no such function: UDF_MAX
 ```
 
+Reading through [dbplyr's SQL
+generation](http://dbplyr.tidyverse.org/articles/sql-translation.html#behind-the-scenes).
+I've considered using something like Apache Calcite for an intermediate
+semantic representation. Does dbplyr do this, or is it a direct translation
+from R to SQL? The docs indicate that dbplyr creates an intermediate
+representation building on `tbl_lazy`.
+
+Is it worth it for me to build on this?
+
+## Bigger picture
+
+What's the motivation for all this? R's iterative development style is
+productive and nice. But in the end we may want to run the code on a bigger
+data set, or make it fast somehow. I would like to argue that we need to
+leverage query optimization techniques if all we're doing is computing on
+data frames. But the PEMS one doesn't _need_ any query optimization because
+it's so simple. Hmmm.
 
 
 ## Scratch
