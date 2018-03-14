@@ -31,7 +31,7 @@ model = lm(b ~ d, xy)
 We are free to run the first block of code in an alternative way provided
 that it produces the same data frame `xy` with columns `b` and `d`.
 
-If `table_1` and `table_2` are files then we can potentially stream the
+If `table_1` and `table_2` are files then we can stream the
 `subset()` operations, and thus stay within memory. If these tables are
 coming from a database then we can potentially run both the `subset()` and
 the `merge()` within the databse.

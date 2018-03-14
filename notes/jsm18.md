@@ -5,6 +5,12 @@ section "Statistical Computing on Parallel Architectures". Norm is
 completely open to me talking about whatever I find interesting. Even
 challenges or "this is what we should do".
 
+What key points do I want to convey in the talk?
+
+- When the data gets big and complex we should first try to leverage
+  and integrate with existing technologies rather than reinventing them.
+- We can use R code to directly generate code that integrates with
+  a larger system.
 
 ## PEMS as example
 
@@ -12,6 +18,8 @@ I plan on talking about the PEMS analysis. So I should at least fully
 describe that use case in terms of the automatic parallelization.
 I didn't want to generate the SQL before because it seemed too
 specific. 
+
+Here is the code to analyze:
 
 ```{R}
 fd_shape = by(data = pems[, c("station", "flow2", "occupancy2")]
@@ -31,7 +39,7 @@ ie. analyzing `subset()`. We can generalize it further by letting the
 `data` argument to `by()` be a more general query- then we probably want to
 leverage existing SQL generation tools.
 
-I assume that we start with the the code. We can query the schema of the
+I assume that we start with the code. We can query the schema of the
 database to find out the column names and classes of `pems`.  Then the code
 analysis needs to infer the following things:
 
@@ -47,6 +55,16 @@ analysis needs to infer the following things:
       From analyzing the return value of npbin
 - `output_classes = c("integer", "numeric", "numeric", "numeric", "integer")`
       Need general type inference for this
+
+
+## dplyr
+
+dplyr can do a fair amount of this. It lazily builds up SQL queries and
+fires them off when they're needed. Then the database is free to optimize
+the SQL as it chooses. To execute the above code it needs to
+call `do()` to execute arbitrary R code, and so brings all the data back
+into the managing R session. This model doesn't work if the data won't fit
+in the R session.
 
 Can I leverage [dbplyr](http://dbplyr.tidyverse.org/articles/dbplyr.html)
 to generate the SQL? Let me try:
@@ -140,6 +158,18 @@ data set, or make it fast somehow. I would like to argue that we need to
 leverage query optimization techniques if all we're doing is computing on
 data frames. But the PEMS one doesn't _need_ any query optimization because
 it's so simple. Hmmm.
+
+There are some very similar popular technologies out there:
+- lazy compute graph as in dask
+- data flow as in tensorflow
+- enqueuing operations into a GPU
+- RSlurm package generating code that can run on SLURM
+
+How is what I'm proposing different? All of the above require one to
+program according to some specific model.
+dplyr also requires programming according to a specific model, but then
+generates code that can run on databases as well as data frames in memory.
+
 
 
 ## Scratch
