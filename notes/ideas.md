@@ -1,3 +1,23 @@
+Wed Mar 14 16:34:40 PDT 2018
+
+Idle thought- what if we took the use def chain and removed every
+intermediate variable that was not necessary, ie. not used anywhere else?
+
+```{R}
+# Start with this:
+a = sin(5)
+b = f(a) + 20
+c = lapply(b, g)
+
+# And make it into this:
+c = lapply(f(sin(5) + 20))
+```
+
+This could be useful in collapsing an expression graph into one with a
+minimal number of nodes. In some sense this is the opposite of what Nick
+was talking about with "flattening code".
+
+
 Wed Mar  7 16:14:14 PST 2018
 
 When is it legal to exchange operations to make them faster?

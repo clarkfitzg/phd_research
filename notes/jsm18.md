@@ -9,7 +9,7 @@ What key points do I want to convey in the talk?
 
 - For seriously large data and computations we should try to leverage
   and integrate with existing technologies rather than reinventing them.
-- We can use R code to directly generate code that integrates with
+- We can use R code as the input to directly generate code that integrates with
   a larger system.
 
 ## PEMS as example
@@ -98,6 +98,22 @@ I need that to generate the code.
 Speaking of views, we could allow every intermediate data frame variable in
 an R script to be a view, and then execute just one final query allowing
 whatever optimizations to happen.
+
+Another possible angle to take so that this is not so limited is to say
+that we can generate and analyze base R, data.table, or dplyr. But this
+basically just amounts to syntactic sugar, and needing more code analysis
+capabilities to deal with each different library using NSE.
+
+Then probably I need a different example, for example multiprocessing with
+shared memory to show how to generate a different type of code.
+
+If the table has already been split to the right groups on disk then
+multiprocessing for parallelism makes sense. We can still limit the memory
+footprint.
+
+At this point I'm thinking all I can really do with Hive is the call to
+`by()`. It feels like just a clever interface, not much more.
+For this to be richer I need to be operating on whole scripts.
 
 
 ## dplyr
