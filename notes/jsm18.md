@@ -106,6 +106,9 @@ capabilities to deal with each different library using NSE.
 
 Then probably I need a different example, for example multiprocessing with
 shared memory to show how to generate a different type of code.
+So I can write something like `parallel_by` that works in memory in the
+conventional way. Then how do we decide to use the parallel version? We're
+probably back to the `parallelize.dynamic` approach in @bohringer2013dynamic.
 
 If the table has already been split to the right groups on disk then
 multiprocessing for parallelism makes sense. We can still limit the memory
