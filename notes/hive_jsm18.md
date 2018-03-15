@@ -19,38 +19,32 @@ describe that use case in terms of the automatic parallelization. When I
 was working on this in the fall I stopped after the code generation in
 `autoparallel::write_udaf_scripts` because I felt like anything further
 would be too specific, ie make too many assumptions about the program.
-
 To claim that we're "automatically" handling the parallelism based on the R
 code I need to do more- analyze the code to generate and then call the
 lower level `autoparallel::write_udaf_scripts`.
 
+Suppose that we've created a view or table in Hive called `pems2`. It could
+have come in through any of the following:
 
-Here is the code to analyze:
+- It was already loaded in the database
+- We wrote the SQL by hand
+- dbplyr generated it from R
+
+We would like to evaluate this code in Hive:
 
 ```{R}
-fd_shape = by(data = pems[, c("station", "flow2", "occupancy2")]
-              , INDICES = pems[, "station"]
+fd_shape = by(data = pems2
+              , INDICES = pems2[, "station"]
               , FUN = npbin
               )
 ```
-
-The code above has the following characteristics: 
-
-1. selects columns from table in the database
-2. groups by one or more columns
-3. apply an R function that produces a data frame
-
-We can slightly generalize this by adding a row filter in the first step,
-ie. analyzing `subset()`. We can generalize it further by letting the
-`data` argument to `by()` be a more general query- then we probably want to
-leverage existing SQL generation tools. 
 
 I assume that we start with the code. We can query the schema of the
 database to find out the column names and classes of `pems`.  Then the code
 analysis needs to infer the following things:
 
 - `cluster_by = "station"`
-      Comes from analyzing `INDICES` argument to `by()`, could be multiple columns
+      Easy. Comes from analyzing `INDICES` argument to `by()`, could be multiple columns
 - `input_table = "pems"`
       A free variable we're treating as a data frame
 - `input_cols = c("station", "flow2", "occupancy2")`

@@ -61,6 +61,16 @@
 \newcommand{\Var}{\operatorname{Var}}
 \newcommand{\Cov}{\operatorname{Cov}}
 
+% Thu Mar 15 11:55:49 PDT 2018
+% Just read through this again. Lots of helpful background here for when I
+% go to write up. But I want to be thinking more about questions we can ask
+% from this, ie. how many workers do we need at one time? How "long" is the
+% graph before and after, in the sense of the number of statements?
+% So not just, what is this thing and how we build it, but more of what we
+% can do with it.
+%
+% I could also use a more compelling example. Reading and then joining two
+% data frames is a pretty natural one.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -413,17 +423,16 @@ programming mechanisms \cite{schmidberger2009state}. These needed to be in
 place before any higher level automatic detection could be built and
 function.
 
-Let $k$ be the number of cores on a machine.
-To accelerate code using this single machine the best possible case is if
-we can keep all $k$ cores busy at once. This will happen if there are $nk$
+Let $k$ be the number of cores on a machine. To accelerate code using this
+single machine the best possible case is if we can keep all $k$ cores
+simultaneously busy with useful work. This will happen if there are $nk$
 expressions which can be independently scheduled for some positive integer
-$n$. 
-On a two core machine that script might look something like:
+$n$.  On a two core machine that script might look something like:
 
 \begin{verbatim}
 # These could be run in parallel
-a = long_running_func()
-b = long_running_func()
+a = f()
+b = g()
 \end{verbatim}
 
 The worst possible case is if the second long running computation depends
@@ -431,8 +440,8 @@ on the first, and everything else depends on the second. Then it must run
 in serial so parallelism can't help.
 
 \begin{verbatim}
-a = long_running_func()
-b = long_running_func2(a)  # depends on a
+a = f()
+b = g(a)  # depends on a
 # Now perform many operations on b
 \end{verbatim}
 
