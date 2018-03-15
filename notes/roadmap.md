@@ -12,9 +12,51 @@ There are a few components or layers of complexity to this.
 3. Minimizing data transfer
 4. Revisit intermediate data on worker nodes
 
+This automatic approach differs from the conventional approach to
+parallelism. With the conventional approach the user writes according to an
+API with an associated mental model of how the parallelism should work. It
+assumes that the user knows when the right time to parallelize is. This
+isn't too hard if the slow running code is just an `lapply` and we can
+simply swap in the `parallel::mclapply`. But task parallelism isn't on most
+people's radar.
 
-##
+## Global Variables
 
+## Systems
+
+## Overhead
+
+These are some approximate times for the overhead to do various operations
+related to process parallelism.
+
+Time (seconds)   | Operation
+--------|----------
+10^-4   | eval code on existing worker in same machine
+TODO    | eval code on existing worker in different machine in same server rack
+10^-3   | process fork    
+10^-1   | run `Rscript` from bash
+
+## Locks
+
+Forcing threads to rendezvous can be seen as a form of concurrency lock.
+
+## Data Size
+
+To come up with a reasonable scheduling algorithm we need to estimate the
+time required to evaluate each expression. Possibly more importantly, we also
+need to know how large the result is so that we can estimate how long it
+will take to transfer the result between processes. We can also use the
+data sizes to determine which thread of execution should be the manager and
+which should be the worker.
+
+For example, in the code below 
+
+```{R}
+# Expression 1 produces a large amount of data
+x = rnorm(1e7L)
+y = rnorm(1)
+z = x + y
+```
 
 ## Scratch
 
