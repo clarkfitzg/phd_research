@@ -52,3 +52,17 @@ third = read.table(f, nrows = 5)
 
 # second is the same as third. This means the worker process only changed
 # the state of the forked connection.
+
+
+# Related question: 
+# Does flush() make us wait for the physical write to disk?
+big_data = sample(letters, size = 1e7, replace = TRUE)
+
+f = file("letters.txt", "w")
+t_write = system.time({
+    writeLines(big_data, f)
+})
+t_flush = system.time(flush(f))
+
+# t_flush takes no time, so no. This may just mean that writeLines calls
+# flush() inside.
