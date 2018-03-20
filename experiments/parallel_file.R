@@ -14,15 +14,41 @@
 # they maintain state. If we change that state in another process
 # what happens?
 
-# If this works then I should see a file test.txt containing:
+# If the worker can write then I should see a file test.txt containing:
 # worker
 # manager
 
 f = file("test.txt", "w")
+
+# When I don't flush the output then I don't see "worker"
 parallel::mcparallel(writeLines("worker", f))
+
+# If I do flush the output then I do see "worker"
+parallel::mcparallel({
+    writeLines("worker", f)
+    flush(f)  # close(f) will also flush
+})
+
 parallel::mccollect()
 writeLines("manager", f)
+
+# If I check the file without closing or flushing either of them it's
+# empty. Then when I q() from the manager the file contains "manager". This
+# means that the files are flushed in the background when terminating an R process
+# with q() BUT NOT when terminating an R process as in `mcparallel`.
 close(f)
 
-# I only saw the lines written by the manager. So they don't actually
-# share the connection.
+# How about for reading?
+
+write.table(letters, "letters.txt")
+f = file("letters.txt", "r")
+first = read.table(f, nrows = 5)
+
+parallel::mcparallel(read.table(f, nrows = 5))
+
+out = parallel::mccollect()
+second = out[[1]]
+third = read.table(f, nrows = 5)
+
+# second is the same as third. This means the worker process only changed
+# the state of the forked connection.
