@@ -52,10 +52,31 @@ npbin = function(occupancy, flow, station)
 cfg = rstatic::to_cfg(npbin)
 
 tenv = typesys::TypeEnvironment$new(
-    "dyncut" = Numeric ~ Numeric
-    #, "cut" = c(Numeric, Numeric, Logical)
+    dyncut = Numeric ~ Numeric
+    , cut = c(Numeric, Numeric, Logical) ~ Integer
+    , split = x ~ ListType
     , quantify = TRUE
 )
 
 
 infer_dm(cfg, tenv)
+
+
+# For Nick:
+
+# 1. Question: How to use vector? I want to say something like:
+#    "dyncut" = NumericVector ~ NumericVector
+#   But I notice part on vectors is commented out of vignette
+
+# 2. Feedback: Useful example in vignette would be:
+#    "length" = x ~ Integer
+
+# 3. Feedback: I tend to think of the output as coming on the LHS of ~, so
+#   I was writing it backwards initially.
+
+# 4. Feedback (low priority): 
+#   Error in formula_to_type.name(x[[3]]) :  Unrecognized type 'List'.
+#   Would be nice something along the lines of:
+#       Valid types include: Logical, Integer, etc.
+
+
