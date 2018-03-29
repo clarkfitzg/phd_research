@@ -51,10 +51,14 @@ npbin = function(occupancy, flow, station)
 
 cfg = rstatic::to_cfg(npbin)
 
+# How do I specify a list of numeric vectors?
+# This doesn't work
+ListType(NumericType())
+
 tenv = typesys::TypeEnvironment$new(
     dyncut = Numeric ~ Numeric
     , cut = c(Numeric, Numeric, Logical) ~ Integer
-    , split = x ~ ListType
+    , split = FunctionType(NumericType(), ListType(NumericType()))
     , quantify = TRUE
 )
 
@@ -64,19 +68,23 @@ infer_dm(cfg, tenv)
 
 # For Nick:
 
-# 1. Question: How to use vector? I want to say something like:
+# Question: How to use vector? I want to say something like:
 #    "dyncut" = NumericVector ~ NumericVector
 #   But I notice part on vectors is commented out of vignette
 
-# 2. Feedback: Useful example in vignette would be:
+# Question: How to use List? I want to express that `split` takes in a
+# vector of type t and outputs a list of vectors of type t.
+
+# Feedback: Useful example in vignette would be:
 #    "length" = x ~ Integer
 
-# 3. Feedback: I tend to think of the output as coming on the LHS of ~, so
+# Feedback: I tend to think of the output / response as coming on the LHS of ~, so
 #   I was writing it backwards initially.
 
-# 4. Feedback (low priority): 
+# Feedback: The ~ notation is convenient, does it work for all possible
+# types? When I try it with list I see something like:
 #   Error in formula_to_type.name(x[[3]]) :  Unrecognized type 'List'.
-#   Would be nice something along the lines of:
+# Would be nice something along the lines of:
 #       Valid types include: Logical, Integer, etc.
 
 
