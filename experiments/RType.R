@@ -52,8 +52,9 @@ npbin = function(occupancy, flow, station)
 cfg = rstatic::to_cfg(npbin)
 
 tenv = typesys::TypeEnvironment$new(
-"dyncut" = VectorType(NumericType())
-, quantify = TRUE
+    "dyncut" = Numeric ~ Numeric
+    #, "cut" = c(Numeric, Numeric, Logical)
+    , quantify = TRUE
 )
 
 
