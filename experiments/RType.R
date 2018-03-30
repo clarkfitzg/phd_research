@@ -53,27 +53,41 @@ cfg = rstatic::to_cfg(npbin)
 
 # How do I specify a list of numeric vectors?
 # This doesn't work
-ListType(NumericType())
+ListType(list(NumericType()))
+
+
+# This is me attempting to define type inference behavior for the
+# functions used in npbin:
 
 tenv = typesys::TypeEnvironment$new(
     dyncut = Numeric ~ Numeric
     , cut = c(Numeric, Numeric, Logical) ~ Integer
-    , split = FunctionType(NumericType(), ListType(NumericType()))
+    #, split = Numeric ~ ListType()
+    #, split = a ~ List(a)
+    #, split = Numeric ~ Numeric
     , quantify = TRUE
+    , mean = Numeric ~ Numeric
+    , sd = Numeric ~ Numeric
+    , length = x ~ Integer
 )
 
 
 infer_dm(cfg, tenv)
 
 
-# For Nick:
+# Talking to Nick
+# Thu Mar 29 17:01:17 PDT 2018
 
 # Question: How to use vector? I want to say something like:
 #    "dyncut" = NumericVector ~ NumericVector
 #   But I notice part on vectors is commented out of vignette
 
+# Ans: Changing to all vectors
+
 # Question: How to use List? I want to express that `split` takes in a
 # vector of type t and outputs a list of vectors of type t.
+
+# Ans: Nick's working on lists now
 
 # Feedback: Useful example in vignette would be:
 #    "length" = x ~ Integer
@@ -86,5 +100,3 @@ infer_dm(cfg, tenv)
 #   Error in formula_to_type.name(x[[3]]) :  Unrecognized type 'List'.
 # Would be nice something along the lines of:
 #       Valid types include: Logical, Integer, etc.
-
-
