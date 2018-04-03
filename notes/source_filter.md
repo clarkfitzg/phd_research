@@ -15,7 +15,7 @@ or more data frames followed by computations in R. Then we can arrange to
 filter the data frames before loading the data into R.
 
 
-## Illustrative Example
+## Hypothetical Example
 
 Here's some hypothetical code that Duncan and I were talking about:
 
@@ -31,7 +31,7 @@ model = lm(b ~ d, xy)
 We are free to run the first block of code in an alternative way provided
 that it produces the same data frame `xy` with columns `b` and `d`.
 
-If `table_1` and `table_2` are files then we can potentially stream the
+If `table_1` and `table_2` are files then we can stream the
 `subset()` operations, and thus stay within memory. If these tables are
 coming from a database then we can potentially run both the `subset()` and
 the `merge()` within the databse.
@@ -91,6 +91,30 @@ Actually might be useful here to use Nick's idea of "flattening" the code,
 since then I don't have to deal with nesting.
 
 
+### Ryan's example
+
+Today (12 Mar 18) Ryan Peek showed me a use case for source filtering
+on genomic data. His analysis consists of the following steps:
+
+- read in a 155K x 1141 flat text file of sequencing data
+- transform it using dplyr (mostly column selection, renaming)
+- joins along with some other metadata
+- produce a much smaller table for plotting, ie. 700 x 2 or something like
+  that
+
+One difficult part in the transformation is pivoting the table from wide to
+long.
+
+After reading in the raw text data he saves it in a binary format using the
+fst package so that it will be faster to load for subsequent iterative
+development.
+
+One reason his use case is interesting is because the size of the data
+pushes R near the edge of what it can handle in memory. Then he has to
+switch to a completely different approach once it exceeds memory.
+
+
+
 ### Scratch
 
 Fri Mar  9 15:13:15 PST 2018
@@ -119,3 +143,4 @@ Related idea: data virtualization.
 Idea: list different ways to integrate data from two sources in one R computation.
 
 Idea: row / column filters in iotools
+

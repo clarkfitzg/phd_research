@@ -1,46 +1,51 @@
-Please write a 2-3 paragraph SUMMARY of your fellowship activities and major accomplishments within the last year.
+# NSF GRFP Fellowship Report
 
+## 2017-18 Richard Clark Fitzgerald
 
-This should be written for the public, and should address both the Intellectual Merit and the Broader Impact of your work.
+### Intellectual Merit
 
+My research focuses on code analysis to increase the performance
+of the R language for statistical computing. I increase the performance by
+automating parallel code generation so that the computer(s) can execute
+multiple instructions simultaneously. This allows
+researchers to scale up analyses to ask new questions on larger data sets.
+The current state of the art is for _users_ to modify their code when they
+need to run code in parallel. I'm working on a _system_ capable of doing
+this modification for them automatically. This requires careful analysis of
+the language as an object using metaprogramming techniques. With such a
+system a user can take potentially sophisticated custom data analysis code
+written in R and generate correct and efficient parallel code specialized
+for different platforms. 
 
-Enter the summary below (1000-5000 characters) OR attach a one page document (1 page limit).
+In June 2017 I passed my PhD oral qualifying exam by presenting a talk
+titled "Parallel Computing Through Code Analysis". I described a motivating
+application to traffic engineering of a qualitatively new kind of analysis
+that requires processing 3 billion data points. In the fall I completed
+this analysis, demonstrating how to generate code to efficiently combine
+several powerful technologies. I'm currently focusing on how to generalize the
+code analysis techniques. Along the way I've learned much about parallel
+computing and was able to contribute to an article "The R Language: A
+Powerful Tool for Taming Big Data" which will be published in the
+"Encyclopedia of Big Data Technologies" this year.
 
-Broader Impact
+### Broader Impacts
 
-- TA for 2 classes
-- 20 blog posts
-- tutor veterans center
-- organized student seminar in Fall, student seminar now in 5th quarter
-- SWC in Jan with Easton White, instructor training in March
+I've made my results available to a broader audience through software and a
+blog. This past year I've written about both basic and research topics in
+data intensive computing in 25 posts in my blog "Data Programming" which
+can be found at http://clarkfitzg.github.io/. I've created prototype
+software which is available publicly in the `autoparallel` package at
+https://github.com/clarkfitzg/autoparallel.
 
-
-Intellectual Merit
-
-- Pems data analysis, shared on dash.
-- Industry consulting data analysis
-- Metaprogramming and code analysis software
-- Springer paper with Matloff and Yancey  Encyclopedia of Big Data Technologies
-
-
-I want to highlight two results:
-
-__R in Hive__ `write_udaf_scripts` provides a massive speedup
-with much less code complexity for two particular classes of problems with
-large data:
-
-- Applying a vectorized R function (one output for each row)
-- Reduction based on grouping by one column (one output for each group)
-
-This uses standard interfaces to allow R to process streaming data.  It
-mainly integrates existing technology in a useful way that's compatible
-with R's computational model, so it isn't really "new". This doesn't
-analyze code, but it does generate code. The PEMS analysis demonstrates the
-practical value of this.
-
-
-__Column Use Inference__ `read_faster` analyzes code to
-find the set of columns that are used and transforms the code to a version
-that only reads and operates on this set of columns.
-
-
+During the last year I've volunteered as a tutor, seminar organizer, and
+programming instructor. 2017 marked the opening of the new UC Davis
+Veterans Success Center. I continue to work closely with the coordinator, Earl
+Raehsler, as a weekly tutor in mathematics and statistics for fellow student
+veterans. Last fall I took another turn as the organizer of the
+statistics student seminar that a fellow student and I initiated in 2016.
+We successfully transitioned the organizer role between students, and the
+seminar is now in its 5th quarter. In 2018 I attended a 2 day Software
+Carpentry (SWC) instructor training to become a certified instructor.
+SWC's mission is to "Teach basic lab skills for research computing". I
+co-instructed a 2 day workshop catered towards graduate students in the
+life sciences, and look forward to leading more workshops in the future.
