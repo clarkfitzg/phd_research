@@ -21,3 +21,18 @@ len = sort(len)
 head(len[len > 2])
 
 # complete.cases is an appealing one- it only calls .External
+
+
+library(CodeDepends)
+
+# Ignoring the following issues for the moment:
+#
+# - symbols which aren't functions
+# - functions defined in the bodies of functions
+
+fun = stats::dgamma
+pkg = "package:stats"
+
+func_names = names(getInputs(body(fun))@functions)
+
+
