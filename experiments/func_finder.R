@@ -23,7 +23,7 @@ len = sapply(funs, function(x) length(body(get(x, ns))))
 
 len = sort(len)
 
-head(len[len > 3])
+tail(len[len > 3])
 
 
 
@@ -100,12 +100,13 @@ used_funcs = function(fun, pkg)
 # ad hoc tests
 ############################################################
 
-names(getInputs(body(dgamma))@functions)
-
-f1 = used_funcs("dgamma", "stats")
-
-
 names(getInputs(body(mad))@functions)
 
-# Currently failing because it doesn't find "median"
 f2 = used_funcs("mad", "stats")
+
+
+names(getInputs(body(arima))@functions)
+
+# Interesting. What is this function?
+# 27           %+%<-    <NA>
+f1 = used_funcs("arima", "stats")
