@@ -4,7 +4,7 @@
 # the name and package of all other functions that it calls. Then I can
 # call this recursively.
 #
-# It appears that I need to be looking through the namespace internals.
+# There are several namespace related functions that make this easy.
 
 # Which functions in the stats package have the fewest expressions?
 
@@ -60,10 +60,23 @@ package_funcs = function(pkg_name)
 
 }
 
+
 fun = stats::dgamma
 pkg = "stats"
 
 func_names = names(getInputs(body(fun))@functions)
 
+base_funcs = data.frame(name = names(getNamespace("base")))
+base_funcs$package = "base"
 
-common = intersect(func_names, names(ns))
+all_funcs = package_funcs("stats")
+
+# Ideally I'd like to do some kind of chained lookups here. I can probably
+# accomplish this with the right kind of joins.
+
+# TODO: Pop these from func_names
+common = intersect(func_names, all_funcs$name)
+
+keepers = func_names %in% base_funcs$name
+
+resolved = base_funcs[base_funcs$name %in% func_names, ]
