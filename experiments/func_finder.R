@@ -8,21 +8,23 @@
 
 # Which functions in the stats package have the fewest expressions?
 
-p = "package:stats"
+p = "stats"
 
+ns = getNamespace(p)
 
-funs = sapply(names, function(x) is.function(get(x, p)))
+funs = sapply(ns, is.function)
 
-funs = names[funs]
+funs = names(funs[funs])
 
-len = sapply(funs, function(x) length(body(get(x, p))))
+len = sapply(funs, function(x) length(body(get(x, ns))))
 
 len = sort(len)
 
-head(len[len > 2])
+head(len[len > 3])
 
-# complete.cases is an appealing one- it only calls .External
 
+
+############################################################
 
 library(CodeDepends)
 
@@ -61,22 +63,38 @@ package_funcs = function(pkg_name)
 }
 
 
-fun = stats::dgamma
-pkg = "stats"
+# Which functions in which packages does fun use directly?
+resolve_names = function(fun, pkg)
+{
 
-func_names = names(getInputs(body(fun))@functions)
+    func_names = names(getInputs(body(fun))@functions)
 
-base_funcs = data.frame(name = names(getNamespace("base")))
-base_funcs$package = "base"
+    base_funcs = data.frame(name = names(getNamespace("base")))
+    base_funcs$package = "base"
 
-all_funcs = package_funcs("stats")
+    all_funcs = package_funcs("stats")
 
-# Ideally I'd like to do some kind of chained lookups here. I can probably
-# accomplish this with the right kind of joins.
+    # Ideally I'd like to do some kind of chained lookups here. I can probably
+    # accomplish this with the right kind of joins.
 
-# TODO: Pop these from func_names
-common = intersect(func_names, all_funcs$name)
+    # TODO: Pop these from func_names
+    common = intersect(func_names, all_funcs$name)
 
-keepers = func_names %in% base_funcs$name
+    keepers = func_names %in% base_funcs$name
 
-resolved = base_funcs[base_funcs$name %in% func_names, ]
+    resolved = base_funcs[base_funcs$name %in% func_names, ]
+}
+
+
+# ad hoc tests
+############################################################
+
+names(getInputs(body(dgamma))@functions)
+
+f1 = resolve_names("dgamma", "stats")
+
+
+names(getInputs(body(mad))@functions)
+
+# Currently failing because it doesn't find "median"
+f2 = resolve_names("mad", "stats")
