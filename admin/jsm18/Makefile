@@ -1,2 +1,2 @@
-fitzgerald_awards.pdf: awards.md
+%.pdf: %.md
 	pandoc -s $< -o $@
