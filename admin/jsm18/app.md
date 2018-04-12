@@ -2,11 +2,11 @@ Please give a brief description of why it is important that you attend this
 meeting:
 
 UC Davis Professor Norm Matloff invited me to present my research in a
-session titled "Statistical Computing on Parallel Architectures".  JSM (the
-Joint Statistical Meetings) is the largest gathering of statisticians and
-data scientists held in North America. This will be my first time
+session titled "Statistical Computing on Parallel Architectures" at JSM (the
+Joint Statistical Meetings). JSM is the largest gathering of statisticians and
+data scientists held in North America, and this will be my first time
 attending.  I plan to use this opportunity to connect and share ideas with
-the broader community of researchers focused on my specialized area of
+the larger community of researchers focused on my specialized area of
 parallel statistical computing.
 
 
