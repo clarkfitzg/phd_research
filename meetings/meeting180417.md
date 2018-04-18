@@ -21,6 +21,7 @@ as many different types of parallel code as I can. Next I need to add:
 - lapply / vectorized embarrassingly parallel nodes
 - Nested expressions, down to literals and symbols
 - for loops
+- Any other types that I can think of! pipeline?
 
 The scheduling is a different problem altogether- the goal of this parallel
 data structure is to be orthogonal to the scheduler, so that we can plug in
