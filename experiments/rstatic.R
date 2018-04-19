@@ -67,14 +67,58 @@ f()
 # No.
 #node0[[c(1, 4)]]
 
+# Can I add an attribute?
+# Yes. Good.
+node0[[1]]$read
+
+attr(node0[[1]]$read, "time") = 500
+
+attr(node0[[1]]$read, "time")
+
+# Will the attribute be there after serialization?
+# Yes. Good.
+saveRDS(node0, "node0.rds")
+
+node0_fromdisk = readRDS("node0.rds")
+
+attr(node0_fromdisk[[1]]$read, "time")
+
+# How will I represent an edge between arbitrary ASTNode objects?
+# First of all, it should be possible, because it's implemented as a 
+# tree. Let's check the implementation for $parent
+
+# For example, suppose I want an edge from statement 1 to 3.
+#add_edge = function(from, to, ...) list(from = from, to = to, ...)
+e = list(from = node0[[1]], to = node0[[3]], type = "def-use", value = "x")
+
+# Can we go in and modify the AST and preserve the graph?
+# Basically we would need an update method for each AST node.
+# I need to read the R6 docs to get a better idea of the programming model
+# here.
+
+# How do I replace this function with a new one?
+node0[[3]]$fn
+
+# Doesn't work
+#node0[[3]]$fn$name = "foo"
+
+
+# This shouldn't work, because it doesn't make any sense. Could potentially
+# cause trouble if we go to navigate the tree.
+childfunc = Symbol$new("min", parent = node0[[3]]$fn)
+
+# I think the missing causes the issue here.
+node_apply(node0, print)
+
+
+
+# What's this namespace? Presumably to identify symbols inside a namespace
 node0[[3]]$fn$namespace
-
-
 
 # It might be possible to do algebra on these things. Maybe.
 node0$body[[3]]$args[[1]]$args
 
-# Might be good to have a missing arg object
+# Suggestion- represent missing arg object
 node0$body[[5]]$args[[2]]$name
 
 
