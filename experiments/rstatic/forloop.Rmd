@@ -1,0 +1,52 @@
+Mon Apr 23 09:15:19 PDT 2018
+
+Working off this commit in rstatic:
+
+```
+commit d89d7572f8a375c97ecc5bfc59b40db8cf5d09f9
+Author: Nick Ulle <nick.ulle@gmail.com>
+Date:   Mon Apr 23 09:11:16 2018 -0700
+
+    WIP: More fixes for data frames IR.
+```
+
+I'm interested in identifying parallelism in for loops. This mean finding
+read after write dependency, since this means they can't be parallelized.
+`CodeAnalysis/explorations/loop_to_apply` has some existing work here.
+Here's some examples from there:
+
+```{R}
+
+library(rstatic)
+
+# quote_blocks fails
+forloop = quote_ast(
+    for(i in seq_along(x)) {
+        ans[i] = f(x[i])
+    }
+)
+
+e = quote_blocks({
+    a = f(x)
+    b = g(a)
+    c = h(g(a), i(b))
+}, ssa = FALSE)
+
+e2 = as.data.frame(e)
+
+to_blocks(forloop)
+
+to_blocks(e)
+
+
+```
+
+Here's an example of one with true dependence, ie. not parallelizable:
+
+```{R}
+estimate = 10
+for(i in 1:n) {
+   estimate = update(estimate)
+}
+```
+
