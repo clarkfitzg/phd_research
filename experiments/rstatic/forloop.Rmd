@@ -10,6 +10,22 @@ Date:   Mon Apr 23 09:11:16 2018 -0700
     WIP: More fixes for data frames IR.
 ```
 
+Does this split up sub expressions as we discussed?
+
+Doesn't look like it.
+
+```{R}
+
+e = quote_blocks({
+    x = rnorm(10)
+    y = f(g(x, x2, h(x3)), x4, f5(x5))
+}, ssa = FALSE)
+
+e = as.data.frame(e)
+
+```
+
+
 I'm interested in identifying parallelism in for loops. This mean finding
 read after write dependency, since this means they can't be parallelized.
 `CodeAnalysis/explorations/loop_to_apply` has some existing work here.
@@ -19,27 +35,28 @@ Here's some examples from there:
 
 library(rstatic)
 
-# quote_blocks fails
-forloop = quote_ast(
+forloop = quote_blocks(
     for(i in seq_along(x)) {
         ans[i] = f(x[i])
     }
-)
+, ssa = FALSE)
 
-e = quote_blocks({
-    a = f(x)
-    b = g(a)
-    c = h(g(a), i(b))
-}, ssa = FALSE)
+f = as.data.frame(forloop)
 
-e2 = as.data.frame(e)
+# So the labels refer to the subexpressions to execute
+f[1, 1][[1]]$body
 
-to_blocks(forloop)
+f[3, 1][[1]]$read
 
-to_blocks(e)
-
+f[3, 1][[1]]$write
 
 ```
+
+# Data dependency
+
+SSA should help identifying these cases.
+
+## RAW Read After Write
 
 Here's an example of one with true dependence, ie. not parallelizable:
 
@@ -50,3 +67,12 @@ for(i in 1:n) {
 }
 ```
 
+## WAW Write After Write
+
+```{R}
+for(i in 1:n) {
+   tmp = f(i)
+   ans[i] = tmp
+   tmp = 20
+}
+```
