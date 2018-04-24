@@ -89,7 +89,9 @@ attr(node0_fromdisk[[1]]$read, "time")
 
 # For example, suppose I want an edge from statement 1 to 3.
 #add_edge = function(from, to, ...) list(from = from, to = to, ...)
-e = list(from = node0[[1]], to = node0[[3]], type = "def-use", value = "x")
+
+e = list(from = node0[[1]], to = node0[[3]]$args, type = "def-use", value = "x")
+
 
 # Can we go in and modify the AST and preserve the graph?
 # Basically we would need an update method for each AST node.
@@ -134,3 +136,5 @@ forloop = quote_ast(
 forloop$ivar
 
 forloop$body$body
+
+
