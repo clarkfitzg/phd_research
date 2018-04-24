@@ -61,10 +61,12 @@ SSA should help identifying these cases.
 Here's an example of one with true dependence, ie. not parallelizable:
 
 ```{R}
+
 estimate = 10
 for(i in 1:n) {
    estimate = update(estimate)
 }
+
 ```
 
 ## WAW Write After Write
@@ -76,3 +78,32 @@ for(i in 1:n) {
    tmp = 20
 }
 ```
+
+Basic heuristic: If the LHS of the assignment, say `ans[i]`, is never used
+on the RHS, then we should be able to parallelize the loop. Probably most
+cases where we can make it parallel are when the code uses an index from
+the loop.
+
+The following is a certain "anti idiom" for growing a vector in R. The
+problem is a lack of preallocation. If we apply the basic heuristic above
+then we can't show that this loop is parallel, when in fact it's the same
+as the most basic `ans = sapply(f, x)`.
+
+```{R}
+ans = numeric()
+for(i in 1:n) {
+    tmp = f(x[i])
+    ans = c(ans, tmp)
+}
+```
+
+Since it's an "anti idiom" maybe we can wait on handling it. Instead we
+could handle this:
+
+ans = numeric()
+for(i in 1:n) {
+    tmp = f(x[i])
+    ans[i] = tmp
+}
+
+
