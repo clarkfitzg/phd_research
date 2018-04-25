@@ -41,6 +41,9 @@ expect_false(
 )
 
 
+# Not using too much of rstatic here- it wouldn't be a big deal to write my
+# own.
+
 #' Returns a character vector of all unique symbols used in children of ast
 findvars = function(ast)
 {
@@ -55,8 +58,45 @@ findvars = function(ast)
 }
 
 
-# Feedback for Nick- would be nice to remove the replacement function call
-# out of here, just put it in the $read $write fields.
+# Feedback for Nick- I actually prefer the way R's AST represents this.
+# rstatic does the dispatching that makes it more difficult to do what I
+# want:
+
+e = quote(x[1] <- f(4))
+# > a[[1]]
+# `<-`
+# > a[[2]]
+# x[1]
+# > a[[3]]
+# f(4)
+
+# How difficult is it to apply some of rstatic's extraction operators to
+# objects in the language?
+`$.<-` = function(x, name)
+{
+    i = switch(name, write = 2, read = 3)
+    x[[i]]
+}
+
+e[[2]]
+
+# fails
+e$write
+
+# TRUE
+class(e) == "<-"
+
+# Explicitly assign
+class(e) = "<-"
+
+# Now it works
+e$write
+
+
+
+
+
+
 expect_equal(c("[[", "f", "i", "x"), findvars(no1$read$args[[3]]))
 
 
@@ -68,7 +108,8 @@ flow_dep = function(loopbody, ivars = "i")
     if(is(loopbody, "ASTNode"))
         loopbody = list(loopbody)
 
-    findvars
+    reads = character()
+    writes = character()
 }
 
 
