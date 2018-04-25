@@ -7,7 +7,14 @@ library(testthat)
 
 
 no1 = quote_ast(ans[[i]] <- f(x[[i]]))
+no2 = quote_ast({
+    # Reads and writes a local variable
+    fi = f(i)
+    print(fi)
+})
 yes1 = quote_ast(theta <- update(theta))
+yes2 = quote_ast({tmp <- update(theta)
+    theta <- tmp})$body
 
 
 #' Returns TRUE if varname is used in children of ast, and FALSE otherwise
@@ -34,25 +41,39 @@ expect_false(
 )
 
 
-loopbody = yes1
+#' Returns a character vector of all unique symbols used in children of ast
+findvars = function(ast)
+{
+    found = character()
+    finder = function(node){
+        if(is(node, "Symbol")){
+            found <<- c(found, node$basename)
+        }
+    }
+    astTraverse(ast, finder)
+    sort(unique(found))
+}
+
+
+# Feedback for Nick- would be nice to remove the replacement function call
+# out of here, just put it in the $read $write fields.
+expect_equal(c("[[", "f", "i", "x"), findvars(no1$read$args[[3]]))
+
 
 #' Returns TRUE if it finds a flow dependency in the loop body, and FALSE
 #' otherwise.
 flow_dep = function(loopbody, ivars = "i")
 {
+    # Single statements
+    if(is(loopbody, "ASTNode"))
+        loopbody = list(loopbody)
 
-    # Would be nice to just do nothing when we call to_ast() on something
-    # that's already an ast.
-    if(!is(ast, "ASTNode")){
-        ast = to_ast(loopbody)
-    }
-
-assigned_to = ast$write$basename
-
-appears(assigned_to, ast$read)
-
-
-
+    findvars
 }
 
-flow_dep
+
+expect_false(flow_dep(no1))
+expect_false(flow_dep(no2))
+expect_true(flow_dep(yes1))
+expect_true(flow_dep(yes2))
+
