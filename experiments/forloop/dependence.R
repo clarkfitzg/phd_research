@@ -44,17 +44,17 @@ expect_false(
 # Not using too much of rstatic here- it wouldn't be a big deal to write my
 # own.
 
-#' Returns a character vector of all unique symbols used in children of ast
+#' Returns a character vector of all symbols used in children of ast
 findvars = function(ast)
 {
     found = character()
     finder = function(node){
         if(is(node, "Symbol")){
-            found <<- c(found, node$basename)
+            found <<- union(found, node$basename)
         }
     }
     astTraverse(ast, finder)
-    sort(unique(found))
+    sort(found)
 }
 
 
