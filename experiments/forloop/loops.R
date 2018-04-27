@@ -1,48 +1,66 @@
-loop1 = quote(
+loops = list(
+
+
+list(loop = quote(
 for(i in seq_along(x)) {
     ans[[i]] = f(x[[i]])
 })
-attr(loop1, "parallel") = TRUE
-attr(loop1, "info") = "rewrote lapply"
+, parallel = TRUE
+, info = "rewrote lapply"
+)
 
+, list(loop = quote(
+for(i in x) {
+   f(i)
+})
+, parallel = TRUE
+, info = "Loop is pointless unless f is not a pure function. If it's not pure then we need to decide if it can be parallelized."
+)
 
-loop2 = quote(
+, list(loop = quote(
+for(i in seq(along = x)){
+   f(x[i])
+}), parallel = TRUE
+, info = "Similar, f() must have a side effect."
+)
+
+, list(loop = quote(
 for(i in x) {
     ans = f(i)
 })
-attr(loop2, "parallel") = TRUE
-attr(loop2, "info") = "loop is pointless, but order of execution matters"
+, parallel = TRUE
+, info = "loop is pointless, but order of execution matters"
+)
 
-
-loop3 = quote(
+, list(loop = quote(
 for(i in x) {
     ii = i %% k
     ans[ii] = f(i)
 })
-attr(loop3, "parallel") = FALSE
-attr(loop3, "info") = "assigns to computed index, so order of execution matters"
+, parallel = FALSE
+, info = "assigns to computed index, so order of execution matters"
+)
 
-
-loop4 = quote(
+, list(loop = quote(
 for(i in seq_along(x)) {
     x[[i]] = f(x[[i]])
 })
-attr(loop4, "parallel") = TRUE
-attr(loop4, "info") = "Each iteration updates in place. May be a reasonable
-    approach if x is huge."
+, parallel = TRUE
+, info = "Each iteration updates in place. May be a reasonable approach if x is huge."
+)
 
-
-loop5 = quote(
+, list(loop = quote(
 for(i in x) {
     tmp1 = f1(i)
     tmp2 = f2(i)
     ans[i] = g(tmp1, tmp2)
 })
-attr(loop5, "parallel") = TRUE
-attr(loop5, "info") = "Uses temporary variables."
+, parallel = TRUE
+, info = "Uses temporary variables."
+)
 
 
-loop6 = quote(
+, list(loop = quote(
 for(i in 1:p){
     for(j in i:p){
         yij = X[i, j] * d[i] * d[j]
@@ -50,22 +68,66 @@ for(i in 1:p){
         Y[j, i] = yij
     }
 })
-attr(loop6, "parallel") = TRUE
-attr(loop6, "info") = "Nested loop updating symmetric matrix. Hard."
+, parallel = TRUE
+, info = "Nested loop updating symmetric matrix. Hard."
+)
 
 
-loop7 = quote(
+, list(loop = quote(
 for(i in 1:n) {
    estimate = estimate - alpha * gradient(estimate)
 })
-attr(loop7, "parallel") = FALSE
-attr(loop7, "info") = "Iterative gradient descent"
+, parallel = FALSE
+, info = "Iterative gradient descent"
+)
 
 
-loop8 = quote(
+, list(loop = quote(
 for(i in x) {
     ii = i %% k
     ans[ii] = f(ii)
 })
-attr(loop8, "parallel") = TRUE
-attr(loop8, "info") = "Updates based on a computed index. Weird and hard."
+, parallel = TRUE
+, info = "Updates based on a computed index. Weird and hard."
+)
+
+, list(loop = quote(
+for(i in seq(along = x)){
+   f(x[i], y[i])   
+})
+, parallel = TRUE
+, info = "like mapply, f() should have side effects."
+)
+
+, list(loop = quote(
+for(i in seq(along = x)[-1]) {
+   j = i-1
+   f(x[i], y[j])   
+})
+, parallel = TRUE
+, info = "mapply offset by one, f() with side effects."
+)
+
+, list(loop = quote(
+for(i in seq(along = x)[-1]) {
+   j = i-1
+   ans[i] = f(x[i], y[j])   
+})
+, parallel = TRUE
+, info = "An 'offset' mapply that saves the result"
+)
+
+, list(loop = quote(
+for(i in seq(along = x)[-1]) {
+   j = i-1
+   ans[i] = f(x[i], y[j], ans[j])   
+}
+)
+, parallel = FALSE
+, info = "read after write because of ans[i] = f(..., ans[i-1]), true dependence."
+)
+
+
+
+# Close big list
+)
