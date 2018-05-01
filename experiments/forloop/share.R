@@ -14,25 +14,47 @@ bfile = "x.bin"
 dfile = "x.bin.desc"
 
 x = big.matrix(n, p, backingfile = bfile, descriptorfile = dfile)
+dx = describe(x)
 
 cls = makeCluster(nworkers, "PSOCK")
 
 # Prepare the workers
 clusterEvalQ(cls, library(bigmemory))
-clusterExport(cls, c("p", "bfile", "dfile"))
-clusterEvalQ(cls, library(bigmemory))
+clusterExport(cls, c("p", "bfile", "dfile", "dx"))
 
-clusterEvalQ(cls, x <- attach.big.matrix(dfile))
+clusterEvalQ(cls, {x <- attach.big.matrix(dfile)
+    NULL})
 
 
 work = function(idx)
 {
     for(i in idx){
         for(j in seq(p))
-            x[i, j] = i*(p-1) + j
+            x[i, j] = (i-1)*p + j
     }
 }
 
 indices = splitIndices(n, nworkers)
 
 parLapply(cls, indices, work)
+
+# Seems to work fine.
+x2 = as.matrix(x)
+
+# How about if I do it from forked processes?
+
+stopCluster(cls)
+
+work3 = function(idx)
+{
+    for(i in idx){
+        for(j in seq(p))
+            x[i, j] = 10*(i-1)*p + j
+    }
+}
+
+mclapply(indices, work3)
+
+# Yes, also works fine. So there's no issue with the inherited data
+# structures.
+x3 = as.matrix(x)
