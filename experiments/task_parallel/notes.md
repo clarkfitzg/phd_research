@@ -18,3 +18,13 @@ complexity when all I'm trying to do is static scheduling.
 Maybe the easiest way forward is to just use sockets directly. One
 advantage of this is that I can open and close the sockets between the
 workers as I need them.
+
+Here I'll implement a task parallel program for this script using sockets:
+
+```{r}
+datadir <- '~/data'            # A worker 1
+x <- paste0(datadir, 'x.csv')  # B worker 1
+y <- paste0(datadir, 'y.csv')  # C worker 2
+xy <- paste0(x, y)             # D worker 1
+print("all done")              # E worker 2
+```
