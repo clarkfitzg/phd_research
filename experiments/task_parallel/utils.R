@@ -10,7 +10,7 @@ PORTS = matrix(starting_port + seq(nworkers * nworkers)
 #' Wrapper socketConnection
 #'
 #' Try to connect on a socket even if the server hasn't opened it yet.
-read_socket = function(..., sleeptime = 1)
+from_socket = function(..., sleeptime = 1)
 {
     while(TRUE){
         try({
