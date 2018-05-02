@@ -1,3 +1,3 @@
 all:
-	Rscript --slave worker1.R &
-	Rscript --slave worker2.R
+	Rscript --vanilla worker1.R &
+	Rscript --vanilla worker2.R
