@@ -16,7 +16,7 @@ from_socket = function(..., sleeptime = 1)
         try({
             socket = socketConnection(...)
             break
-        })
+        }, silent = TRUE)
         Sys.sleep(sleeptime)
     }
     socket
