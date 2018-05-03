@@ -57,12 +57,18 @@ run first, which causes the two servers to collide and both fail. Then the
 client should also fail. Or the next time the client may run first, in
 which case it connects to the previous server.
 
+Yes, confirmed it. If I start fresh with no R processes running then I only
+see the error from the client, which I expect because I didn't synchronize
+them. Then I don't get my shell prompt back because the server is still
+listening, waiting for timeout.
+
 For whatever reason it's not behaving the same on my Mac.
 
-There's also a simple way to get around all of these issues. On every
+~~There's also a simple way to get around all of these issues. On every
 worker, open all the server side connections first. Then pause to make sure
 all processes are ready. Then open all the clients. Only requires a single
-pause to get all n workers connected.
+pause to get all n workers connected.~~ No. That won't work because a
+worker can only open one server socket at a time.
 
 ============================================================
 

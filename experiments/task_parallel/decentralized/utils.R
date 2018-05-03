@@ -7,20 +7,6 @@ starting_port = 33000  # Random, just need it to be open.
 PORTS = matrix(starting_port + seq(nworkers * nworkers)
                  , nrow = nworkers)
 
-#' Wrapper socketConnection
-#'
-#' Try to connect on a socket even if the server hasn't opened it yet.
-from_socket = function(..., sleeptime = 1)
-{
-    while(TRUE){
-        try({
-            socket = socketConnection(...)
-            break
-        }, silent = TRUE)
-        Sys.sleep(sleeptime)
-    }
-    socket
-}
 
 #' We won't necessarily create all connections, so some will be NULL.
 close.NULL = function(...) NULL
