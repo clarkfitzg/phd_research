@@ -7,6 +7,7 @@ id = 2
 
 workers = list()
 
+
 workers[[1]] = socketConnection(port = PORTS[1, id], open = "w+"
         , server = FALSE, blocking = TRUE)
 
@@ -17,8 +18,11 @@ message(sprintf("Worker %d ready.", id))
 ############################################################
 
 datadir <- unserialize(workers[[1]])
+
 y <- paste0(datadir, 'y.csv')  # C worker 2
+
 serialize(y, workers[[1]])
+
 print("all done")              # E worker 2
 
 ############################################################

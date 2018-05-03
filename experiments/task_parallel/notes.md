@@ -1,3 +1,5 @@
+TODO: `serialize(..., xdr = FALSE)` for performance.
+
 Wed May  2 09:46:37 PDT 2018
 
 To do task parallel stuff I need two essential capabilities:
@@ -24,8 +26,6 @@ Here I'll implement a task parallel program for this script using sockets:
 ```{r}
 datadir <- '~/data'            # A worker 1
 x <- paste0(datadir, 'x.csv')  # B worker 1
-
-
 y <- paste0(datadir, 'y.csv')  # C worker 2
 xy <- paste0(x, y)             # D worker 1
 print("all done")              # E worker 2
@@ -35,15 +35,28 @@ print("all done")              # E worker 2
 ## Intermittent Failures
 
 Sometimes this runs, sometimes it fails.
-I'm not sure what's causing this to behave strangely. 
+I'm not sure what's causing this.
 
-It might be because one worker tries to read/write from socket before the
-other one opens it.
+It might be because one worker tries to read/write from the socket before
+the other one opens it. Yes, this is a problem for the worker that is not
+the server, but it doesn't explain the error when `server = TRUE` as below.
 
-But it makes me think
-that I need to checkpoint all the workers before and after the program code
-starts running.
+~~Another possibility is that one worker closes the
+socket before the other is finished.~~ Nope, OS still delivers the packets
+even if the sending process is gone.
 
+- If I open the socket with `server = TRUE` then it waits for an incoming
+  connection until the timeout (default 60 seconds) and then gives up.
+- If I open the socket with `server = FALSE` and a server is open on that
+  socket then it works.
+- If I open the socket with `server = FALSE` and a server is NOT open on
+  that socket then it fails immediately.
+
+This makes me think that I need to checkpoint all the workers before and
+after the program code starts running.
+
+Change error options to dump.frames, add PID, write PID before socket
+connection
 
 ```
 $ make
