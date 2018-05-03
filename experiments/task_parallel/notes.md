@@ -59,6 +59,11 @@ which case it connects to the previous server.
 
 For whatever reason it's not behaving the same on my Mac.
 
+There's also a simple way to get around all of these issues. On every
+worker, open all the server side connections first. Then pause to make sure
+all processes are ready. Then open all the clients. Only requires a single
+pause to get all n workers connected.
+
 ============================================================
 
 Sometimes this runs, sometimes it fails.
