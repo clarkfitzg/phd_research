@@ -34,6 +34,33 @@ print("all done")              # E worker 2
 
 ## Intermittent Failures
 
+Wed May  2 22:14:51 PDT 2018
+
+update: Think I figured it out. It's caused by the background process:
+
+```
+$ Rscript worker1.R &
+```
+
+not finishing. Ie. when I repeatedly run make it eventually happens that
+the 2nd script fails, as expected. Then the first one continues to run and
+messes up the following run. I can reproduce this with the following code:
+
+```
+$ Rscript worker1.R &
+  Rscript worker1.R
+```
+
+If this theory is correct then I should only see the server fail after the
+client fails and leaves a running server. Then the next time the server may
+run first, which causes the two servers to collide and both fail. Then the
+client should also fail. Or the next time the client may run first, in
+which case it connects to the previous server.
+
+For whatever reason it's not behaving the same on my Mac.
+
+============================================================
+
 Sometimes this runs, sometimes it fails.
 I'm not sure what's causing this.
 
@@ -56,7 +83,7 @@ This makes me think that I need to checkpoint all the workers before and
 after the program code starts running.
 
 Change error options to dump.frames, add PID, write PID before socket
-connection
+connection.
 
 ```
 $ make

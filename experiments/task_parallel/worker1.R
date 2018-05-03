@@ -7,9 +7,11 @@ id = 1
 
 workers = list()
 
-Sys.sleep(3)
 workers[[2]] = socketConnection(port = PORTS[id, 2], open = "w+"
         , server = TRUE, blocking = TRUE)
+
+# Nope, this won't work, since previous line has to return first.
+# system2("Rscript", c("--vanilla", "worker2.R"))
 
 message(sprintf("Worker %d ready.", id))
 

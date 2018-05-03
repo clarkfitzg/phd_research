@@ -7,7 +7,6 @@ id = 2
 
 workers = list()
 
-
 workers[[1]] = socketConnection(port = PORTS[1, id], open = "w+"
         , server = FALSE, blocking = TRUE)
 
