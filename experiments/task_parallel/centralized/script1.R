@@ -1,23 +1,25 @@
 source("utils.R")
 
+script = parse(text = "
+    datadir <- '~/data'            # A worker 1
+    x <- paste0(datadir, 'x.csv')  # B worker 1
+    y <- paste0(datadir, 'y.csv')  # C worker 2
+    xy <- paste0(x, y)             # D worker 1
+    print('all done')              # E worker 2
+")
 
-# Can't do more than 1 slave on my 2 core machine!
-mpi.spawn.Rslaves(nslaves = 1)
 
-# From docs:
-# ‘mpi.bcast.Rfun2slave’ transmits all master's functions to slaves and
-# returns no value. 
+mpi.spawn.Rslaves(nslaves = 2)
+
+
 mpi.bcast.Rfun2slave()
-
 mpi.remote.exec(ls())
-# The worker now has the receive() function
+# both workers have the receive() function
 
 
-x = "funstuff"
 
-# Identifies this particular transmission of data, so should be fine if
-# this is just a counter.
-tag = 1
+mpi.close.Rslaves()
+
 
 # Send x to worker 1.
 mpi.send.Robj(x, 1, tag)
