@@ -31,4 +31,8 @@ mpi.remote.exec(receive, name = "x", tag = tag, source = 0, dest = 1
 mpi.remote.exec(ls())
 # The worker has both `receive` and `x`
 
+mpi.bcast.cmd(z <- 20)
+
+mpi.remote.exec(z)
+
 mpi.close.Rslaves()
