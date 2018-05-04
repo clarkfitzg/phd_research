@@ -12,31 +12,39 @@ mpi.bcast.Rfun2slave()
 mpi.remote.exec(ls())
 # The worker now has the functions in utils
 
+script = parse(text = "
+    datadir <- '~/data'            # A worker 1
+    x <- paste0(datadir, 'x.csv')  # B worker 1
+    y <- paste0(datadir, 'y.csv')  # C worker 2
+    xy <- paste0(x, y)             # D worker 1
+    print('all done')              # E worker 2
+")
+
+
 # Now we can write the actual program.
 ############################################################
 
-evaluate(1, quote(x <- "funstuff"))
+evaluate(1, script[[1]])
 
-mpi.bcast.cmd(evaluate, expr = , dest = 1)
+# After I execute this command CPU usage on one slave process jumps to 100%
+transfer("datadir", source = 1, dest = 2, tag = 12834)
 
-# Identifies this particular transmission of data, so should be fine if
-# this is just a counter.
-tag = 1
+evaluate(1, script[[2]])
 
-# Send x to worker 1.
-mpi.send.Robj(x, 1, tag)
-# This returns immediately, before I execute the receive command on the
-# worker. I'm not sure what the non blocking version mpi.isend.Robj does.
+evaluate(2, script[[3]])
 
-# Receive x on worker 1
-mpi.remote.exec(receive, name = "x", tag = tag, source = 0, dest = 1
-                , ret = FALSE)
+transfer("y", source = 2, dest = 1, tag = 24789)
 
+evaluate(1, script[[4]])
+
+evaluate(2, script[[5]])
+
+
+# Somehow I got a race condition. And it looks like zombies.
 mpi.remote.exec(ls())
-# The worker has both `receive` and `x`
 
-mpi.bcast.cmd(z <- 20)
 
-mpi.remote.exec(z)
 
+# Cleanup
+############################################################
 mpi.close.Rslaves()
