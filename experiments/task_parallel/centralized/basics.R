@@ -2,7 +2,7 @@ source("utils.R")
 
 
 # Can't do more than 1 slave on my 2 core machine!
-mpi.spawn.Rslaves(nslaves = 1)
+mpi.spawn.Rslaves(nslaves = 2)
 
 # From docs:
 # ‘mpi.bcast.Rfun2slave’ transmits all master's functions to slaves and
@@ -15,7 +15,9 @@ mpi.remote.exec(ls())
 # Now we can write the actual program.
 ############################################################
 
-mpi.bcast.cmd(evaluate, expr = quote(x <- "funstuff"), dest = 1)
+evaluate(1, quote(x <- "funstuff"))
+
+mpi.bcast.cmd(evaluate, expr = , dest = 1)
 
 # Identifies this particular transmission of data, so should be fine if
 # this is just a counter.

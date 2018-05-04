@@ -1,35 +1,50 @@
 library(Rmpi)
 
 
-#' Evaluate expression on worker dest
-evaluate = function(expr, dest)
+_evaluate = function(dest, expr)
 {
     id = mpi.comm.rank()
-    if(id == worker){
-        eval(expr, envir = .GlobalEnv)
+    if(id == dest){
+       _eval(expr, envir = .GlobalEnv)
     }
     NULL
 }
 
 
+#' Evaluate expression on worker dest
+evaluate = function(dest, expr)
+{
+    mpi.bcast.cmd(_evaluate, dest = dest, expr = expr)
+}
+
+
 #' Send Object
-send = function(obj, source, dest, tag, comm = 1)
+_send = function(varname, source, dest, tag, comm = 1)
 {
     id = mpi.comm.rank()
     if(id == source){
-        mpi.send.Robj(obj, dest, tag, comm)
+        obj = get(varname, .GlobalEnv)
+        mpi_send.Robj(obj, dest, tag, comm)
     }
     NULL
 }
 
 
 #' Receive Object
-receive = function(name, source, dest, tag, comm = 1)
+_receive = function(varname, source, dest, tag, comm = 1)
 {
     id = mpi.comm.rank()
     if(id == dest){
         value = mpi.recv.Robj(source, tag)
-        assign(name, value, .GlobalEnv)
+        assign(varname, value, .GlobalEnv)
     }
     NULL
+}
+
+
+#' Wraps_send and_receive.
+transfer = function(...)
+{
+    mpi.bcast.cmd(_send, ...)
+    mpi.bcast.cmd(_receive, ...)
 }
