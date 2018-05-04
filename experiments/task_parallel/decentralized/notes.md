@@ -1,3 +1,27 @@
+Thu May  3 21:11:36 PDT 2018
+
+I am discovering some very appealing things about sockets.
+
+- A socket acts as a FIFO. Every call to unserialize pops the next R
+  object out of the queue. So I don't have to directly manage a queue.
+- Writes are asynchronous. After writing an object the worker process may
+  continue executing code, which is what the scheduling algorithms assume.
+- Writes are delivered even if the sending process completes, which is very
+  good. If a worker completes it should be free to terminate.
+- Reads are synchronous. Reading from a socket waits until something comes
+  through or it reaches the timeout.
+- Asynchronous writes and synchronous reads implicitly handle the
+  checkpoints in the program.
+- There's no event loop to complicate things, we're just running scripts so
+  logging can potentially be easier.
+- There's less nonstandard evaluation because we're just running scripts
+
+The difficult part is initially setting up connections between all workers,
+as I saw below.
+
+
+TODO: With `blocking = TRUE` they implicitly do the checkpoint, 
+
 TODO: `serialize(..., xdr = FALSE)` for performance.
 
 Wed May  2 09:46:37 PDT 2018
