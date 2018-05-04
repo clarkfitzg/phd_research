@@ -1,12 +1,12 @@
 library(Rmpi)
 
 
-#' Evaluate expression on worker
-evaluate = function(code, worker)
+#' Evaluate expression on worker dest
+evaluate = function(expr, dest)
 {
     id = mpi.comm.rank()
     if(id == worker){
-        mpi.bcast.cmd(code)
+        eval(expr, envir = .GlobalEnv)
     }
     NULL
 }

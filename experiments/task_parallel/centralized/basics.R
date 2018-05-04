@@ -10,10 +10,12 @@ mpi.spawn.Rslaves(nslaves = 1)
 mpi.bcast.Rfun2slave()
 
 mpi.remote.exec(ls())
-# The worker now has the receive() function
+# The worker now has the functions in utils
 
+# Now we can write the actual program.
+############################################################
 
-x = "funstuff"
+mpi.bcast.cmd(evaluate, expr = quote(x <- "funstuff"), dest = 1)
 
 # Identifies this particular transmission of data, so should be fine if
 # this is just a counter.
