@@ -33,5 +33,9 @@ clusterExport(cls, c("workers", "connect", "close.NULL"))
 clusterMap(cls, assign, "ID", seq(n)
         , MoreArgs = list(envir = .GlobalEnv))
 
-
 clusterEvalQ(cls, ID)
+
+clusterEvalQ(cls, connect(1, 2, 33000))
+
+# Action!
+parLapply(cls, c("worker1.R", "worker2.R"), source)

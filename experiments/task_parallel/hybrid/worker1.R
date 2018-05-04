@@ -22,4 +22,4 @@ xy <- paste0(x, y)             # D worker 1
 
 lapply(workers, close)
 
-message(sprintf("Worker %d finished.", id))
+message(sprintf("Worker %d finished.", ID))

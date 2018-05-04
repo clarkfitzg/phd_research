@@ -16,4 +16,4 @@ print("all done")              # E worker 2
 
 lapply(workers, close)
 
-message(sprintf("Worker %d finished.", id))
+message(sprintf("Worker %d finished.", ID))
