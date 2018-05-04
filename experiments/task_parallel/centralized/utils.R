@@ -35,14 +35,14 @@ receive = function(varname, source, dest, tag, comm = 1)
 {
     id = mpi.comm.rank()
     if(id == dest){
-        value = mpi.recv.Robj(source, tag)
+        value = mpi.recv.Robj(source, tag, comm)
         assign(varname, value, .GlobalEnv)
     }
     NULL
 }
 
 
-#' Wraps send andreceive.
+#' Wraps send and receive.
 transfer = function(...)
 {
     mpi.bcast.cmd(send, ...)

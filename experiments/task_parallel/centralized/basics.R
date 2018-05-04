@@ -26,7 +26,10 @@ script = parse(text = "
 
 evaluate(1, script[[1]])
 
-# After I execute this command CPU usage on one slave process jumps to 100%
+# After I execute this command CPU usage on one worker process jumps to
+# 100%. debugged it and found its ok after send. But CPU spikes after
+# receive.
+# Next step is to log process ID's to see where the issue is.
 transfer("datadir", source = 1, dest = 2, tag = 12834)
 
 evaluate(1, script[[2]])
