@@ -1,3 +1,10 @@
+# Summary:
+# - MUST open in a+b mode for serializing
+# - serializing with xdr = TRUE cuts time about in half
+# - Overhead to send is about 8 microseconds
+# - Overhead to receive is about 1.3 microseconds
+# - Local bandwidth is about 1.5 GB / second
+
 library(microbenchmark)
 
 con = socketConnection(port = 33000, server = FALSE, blocking = TRUE, open = "w+")
@@ -16,9 +23,15 @@ print(object.size(onemb), units = "MB")
 serialize(onemb, con, xdr = TRUE)
 
 
+# 1.8 milliseconds
+microbenchmark(serialize(onemb, con, xdr = TRUE))
 
+# 4 seconds in text mode
+# 700 microseconds in binary mode
+microbenchmark(serialize(onemb, con, xdr = FALSE))
 
-# Takes about 4 seconds to serialize 1MB? That seems crazy.
+bandwidth = 1 / 700e-6
+
 microbenchmark(serialize(onemb, con, xdr = FALSE), times = 10L)
 # And the result is the same for generated code- about 44 seconds to
 # serialize 10 MB.
