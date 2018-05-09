@@ -1,5 +1,6 @@
+logfile = file("worker2.log", open = "a")
 
-# Program begins
+writeLines("Worker 2 starting.", con = logfile)
 ############################################################
 
 datadir <- unserialize(workers[[1]])
@@ -11,9 +12,6 @@ serialize(y, workers[[1]])
 print("all done")              # E worker 2
 
 ############################################################
-# Program ends
+writeLines("Worker 2 finished.", con = logfile)
 
-
-lapply(workers, close)
-
-message(sprintf("Worker %d finished.", ID))
+close(logfile)

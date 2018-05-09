@@ -33,9 +33,15 @@ clusterExport(cls, c("workers", "connect", "close.NULL"))
 clusterMap(cls, assign, "ID", seq(n)
         , MoreArgs = list(envir = .GlobalEnv))
 
+# Should see a sequence from 1 to n
 clusterEvalQ(cls, ID)
 
+
+# Set up all necessary peer to peer connections
 clusterEvalQ(cls, connect(1, 2, 33000))
 
-# Action!
+# Action! Run the scripts
 parLapply(cls, c("worker1.R", "worker2.R"), source)
+
+# Shut it all down
+clusterEvalQ(cls, lapply(workers, close))
