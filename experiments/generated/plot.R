@@ -1,10 +1,10 @@
 library(autoparallel)
 
-script = parse("script2.R")
+script = parse("script3.R")
 
 tg = task_graph(script)
 
-schedule = minimize_start_time(script, tg)
+schedule = minimize_start_time(script, tg, nprocs = 3L)
 
 plot(schedule)
 
