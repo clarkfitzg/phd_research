@@ -1,14 +1,16 @@
 library(autoparallel)
 
-script = parse("script5.R")
-tg = task_graph(script)
-schedule = minimize_start_time(script, tg, maxworkers = 3L)
-plot(schedule)
+s4 = autoparallel("script4.R")
 
-autoparallel("script6.R", maxworkers = 3L)
+plot(s4$schedule)
 
-script = parse("script6.R")
-tg = task_graph(script)
-schedule = minimize_start_time(script, tg, maxworkers = 2L)
-plot(schedule)
+# TODO: Transfers a variable twice
+s5 = autoparallel("script5.R")
+plot(s5$schedule)
 
+s5 = autoparallel("script5.R", maxworkers = 3L)
+plot(s5$schedule)
+
+# Duncan's "revisit"
+s7 = autoparallel("script7.R", maxworkers = 2L)
+plot(s7$schedule)
