@@ -1,4 +1,4 @@
-nx = 1e6
+nx = 1e5
 ny = nx
 
 x = data.frame(joinkey = sample.int(nx), value_x = rnorm(nx))
