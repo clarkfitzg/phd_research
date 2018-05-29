@@ -43,3 +43,15 @@ mccollect(job)
 # About 4 ms on my Mac.
 times = microbenchmark::microbenchmark({job = mcparallel("hi")
     mccollect(job)}, times = 10L)
+
+
+# What happens if we nest calls to mclapply?
+
+f = function(...) mclapply(1:3, function(...) Sys.getpid())
+
+# We see two distinct PID's each time this is called, as expected.
+f()
+
+# To avoid nested parallelism we only want to see one unique PID in each
+# list. Therefore I should only replace the outermost lapply.
+nested = mclapply(1:4, f)
