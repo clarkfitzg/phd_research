@@ -1,6 +1,22 @@
-#getZL = function(distM,k=1){
-distM = NULL
+d = 100
+k = 5
+d = 100
+N0 =200
+L =200
+b = 4.605 #35
+
+m =1000
+
+y0 = matrix(rnorm(d*N0),N0,d)
+y1 = matrix(rnorm(d*m),m,d)
+y = rbind(y0,y1)
+y.dist = as.matrix(dist(y))
+diag(y.dist) = max(y.dist)+100
+n = N0+1
+distM = y.dist[(n-L+1):n,(n-L+1):n]
 k = 1
+#getZL = function(distM,k=1){
+
 
   L = dim(distM)[1]	
   A = matrix(0,L,k)
@@ -58,7 +74,7 @@ k = 1
   S = Zw^2 + Zdiff^2
   M = apply(cbind(abs(Zdiff),Zw),1,max)
   
-  list(R=X, R1= X1, R2 = X2, Rw = Rw, Z1 = (X1-EX1L)/sqrt(var1) , Z2 = (X2-EX2L)/sqrt(var2), Zdiff = Zdiff, Zw = Zw, S = S, M =M )
+out = list(R=X, R1= X1, R2 = X2, Rw = Rw, Z1 = (X1-EX1L)/sqrt(var1) , Z2 = (X2-EX2L)/sqrt(var2), Zdiff = Zdiff, Zw = Zw, S = S, M =M )
 
 #}
 

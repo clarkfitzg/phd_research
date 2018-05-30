@@ -55,3 +55,8 @@ f()
 # To avoid nested parallelism we only want to see one unique PID in each
 # list. Therefore I should only replace the outermost lapply.
 nested = mclapply(1:4, f)
+
+# How feasible is defining
+# lapply = parallel::mclapply?
+# The issue is nested parallelism
+mclapply(1:3, function(...) getOption("mc.cores"))
