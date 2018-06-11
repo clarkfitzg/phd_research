@@ -19,7 +19,8 @@ pop = function(q = queue)
 }
 
 
-# In practice we would execute these from different processes.
+# In practice we would execute all the pushes from one process and all the
+# pops from another.
 
 push("hi")
 
@@ -29,4 +30,6 @@ push(1:10)
 push(rnorm)
 push("bye")
 
+pop()
+pop()
 pop()
