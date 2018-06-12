@@ -3,13 +3,15 @@
 #
 # The model below works for both files and sockets.
 
-
-queue = file("q.rds", "w+b")
+qfile = "q.rds"
+system2("touch", qfile)
+queue = file(qfile, "r+b")
 
 
 push = function(obj, q = queue)
 {
     serialize(obj, q, xdr = FALSE)
+    flush(q)
 }
 
 
