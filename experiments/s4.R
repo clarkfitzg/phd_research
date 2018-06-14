@@ -1,6 +1,5 @@
 # Wed Jun 13 21:32:43 PDT 2018
 
-# 
 # I want to create objects of class B from objects of class A. 
 # Class A1 contains A and 
 # B is pretty complex, resulting in objects PastaMeal and B2. I can't use
@@ -13,7 +12,18 @@
 # this reasonable? The idea is that the generic function B will always
 # return an object that contains the class B.
 #
-# The strange thing to me is that "A" and "B" are __both__ classes and
+# The strange thing to me is that "Ingredient" can be used for four
+# different things:
+# - the name of a class, which is conventional
+# - the name of a generic, which seems 
+# - the name of a slot in the class `Meal()`
+# - the name of a formal argument to the generic `Meal()`
+
+# I wouldn't do the last one for the same reason that I don't define
+# functions as f = function(data.frame) when the argument is a data.frame
+
+# Actually, I'm not crazy about this example because "Meal" is not a verb.
+
 # generic functions. 
 
 # The idea seems to work out fine below.
@@ -57,7 +67,7 @@ setMethod("Ingredient", "Meal", function(x)
 })
 
 
-setGeneric("Meal", function(a, ...)
+setGeneric("Meal", function(ingredient, ...)
 {
     message("default")
     new("Meal", a = a, Bbar = a@main + 1)
