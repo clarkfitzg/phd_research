@@ -104,4 +104,3 @@ b1 = B(a1)
 as(a1, "PastaMeal")
 
 A(b1)
-

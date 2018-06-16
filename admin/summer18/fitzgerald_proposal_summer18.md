@@ -2,7 +2,8 @@
 
 ## UC Davis Statistics Department
 
-### Richard Clark Fitzgerald
+__Applicant:__
+Richard Clark Fitzgerald, PhD Candidate
 
 __Dates:__
 I will be in Davis for the entire summer, except for 3 days to travel
