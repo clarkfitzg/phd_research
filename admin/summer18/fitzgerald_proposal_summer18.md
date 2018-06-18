@@ -15,7 +15,9 @@ I have not received any award or reimbursement to cover the travel to JSM.
 However, I do have an active NSF Graduate Research Fellowship.
 
 __Faculty:__
-Professor Duncan Temple Lang can endorse these research activities.
+Professor Duncan Temple Lang is my thesis advisor. He and I developed this
+plan jointly as part of my larger goal of graduating next year, so that my
+time to degree will be 5 years. This funding will help towards this goal.
 
 __Plan:__
 
@@ -40,13 +42,15 @@ This summer I plan to do the following research activities related to this talk:
   transformations. The steps include inferring the dependencies between
   expressions, scheduling on multiple processors, and generating executable
   code.
-- Redesign my existing software, the [autoparallel
+- Enhance my original design, the [autoparallel
   package](https://github.com/clarkfitzg/autoparallel), to match the
   more general computational model. I will use R's S4
   object oriented system to improve clarity and extensibility.
-- Develop a task scheduling algorithm based on forking and joining. This
-  should work better for typical workloads in R where the program spends
-  the majority of time in relatively few statements.
+- Develop a divide and conquer task scheduling algorithm based on executing
+  the two longest running statements in parallel. This should
+  work well in R because typical R programs spend most of their time in
+  relatively few statements, and system level software
+  (`parallel::mcparallel`) directly supports this type of code.
 - Continue to develop general purpose code analysis and metaprogramming
   tools, which can be found in the [CodeAnalysis
   package](https://github.com/duncantl/CodeAnalysis). By the end of the
