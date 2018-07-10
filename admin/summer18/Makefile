@@ -1,5 +1,6 @@
 # Name of the report
-REPORT = fitzgerald_proposal_summer18
+#REPORT = fitzgerald_proposal_summer18
+REPORT = fitzgerald_travel_summer18
 
 # $< references the first prerequisite
 $(REPORT).pdf : $(REPORT).md
