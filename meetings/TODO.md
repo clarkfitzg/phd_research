@@ -15,13 +15,12 @@ discuss and edit it to make sure we're both happy. Then I need to run it by
 the other committee members, probably Ethan and Norm.
 
 
-## partools Paper with Norm and Robin
+## Implement Fork Based Scheduling Algorithm
 
-Estimated effort: 3 days
+Estimated effort: 5+ days
 
-Norm and Robin are writing a paper on the partools package to submit to the
-R Journal. I would write a short section on disk based sorting that I did
-during the summer of 2017 and be the 3rd author.
+I've written down the conceptual ideas for an automatic parallelization
+algorithm based on fork and join. Next I need to implement and test it.
 
 
 ## Conference Paper
@@ -43,12 +42,13 @@ Estimated effort: 10+ days
 - Grouping plotting code
 
 
-## Implement Fork Based Scheduling Algorithm
+## partools Paper with Norm and Robin
 
-Estimated effort: 5+ days
+Estimated effort: 3 days
 
-I've written down the conceptual ideas for an automatic parallelization
-algorithm based on fork and join. Next I need to implement and test it.
+Norm and Robin are writing a paper on the partools package to submit to the
+R Journal. I would write a short section on disk based sorting that I did
+during the summer of 2017 and be the 3rd author.
 
 
 ## makeParallel Improvements
