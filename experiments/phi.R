@@ -1,6 +1,14 @@
-# Return the rightmost argument in ... that exists
+# Return the rightmost argument that actually exists
 phi = function(...)
 {
+    call = sys.call()
+    for(arg in seq(from = length(call), to = 2)){
+        argname = as.character(call[[arg]])
+        try(
+            return(get(argname))
+        , silent = TRUE)
+    }
+    stop("No arguments are defined!")
 }
 
 
@@ -10,6 +18,7 @@ if(TRUE)
 x1 = 10
 x2 = 20
 x3 = phi(x1, x2)
+
 stopifnot(identical(x2, x3))
 
 x4 = 30
