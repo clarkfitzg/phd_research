@@ -28,6 +28,10 @@ platforms and the program is a very rich problem. I should find some more
 examples of programs other than the Pems highway data analysis and show how
 to use it. For example, simulations on our campus servers and clusters.
 
+Duncan expects the static code analysis to handle the more difficult code
+analysis tasks that I mentioned briefly- `<<-`, NSE, etc. So I have a lot
+more work to do to capture these things.
+
 Next I can flesh out these high level abstracts with more information-
 turn them into an outline containing section headers with titles and say 3
 sentence abstracts. Keep these original chapter level abstracts also, that
