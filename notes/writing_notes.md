@@ -1,4 +1,4 @@
-It might be nice to leave this for any future PhD student of Duncan's so that
+It might be nice to leave this for any future student of Duncan's so that
 they can work more efficiently.
 
 Write __a lot__. Tons and tons.
