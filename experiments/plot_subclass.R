@@ -21,7 +21,6 @@ any(plotfuncs %in% names(cd@functions))
 #   2. Opens device     ex: pdf
 #   3. Plots            ex: lines
 #   4. Closes device    ex: dev.off
-
 plotUse = function(node
     , openFuncs = c("pdf", "bmp", "jpeg", "png", "tiff")
     , plotFuncs = c("plot", "lines", "points")
