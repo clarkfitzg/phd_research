@@ -33,6 +33,8 @@ Good software design and engineering is not research.
 Research is demonstrating examples where the system can be intelligent about using the data and hardware to generate code.
 The system doesn't have to come up with the optimal solution, but it should come up with a reasonable solution.
 
+To make progress, every day I need to be doing something that's directly furthering the research goal, or that could go into my dissertation.
+
 
 ## TODO
 
