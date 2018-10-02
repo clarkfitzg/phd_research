@@ -6,8 +6,7 @@ Richard Clark Fitzgerald, PhD Candidate
 
 On August 2nd I presented an invited talk at JSM in the section on
 statistical computing organized by George Ostrouchov and Norm Matloff. The
-title for the talk as __Automated Parallelization of R Code__ and the
-abstract is as follows:
+title for the talk was __Automated Parallelization of R Code__. Here's the abstract:
 
 > Conventional systems for parallel programming require users to modify
 > existing serial code to take full advantage of a platform's computational
@@ -38,3 +37,5 @@ This summer I did the following research activities:
   work well in R because typical R programs spend most of their time in
   relatively few statements, and system level software
   (`parallel::mcparallel`) directly supports this type of code.
+- Written examples and explanations of the techniques and the research concepts.
+  I now have about 100 pages of rough material that I will continue to revise into my dissertation.
