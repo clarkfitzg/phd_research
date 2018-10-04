@@ -12,6 +12,10 @@ set.seed(380)
 x[nonzero] = rnorm(length(nonzero))
 
 Rprof()
-# Careful, this locked up my computer.
-fit = pam(x, 3)
 
+# Careful, this locked up my computer.
+fit = pam(x, 3, trace.lev = 100)
+
+summaryRprof()
+# No need to even look at profiling, it spends all the time in the .Call inside
+# pam
