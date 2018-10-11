@@ -1,14 +1,5 @@
 Cover Letter for Data scientist job at Veterans Administration (VA) Health Administration
 
-Possible points to convey:
-
-- I've been working and volunteering with veterans for last 10 years
-- Can do the full data science stack: questions, math models, implementation, communication
-- Leadership and initiative
-- My research expertise in large data analysis is useful for this job
-- (Not sure?) I haven't worked with healthcare data- could turn it around and say I've worked with all these other types of data.
-
-
 Dear Kayla August,
 
 The VA has the nation's largest health care system.
