@@ -46,59 +46,17 @@ and working knowledge in MS-word, Latex, R markdown.
 
 # Notes
 
-Phrases from job description:
-
-- perform data analysis
-- curating tailored to fit data products
-- !!! data visualization
-- ! interactive visualizations
-- ! predictive models
-- ! independently execute/lead approved plan
-- ! present results formally/informally to justify projects to officials
-- formulate operational questions into quantitative models
-- implement solution in software
-- computational methods
-- SQL
-- formulate analysis plan
-- articulate needed resources
-- independently address technical and administrative challenges
-- recommend policy improvements based on data
-- recommend work flow adjustments based on data
-- articulate findings to technical and non-technical audiences
-- advise management
-- analytical pipeline
-- deployable application used by staff
-- document work
-- reports for officials
-
-
-Work should show:
-
-- simulation
-- statistics
-- machine learning
-- feature extraction
-- model selection
-- data transformation, filtering
-- master new computational methods with minimal instruction
-- expert Python, R manipulating data
-- Linux
-- SQL
-- Python notebooks
-- MS-word
-- Latex
-- R markdown
-
-
 Possible points to convey in cover letter:
 
 - Can do the full data science stack: questions, math models, implementation, communication
-- Local connection to UC Davis Data Science Initiative and statistics department unique and valuable
+- Local connection to UC Davis Data Science Initiative and statistics department unique and valuable, healthcare AI movement at UC Davis
 - I've been working and volunteering with veterans for last 10 years
 - Visualization software development
 - Leadership and initiative
 - My research expertise in large data analysis is useful for this job
 - (Not sure?) I haven't worked with healthcare data- could turn it around and say I've worked with all these other types of data.
+- Learning excites me, I already know the tools and techniques- for this position I'm excited to learn about the healthcare domain, very rich and impactful
+- I am currently qualified for this job based on a combination of education (MS statistics) and 2 years of work experience in data science.
 
 
 # References
@@ -125,28 +83,85 @@ business analyst
 
 statistics PhD candidate
 
+- Research focused on an automatic system to scale and customize R data analysis code
 - Formulated and defended research plan for PhD qualifying examination
-- Created custom statistical data analysis and interactive web visualizations using D3 and Javascript
+- Created interactive web visualizations based on custom statistical data analysis
 - Developed and implemented an analytical pipeline deployed on Apache Hive database
-- Awarded National Science Foundation Graduate Research Fellowship grant worth $140,000
-- Published automatic parallelization software (CRAN package makeParallel)
+- Awarded 4 different grants and fellowships worth a total of $170,000, including the prestigious National Science Foundation Graduate Research Fellowship
+- Reported periodically to grant officials on achievements and progress
 - Presented results formally at international academic conference (Joint Statistical Meetings in Vancouver)
+- Mastered the R programming language as the student of an R core developer (Duncan Temple Lang)
 
 ## Davis
 
 Data Science Initiative Affiliate
 
-- Created and presented advanced technical workshops to audiences of up to 100 on Python, R, SQL using Python notebooks, R markdown, Latex, and MS-word
+- Created and presented advanced technical workshops to audiences of up to 100 on Python, R, and SQL
+
+Skills: Python notebooks, R markdown, Latex, MS-word
 
 ## Lulus
 
 Data Science Consultant
 
-- Predicted product returns using statistics, generalized linear models
-- Visualized and presented results to non technical executive audience
+- Formulated general domain questions into quantitative models
+- Created tailored to fit predictive statistical models for product returns
+- Visualized, presented, and interpreted results to non technical executive audience
+- Documented all steps of research in R markdown documents
+- Designed computations to be deployable by other staff through GNU Make
 
-# Climate Corp
+Skills: R, Python, SQL, feature extraction, data transformation, Linux, Windows
 
-- Developed visualization software for high dimensional data analysis in popular Python package xarray
-- Formulate questions and independently analyzed data to understand and visualize rainfall patterns 
+## Climate Corp
+
+- Developed custom data visualization software in popular Python package xarray
+- Independently analyzed data to understand and visualize rainfall patterns 
 - Presented results to general audiences of 300 people
+
+Skills: Python, software engineering, Linux, visualization
+
+
+Phrases from job description:
+
+2. perform data analysis
+1. curating tailored to fit data products
+2. !!! data visualization
+1. ! interactive visualizations
+1. ! predictive models
+1. ! independently execute/lead approved plan
+2. ! present results formally/informally
+0. justify projects to officials
+0. formulate operational questions into quantitative models
+0. implement solution in software
+0. computational methods
+1. pull data from corporate data warehouse
+2. SQL
+1. formulate analysis plan
+0. articulate needed resources
+1. independently address technical and administrative challenges
+0. recommend policy improvements based on data
+1. recommend work flow adjustments based on data
+1. articulate findings to technical and non-technical audiences
+0. advise management
+1. analytical pipeline
+1. deployable application used by staff
+1. document work
+0. reports for officials
+1. IRB submissions, grantsmanship, and research methodologies
+
+
+Work should show:
+
+0. simulation
+1. statistics
+1. machine learning
+0. feature extraction
+0. model selection
+0. data transformation, filtering
+0. master new computational methods with minimal instruction
+2. expert Python, R manipulating data
+0. Linux
+0. Python notebooks
+0. MS-word
+0. Latex
+1. R markdown
