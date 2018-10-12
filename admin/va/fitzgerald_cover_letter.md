@@ -3,27 +3,31 @@ Dear Kayla August,
 <!--
 Intro, state basics, show excitement
 -->
-
-My name is Richard Clark Fitzgerald, and I'm a PhD candidate in statistics at UC Davis.
-I'm applying for the position of Statistician (Data Scientist) at the Veteran's Health Administration.
-This job at the Veteran's Administration (VA) appeals to me for two reasons.
+My name is Richard Clark Fitzgerald, and I'm a PhD Candidate in Statistics at UC Davis.
+I'm applying for the position of Statistician (Data Scientist) at the Veteran's Health Administration (VHA).
+This job appeals to me for two reasons.
 First, I believe in the mission of serving veterans.
 I'm an Army veteran of Afghanistan, and I have worked and volunteered with veterans for the last 10 years.
-Second, the VA has the nation's largest health care system, which must generate rich and interesting data sets.
-As a data scientist, I'm excited about opportunities to scientifically improve policy and health care through data analysis.
-
-<!--
-What I can uniquely bring to the job
--->
-I see this job as an opportunity to make a strong local connection between the VA and the UC Davis Data Science Initiative (DSI).
-The DSI
+Second, the VHA has the nation's largest health care system, which must generate rich and interesting data sets.
+As a data scientist, I'm excited about opportunities to improve policy and health care through data analysis.
 
 <!--
 More about me
 -->
+I am qualified for this job based on a combination of 2 years of specialized experience and education (masters in statistics).
+Since 2012 I've been either working in data science, or studying data science full time.
+My PhD research focu
 
-I am qualified for this job based on a combination of 2 years specialized work experience in data science, and education, a masters degree in statistics.
 
+<!--
+What I can uniquely bring to the job
+-->
+I see this job as an opportunity to make a strong local connection between the VHA and the UC Davis Data Science Initiative (DSI).
+The DSI draws experts together from across domains to innovate and learn using data science; it's the regional leader for data science in the Sacramento area.
+I have been involved with the DSI since its inception in 2014.
+I'm here every day, I've initiated and organized study groups, and I've designed and delivered workshops on technical topics like R, Python, and SQL.
+This active participation has given me a broad network of contacts beyond my department, from computer science to the UC Davis Medical Center.
+My network could help spark collaboration with the VHA and world class UC Davis researchers.
 
 I can 
 

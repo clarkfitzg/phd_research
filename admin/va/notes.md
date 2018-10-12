@@ -48,13 +48,14 @@ Possible points to convey in cover letter:
 
 - Can do the full data science stack: questions, math models, implementation, communication
 - Local connection to UC Davis Data Science Initiative and statistics department unique and valuable, healthcare AI movement at UC Davis
-- I've been working and volunteering with veterans for last 10 years
+X I've been working and volunteering with veterans for last 10 years
 - Visualization software development
 - Leadership and initiative
 - My research expertise in large data analysis is useful for this job
 - (Not sure?) I haven't worked with healthcare data- could turn it around and say I've worked with all these other types of data.
 - Learning excites me, I already know the tools and techniques- for this position I'm excited to learn about the healthcare domain, very rich and impactful
-- I am currently qualified for this job based on a combination of education (MS statistics) and 2 years of work experience in data science.
+X I am currently qualified for this job based on a combination of education (MS statistics) and 2 years of work experience in data science.
+- Hypothetical research applications at VA
 
 
 # References
