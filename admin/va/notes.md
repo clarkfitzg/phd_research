@@ -99,6 +99,7 @@ Skills: statistics, machine learning, data analysis, R, Python, SQL, simulation,
 Data Science Initiative Affiliate
 
 - Created and presented advanced technical workshops to audiences of up to 100 on Python, R, and SQL
+- Communicated and documented technical topics through 34 posts on a technical blog, http://clarkfitzg.github.io/
 
 Skills: Python notebooks, R markdown, Latex, MS-word
 
