@@ -1,6 +1,5 @@
 Position: GS12 Statistician (Data Scientist) at VA Veterans Health Administration
 
-Extracting some of the phrases and keywords
 
 # Summary
 
@@ -8,7 +7,6 @@ This position is located in the Clinical Informatics Office reporting to the Ass
 
 
 # Responsibilities
-
  
 
 Utilize and excellent working knowledge of SQL used to pull data from the VA's corporate data warehouse.
@@ -79,18 +77,21 @@ business analyst
 - Independently negotiatated database storage privileges
 - Recommended and implemented work flow adjustments to more powerful data analysis software
 
-## Davis
+## University of California, Davis
 
 statistics PhD candidate
 
-- Research focused on an automatic system to scale and customize R data analysis code
+- Research focused on an automatic system to scale and modify R code based on the data it analyzes
 - Formulated and defended research plan for PhD qualifying examination
 - Created interactive web visualizations based on custom statistical data analysis
 - Developed and implemented an analytical pipeline deployed on Apache Hive database
 - Awarded 4 different grants and fellowships worth a total of $170,000, including the prestigious National Science Foundation Graduate Research Fellowship
 - Reported periodically to grant officials on achievements and progress
-- Presented results formally at international academic conference (Joint Statistical Meetings in Vancouver)
-- Mastered the R programming language as the student of an R core developer (Duncan Temple Lang)
+- Presented results formally at international academic conference (2018 Joint Statistical Meetings in Vancouver)
+- Mastered the R programming language as the student of an R core developer, Duncan Temple Lang
+
+Skills: statistics, machine learning, data analysis, R, Python, SQL, simulation, feature extraction, model selection, data transformation, filtering, manipulating data, Linux, Python notebooks, Latex, R markdown
+
 
 ## Davis
 
