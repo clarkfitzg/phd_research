@@ -111,7 +111,7 @@ Data Science Consultant
 - Documented all steps of research in R markdown documents
 - Designed computations to be deployable by other staff through GNU Make
 
-Skills: R, Python, SQL, feature extraction, data transformation, Linux, Windows
+Skills: statistics, logistic regression, R, Python, SQL, feature extraction, data transformation, Linux, Windows
 
 ## Climate Corp
 
@@ -166,3 +166,13 @@ Work should show:
 0. MS-word
 0. Latex
 1. R markdown
+
+
+You will be rated on the following competencies for this position:
+
+0. Analysis and Problem Solving
+0. Analytical Reasoning
+0. Communication
+0. Computer Languages
+0. Logical System Design
+0. Research

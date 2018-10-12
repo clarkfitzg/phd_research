@@ -1,9 +1,32 @@
-Cover Letter for Data scientist job at Veterans Administration (VA) Health Administration
-
 Dear Kayla August,
 
-The VA has the nation's largest health care system.
-This scale means big datasets and big opportunities to analyze the data and make an impact.
+<!--
+Intro, state basics, show excitement
+-->
+
+My name is Richard Clark Fitzgerald, and I'm a PhD candidate in statistics at UC Davis.
+I'm applying for the position of Statistician (Data Scientist) at the Veteran's Health Administration.
+This job at the Veteran's Administration (VA) appeals to me for two reasons.
+First, I believe in the mission of serving veterans.
+I'm an Army veteran of Afghanistan, and I have worked and volunteered with veterans for the last 10 years.
+Second, the VA has the nation's largest health care system, which must generate rich and interesting data sets.
+As a data scientist, I'm excited about opportunities to scientifically improve policy and health care through data analysis.
+
+<!--
+What I can uniquely bring to the job
+-->
+I see this job as an opportunity to make a strong local connection between the VA and the UC Davis Data Science Initiative (DSI).
+The DSI
+
+<!--
+More about me
+-->
+
+I am qualified for this job based on a combination of 2 years specialized work experience in data science, and education, a masters degree in statistics.
+
+
+I can 
+
 As a PhD candidate in statistics and data science at UC Davis my research has focused on addressing the inherent computational challenges.
 Solving them requires analytical and computational skills, both of which I have.
 
