@@ -1,5 +1,6 @@
 import os
 import subprocess
+import re
 
 months = {"jan": "01",
         "feb": "02",
@@ -33,11 +34,15 @@ def rename(oldname):
     return "meeting" + year + months[mon] + day + ".md"
 
 
+def rename2(oldname):
+    date = re.findall("[0-9]{6,6}", oldname)[0]
+    return "20" + date[:2] + "-" + date[2:4] + "-" + date[4:] + ".md"
+
+
 for old_nm in os.listdir():
     try:
-        nm = rename(old_nm)
+        nm = rename2(old_nm)
         print(nm)
         subprocess.run(("git", "mv", old_nm, nm))
-    except ValueError:
+    except IndexError:
         next
-
