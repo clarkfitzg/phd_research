@@ -1,35 +1,41 @@
 {
-    "@context": "http://www.w3.org/ns/csvw",
-    "url": "tasks.csv",
-	"tableSchema": {
-		"columns": [{
-		  "titles": "date",
-          "datatype": "date"
-		},{
-		  "titles": "category",
-		  "dc:description": "how it relates to the greater goal of completing the dissertation",
-          "datatype": {
-              "base": "factor",
-              "levels": {
-                  "background": "background writing or literature review",
-                  "draft": "writing new content",
-                  "revise": "revising or editing existing content",
-                  "example": "creating, investigating, or implementing examples",
-                  "software": "general software that implements the described techniques",
-                  "support": "peripheral tasks, such as meetings, writing group, or preparing notes",
-                  "job": "preparing for a job after PhD, such as career events or writing resume"
-              }
+  "@context": "http://www.w3.org/ns/csvw",
+  "tableSchema": {
+    "columns": [
+      {
+        "titles": "date",
+        "datatype": "date"
+      },
+      {
+        "titles": "category",
+        "datatype": {
+          "base": "factor",
+          "levels": {
+            "job": "preparing for a job after PhD, such as career events or writing resume",
+            "background": "background writing or literature review",
+            "draft": "writing new content",
+            "software": "general software that implements the described techniques",
+            "revise": "revising or editing existing content",
+            "support": "peripheral tasks, such as meetings, writing group, or preparing notes",
+            "example": "creating, investigating, or implementing examples"
           }
-		},{
-		  "titles": "task",
-		  "dc:description": "description of the task, which should be SMART (specific, measurable, achievable, relevant, time bound)"
-		},{
-		  "titles": "complete",
-          "datatype": "boolean",
-		  "dc:description": "task completed or not"
-		},{
-		  "titles": "notes",
-		  "dc:description": "any additional notes on the work"
-		}]
-	  }
+        },
+        "dc:description": "how it relates to the greater goal of completing the dissertation"
+      },
+      {
+        "titles": "task",
+        "dc:description": "description of the task, which should be SMART (specific, measurable, achievable, relevant, time bound)"
+      },
+      {
+        "titles": "complete",
+        "datatype": "boolean",
+        "dc:description": "task completed or not"
+      },
+      {
+        "titles": "notes",
+        "dc:description": "any additional notes on the work"
+      }
+    ]
+  },
+  "url": "tasks.csv"
 }
