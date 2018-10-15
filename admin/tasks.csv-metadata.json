@@ -9,8 +9,16 @@
 		  "titles": "category",
 		  "dc:description": "how it relates to the greater goal of completing the dissertation",
           "datatype": {
-              "base": "string",
-              "format": "background|draft|revise|example|software|support|job"
+              "base": "factor",
+              "levels": {
+                  "background": "background writing or literature review",
+                  "draft": "writing new content",
+                  "revise": "revising or editing existing content",
+                  "example": "creating, investigating, or implementing examples",
+                  "software": "general software that implements the described techniques",
+                  "support": "peripheral tasks, such as meetings, writing group, or preparing notes",
+                  "job": "preparing for a job after PhD, such as career events or writing resume"
+              }
           }
 		},{
 		  "titles": "task",
