@@ -1,0 +1,6 @@
+{
+    "Date": "calendar date formatted as YY-MM-DD",
+    "Category": {"how it relates to PhD", {"possible values": ["Background", "Draft", "Revise", "Example", "Software", "Support", "Job"]}},
+    "Task": ,
+    "Status"
+}
