@@ -10,6 +10,7 @@
         "titles": "category",
         "datatype": {
           "base": "factor",
+          "extensible": true,
           "levels": {
             "job": "preparing for a job after PhD, such as career events or writing resume",
             "background": "background writing or literature review",
