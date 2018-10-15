@@ -1,6 +1,27 @@
 {
-    "Date": "calendar date formatted as YY-MM-DD",
-    "Category": {"how it relates to PhD", {"possible values": ["Background", "Draft", "Revise", "Example", "Software", "Support", "Job"]}},
-    "Task": ,
-    "Status"
+    "@context": "http://www.w3.org/ns/csvw",
+    "url": "tasks.csv",
+	"tableSchema": {
+		"columns": [{
+		  "titles": "date",
+          "datatype": "date"
+		},{
+		  "titles": "category",
+		  "dc:description": "how it relates to the greater goal of completing the dissertation",
+          "datatype": {
+              "base": "string",
+              "format": "background|draft|revise|example|software|support|job"
+          }
+		},{
+		  "titles": "task",
+		  "dc:description": "description of the task, which should be SMART (specific, measurable, achievable, relevant, time bound)"
+		},{
+		  "titles": "complete",
+          "datatype": "boolean",
+		  "dc:description": "task completed or not"
+		},{
+		  "titles": "notes",
+		  "dc:description": "any additional notes on the work"
+		}]
+	  }
 }
