@@ -1,3 +1,26 @@
 Fri Oct 12 16:32:33 PDT 2018
 
-It's better to focus on the general case of task scheduling as it subsumes the more restricted model of 
+It's better to focus on the general case of task scheduling as it subsumes the more restricted model of all tasks branching and returning to a single process.
+It's fine to use the UNIX fork as part of the implementation, especially hierarchically on a cluster of machines, but forked child processes should be capable of staying alive.
+
+Be careful about using technical terms in a more casual sense, such as 'fork' and 'thread'.
+
+Regarding Sacramento State, I should talk to Jerry Lundblad about teaching there.
+I could also guest lecture for Nick so that Duncan can watch me teach.
+
+### Writing Notes
+
+I need to communicate more efficiently with Duncan in my writing.
+In this case the material I wanted feedback on, the algebraic expressions measuring the program execution time, didn't appear until page 6.
+It's good to record the whole train of thought that leads to these, but I should edit it so that Duncan only sees what I'm looking for feedback on.
+
+I need to include more background and context, and be very explicit about what code I'm starting with, and who writes it.
+That is, I need to be clear about what the inputs and outputs of the program are.
+The last document assumed too much of this.
+
+Pictures and diagrams of the computation are much better than code.
+Duncan doesn't want to stare at code and figure out what it does.
+
+To expand the examples I can think about many different data configurations, and what ways exist to do the computations.
+
+TODO: What is the technical name in statistics for models that can fit in chunks?
