@@ -3,8 +3,13 @@
   "tableSchema": {
     "columns": [
       {
-        "titles": "date",
-        "datatype": "date"
+        "titles": "date_create",
+        "datatype": "date task was created"
+      },
+      {
+        "titles": "date_complete",
+        "datatype": "boolean",
+        "dc:description": "date task was completed"
       },
       {
         "titles": "category",
@@ -25,12 +30,7 @@
       },
       {
         "titles": "task",
-        "dc:description": "description of the task, which should be SMART (specific, measurable, achievable, relevant, time bound)"
-      },
-      {
-        "titles": "complete",
-        "datatype": "boolean",
-        "dc:description": "task completed or not"
+        "dc:description": "description of the task, which should be SMART (specific, measurable, achievable, relevant, time bound). Time bound in this case means it can be done in a couple days or less."
       },
       {
         "titles": "notes",
