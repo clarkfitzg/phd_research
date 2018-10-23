@@ -1,4 +1,5 @@
 date_create,date_complete,category,task,notes
+2018-10-19,2018-10-22,example,write Shauhin Alavi's example of calculating mean and standard deviation based on spatial interpolation,
 2018-10-17,,background,write 0.5 page on how Hive uses its metadata store and think about how we could use the same ideas,
 2018-10-17,,background,write 1 page on highly cited academic work on distributed systems with computational graphs that account for data locations,
 2018-10-15,2018-10-17,draft,explain how to describe identify 'free' data variables in code,
