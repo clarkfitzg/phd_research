@@ -1,6 +1,7 @@
 date_create,date_complete,category,task,notes
+2018-10-25,,revise,prepare and send Duncan document on PEMS example,
 2018-10-24,,experiment,try processing data coming through netcat (nc),
-2018-10-23,,example,write 1 page on the data description for the PEMS data to start building the example,
+2018-10-23,2018-10-25,example,write 1 page on the data description for the PEMS data to start building the example,
 2018-10-19,2018-10-22,example,write Shauhin Alavi's example of calculating mean and standard deviation based on spatial interpolation,
 2018-10-17,2018-10-23,background,write 0.5 page on how Hive uses its metadata store and think about how we could use the same ideas,
 2018-10-17,,background,write 1 page on highly cited academic work on distributed systems with computational graphs that account for data locations,
