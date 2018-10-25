@@ -4,7 +4,7 @@
     "columns": [
       {
         "titles": "date_create",
-        "datatype": "date task was created"
+        "dc:description": "date task was created"
       },
       {
         "titles": "date_complete",
@@ -17,13 +17,14 @@
           "base": "factor",
           "extensible": true,
           "levels": {
-            "job": "preparing for a job after PhD, such as career events or writing resume",
-            "background": "background writing or literature review",
-            "draft": "writing new content",
-            "software": "general software that implements the described techniques",
-            "revise": "revising or editing existing content",
-            "support": "peripheral tasks, such as meetings, writing group, or preparing notes",
-            "example": "creating, investigating, or implementing examples"
+            "job": "preparing for a job after PhD, such as career events or writing resume"
+            , "background": "background writing or literature review",
+            , "draft": "writing new content"
+            , "software": "general software that implements the described techniques"
+            , "revise": "revising or editing existing content"
+            , "support": "peripheral tasks, such as meetings, writing group, or preparing notes"
+            , "example": "creating, investigating, or implementing examples"
+            , "experiment": "small experiments to understand what is possible"
           }
         },
         "dc:description": "how it relates to the greater goal of completing the dissertation"
