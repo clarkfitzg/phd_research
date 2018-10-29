@@ -1,5 +1,6 @@
 date_create,date_complete,category,task,notes
-2018-10-25,,revise,prepare and send Duncan document on PEMS example,
+2018-10-29,,revise,write equations for total execution time for PEMS scenarios,
+2018-10-25,2018-10-27,revise,prepare and send Duncan document on PEMS example,
 2018-10-24,,experiment,try processing data coming through netcat (nc),
 2018-10-23,2018-10-25,example,write 1 page on the data description for the PEMS data to start building the example,
 2018-10-19,2018-10-22,example,write Shauhin Alavi's example of calculating mean and standard deviation based on spatial interpolation,
