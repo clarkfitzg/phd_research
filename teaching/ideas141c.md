@@ -1,6 +1,6 @@
 ## Concepts
 
-### Workflow
+### Software Engineering
 
 __Errors__
 How to read a stack trace?
@@ -23,6 +23,11 @@ Use standard, existing tools where possible.
 Good example- R's Matrix package.
 Use the _minimium_ tool that gets the job done- if you can do it on a server in 2 minutes and you don't anticipate this growing, then why bother with Hadoop?
 
+__Unit Testing__
+Test driven development, write a test and documentation first.
+
+__Automation__
+`GNU make` works well, and we can use this to test everyone's code all at once.
 
 ### Data
 
