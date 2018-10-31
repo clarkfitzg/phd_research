@@ -69,7 +69,10 @@ __Map side join__
 One big table larger than memory, one small table that fits in memory, do something that requires joining the two.
 
 
-### Use cases
+### Project / HW ideas
 
 __Animal movements__
 Given GPS tracking data of where the monkeys have moved, describe how they behave.
+
+__Julia on GPU__
+Can compile and run Julia code directly?
