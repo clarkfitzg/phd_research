@@ -1,5 +1,7 @@
 date_create,date_complete,category,task,notes
-2018-10-29,,revise,write equations for total execution time for PEMS scenarios,
+2018-10-31,,example,find and implement a simple but interesting statistical streaming algorithm,
+2018-10-30,2018-10-30,write,draw first diagrams explaining different computational strategies for PEMS,
+2018-10-29,2018-10-29,revise,write equations for total execution time for PEMS scenarios,
 2018-10-25,2018-10-27,revise,prepare and send Duncan document on PEMS example,
 2018-10-24,,experiment,try processing data coming through netcat (nc),
 2018-10-23,2018-10-25,example,write 1 page on the data description for the PEMS data to start building the example,
