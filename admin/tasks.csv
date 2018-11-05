@@ -1,4 +1,5 @@
 date_create,date_complete,category,task,notes
+2018-10-31,,write,see what Tensorflow actually does- can we translate some R programs to tensorflow?,
 2018-10-31,,revise,rewrite traffic sensor according to Duncan's feedback,
 2018-10-31,,example,find and implement a simple but interesting statistical streaming algorithm,
 2018-10-30,2018-10-30,write,draw first diagrams explaining different computational strategies for PEMS,
