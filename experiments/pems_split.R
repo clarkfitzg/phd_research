@@ -23,7 +23,7 @@ pems_columns = function(nlanes = 8)
 process_file = function(fname, keepers = c("station", "flow2", "occupancy2"))
 {
     columns = pems_columns()
-    keep_col = keepers %in% names(columns)
+    keep_col = names(columns) %in% keepers
     columns[!keep_col] = "NULL"
 
     con = gzfile(fname, open = "rb")

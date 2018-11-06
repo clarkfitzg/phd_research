@@ -51,6 +51,9 @@ Leads nicely into C programming.
 __Data Representation__
 Sparse data structures can save on both space and runtime.
 
+__Low Rank Matrix Decompositions__
+Approximately represent large data more efficiently, see notes from Udell's talk.
+
 __stdin stdout__
 UNIX pipes- standard interfaces for data transfer between processes.
 Can show pipeline parallelism here.
