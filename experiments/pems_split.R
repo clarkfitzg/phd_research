@@ -8,55 +8,39 @@
 
 library(iotools)
 
-read30sec = function(file, posix_timestamp = FALSE, lanes = 1:2
-                     , numlanes = 8, nrows = 10000L, ...)
-{
-    ln = data.frame(number = rep(seq.int(numlanes), each = 3))
-    ln$name = paste0(rep(c("flow", "occupancy", "speed"), numlanes), ln$number)
-    ln$class = rep(c("integer", "numeric", "integer"), numlanes)
-    ln$keep = ln$number %in% lanes
-    ln$colname = ifelse(ln$keep, ln$name, "NULL")
-    ln$colclass = ifelse(ln$keep, ln$class, "NULL")
 
-    rawdata = read.table(file, header = FALSE, sep = ",", nrows = nrows
-        , col.names = c("timestamp", "station", ln$colname)
-        , colClasses = c("character", "integer", ln$colclass)
-        , ...)
-
-
-columns = c(
-    ln$name = paste0(rep(c("flow", "occupancy", "speed"), numlanes), ln$number)
-    ln$class = rep(c("integer", "numeric", "integer"), numlanes)
-    ln$keep = ln$number %in% lanes
-    ln$colname = ifelse(ln$keep, ln$name, "NULL")
-    ln$colclass = ifelse(ln$keep, ln$class, "NULL")
-
+# Return a vector of types with column names
 pems_columns = function(nlanes = 8)
 {
-
     lane_number = rep(seq.int(nlanes), each = 3)
-    column_title = rep(c("flow", "occupancy", "speed"), each = 3)
+    nm = rep(c("flow", "occupancy", "speed"), nlanes)
+    nm = paste0(nm, lane_number)
+    nm = c("timestamp", "station", nm)
+    out = rep(c("integer", "numeric", "integer"), nlanes)
+    out = c("POSIXct", "integer", out)
+    names(out) = nm
+    out
 }
 
 
-process_file = function(fname, keepers = c("timestamp", "station")
+process_file = function(fname, keepers = c("station", "flow2", "occupancy2"))
 {
+    columns = pems_columns()
+    keep_col = keepers %in% names(columns)
+    columns[!keep_col] = "NULL"
 
     con = gzfile(fname, open = "rb")
-
     reader = chunk.reader(con)
-
-    chunk = read.chunk(reader)
-
-    chunk.apply(reader, function(Xraw){
-        X = dstrsplit(Xraw, col_types = cols, sep = ",")
-        y = predict(fit, X)
+    out = chunk.apply(reader, function(chunk){
+        dstrsplit(chunk, col_types = columns, sep = ",")
         # Can't seem to get the row names out of here... Oh well.
-        write.csv.raw(y, yfile, append = TRUE, sep = ",", nsep = ",", col.names = FALSE)
-    }, CH.MAX.SIZE = chunksize)
-
+        #write.csv.raw(y, yfile, append = TRUE, sep = ",", nsep = ",", col.names = FALSE)
+    })
+    col.names[out] = names(columns[keep_col] )
+    out
 }
 
 
-
-mstrsplit
+system.time(
+    test <- process_file("~/data/pems/d04_text_station_raw_2016_04_13.txt.gz")
+)
