@@ -48,6 +48,9 @@ __Physical Data Types__
 What is an array of doubles?
 Leads nicely into C programming.
 
+__Vectorization__
+Intermediate copies, R's memory model.
+
 __Data Representation__
 Sparse data structures can save on both space and runtime.
 
