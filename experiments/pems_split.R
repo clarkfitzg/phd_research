@@ -33,6 +33,7 @@ process_file = function(fname, keepers = c("station", "flow2", "occupancy2"))
         # Can't seem to get the row names out of here... Oh well.
         #write.csv.raw(y, yfile, append = TRUE, sep = ",", nsep = ",", col.names = FALSE)
     })
+    close(con)
     colnames(out) = names(columns[keep_col] )
     out
 }
@@ -46,6 +47,12 @@ if(FALSE)
 system.time(
     test <- process_file(testfile)
 )
+#   user  system elapsed
+#  6.184   0.596   6.858
+#   user  system elapsed
+#  5.892   0.448   6.406
+
+
 
 
     con = gzfile(testfile, open = "rt")
