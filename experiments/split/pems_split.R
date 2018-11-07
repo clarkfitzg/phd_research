@@ -47,12 +47,38 @@ if(FALSE)
 system.time(
     test <- process_file(testfile)
 )
+
+# Defaults:
 #   user  system elapsed
 #  6.184   0.596   6.858
 #   user  system elapsed
 #  5.892   0.448   6.406
+#   user  system elapsed
+#  6.064   0.540   6.607
+
+system.time(write.table(test, "~/data/pems/threecolumns.csv"
+                        , sep = ",", row.names = FALSE, col.names = FALSE))
+#   user  system elapsed
+# 13.624   0.072  13.696
 
 
+split_column_name = "station"
+split_column = names(test) == split_column_name
+
+system.time(
+    ts <- split(test[, !split_column], test[, split_column])
+)
+#   user  system elapsed
+# 17.840  30.008  47.850
+# Ouch, this is extremely slow :(
+
+#rownames(test) = NULL
+
+system.time(
+    test2 <- test[order(test[, split_column_name]), ]
+)
+#   user  system elapsed
+#  1.064   0.112   1.176
 
 
     con = gzfile(testfile, open = "rt")
