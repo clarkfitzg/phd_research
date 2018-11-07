@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 
+# Pretty fast, because we use the sorting structure
+# real    0m9.673s
+# user    0m9.472s
+# sys     0m0.196s
+
+
 import csv
 import itertools
 import operator
@@ -15,11 +21,8 @@ def write_group(filename, rows, dd = datadir):
         writer.writerows(rows)
 
 
-f = open(fname)
-reader = csv.reader(f)
-grouped = itertools.groupby(reader, lambda x: x[0])
-for grp in grouped:
-    write_group(*grp)
-
-close(f)
-
+with open(fname) as f
+    reader = csv.reader(f)
+    grouped = itertools.groupby(reader, lambda x: x[0])
+    for grp in grouped:
+        write_group(*grp)
