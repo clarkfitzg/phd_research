@@ -80,6 +80,10 @@ system.time(
 #   user  system elapsed
 #  1.064   0.112   1.176
 
+system.time(write.table(test2, "~/data/pems/threecolumns_sorted.csv"
+                        , sep = ",", row.names = FALSE, col.names = FALSE))
+
+
 
     con = gzfile(testfile, open = "rt")
 
