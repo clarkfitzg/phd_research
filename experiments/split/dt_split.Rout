@@ -17,6 +17,8 @@ Type 'demo()' for some demos, 'help()' for on-line help, or
 'help.start()' for an HTML browser interface to help.
 Type 'q()' to quit R.
 
+[Previously saved workspace restored]
+
 > library(data.table)
 > 
 > # Only one thread
@@ -66,8 +68,8 @@ Type 'q()' to quit R.
 > if(TRUE)
 + {
 + 
-+     files = c(list.files(path = "/scratch/clarkf/pems/district3"),
-+               list.files(path = "/scratch/clarkf/pems/district4"))
++     files = c(list.files(path = "/scratch/clarkf/pems/district3", full.names = TRUE),
++               list.files(path = "/scratch/clarkf/pems/district4", full.names = TRUE))
 + 
 +     lapply(files, function(fname){
 +         tmp = read_file(fname) 
@@ -75,45 +77,21 @@ Type 'q()' to quit R.
 +     })
 + 
 + }
-Taking input= as a system command ('zcat d03_text_station_raw_2016_01_01.txt.gz') and a variable has been used in the expression passed to `input=`. Please use fread(cmd=...). There is a security concern if you are creating an app, and the app could have a malicious user, and the app is not running in a secure envionment; e.g. the app is running as root. Please read item 5 in the NEWS file for v1.11.6 for more information and for the option to suppress this message.
-gzip: d03_text_station_raw_2016_01_01.txt.gz: No such file or directory
-Error in setnames(x, value) : 
-  Can't assign 3 names to a 0 column data.table
-Calls: lapply ... colnames<- -> names<- -> names<-.data.table -> setnames
-In addition: Warning message:
-In data.table::fread(cmd, sep = ",", select = select) :
-  File '/tmp/RtmpZK1Znl/file975e22d1d8ea' has size 0. Returning a NULL data.table.
-recover called non-interactively; frames dumped, use debugger() to view
-> 
-> 
-> if(FALSE)
-+ {
-+     # On my local machine
-+ 
-+     testfile = "~/data/pems/d04_text_station_raw_2016_04_13.txt.gz"
-+ 
-+ system.time(
-+     t2 <- read_file(testfile)
-+ )
-+ # About the same as iotools
-+ #   user  system elapsed
-+ #  5.924   0.284   6.212
-+ 
-+ system.time(
-+     split_and_write(t2)
-+ )
-+ #   user  system elapsed
-+ #  2.532   0.104   2.634
-+ #    user  system elapsed
-+ #   1.356   0.188   1.552
-+ 
-+ # Takes under 10 seconds.
-+ # So we should be able to process 300 files like this in less than 
-+ # 3000 / 60 = 50 minutes
-+ # I can try different levels of parallelism to see when we hit the
-+ # bottleneck with disk IO.
-+ }
-> 
-> proc.time()
-   user  system elapsed 
-  0.374   0.049   0.415 
+Taking input= as a system command ('zcat /scratch/clarkf/pems/district3/d03_text_station_raw_2016_01_01.txt.gz') and a variable has been used in the expression passed to `input=`. Please use fread(cmd=...). There is a security concern if you are creating an app, and the app could have a malicious user, and the app is not running in a secure envionment; e.g. the app is running as root. Please read item 5 in the NEWS file for v1.11.6 for more information and for the option to suppress this message.
+Taking input= as a system command ('zcat /scratch/clarkf/pems/district3/d03_text_station_raw_2016_01_02.txt.gz') and a variable has been used in the expression passed to `input=`. Please use fread(cmd=...). There is a security concern if you are creating an app, and the app could have a malicious user, and the app is not running in a secure envionment; e.g. the app is running as root. Please read item 5 in the NEWS file for v1.11.6 for more information and for the option to suppress this message.
+Taking input= as a system command ('zcat /scratch/clarkf/pems/district3/d03_text_station_raw_2016_01_03.txt.gz') and a variable has been used in the expression passed to `input=`. Please use fread(cmd=...). There is a security concern if you are creating an app, and the app could have a malicious user, and the app is not running in a secure envionment; e.g. the app is running as root. Please read item 5 in the NEWS file for v1.11.6 for more information and for the option to suppress this message.
+Taking input= as a system command ('zcat /scratch/clarkf/pems/district3/d03_text_station_raw_2016_01_04.txt.gz') and a variable has been used in the expression passed to `input=`. Please use fread(cmd=...). There is a security concern if you are creating an app, and the app could have a malicious user, and the app is not running in a secure envionment; e.g. the app is running as root. Please read item 5 in the NEWS file for v1.11.6 for more information and for the option to suppress this message.
+Taking input= as a system command ('zcat /scratch/clarkf/pems/district3/d03_text_station_raw_2016_01_05.txt.gz') and a variable has been used in the expression passed to `input=`. Please use fread(cmd=...). There is a security concern if you are creating an app, and the app could have a malicious user, and the app is not running in a secure envionment; e.g. the app is running as root. Please read item 5 in the NEWS file for v1.11.6 for more information and for the option to suppress this message.
+Taking input= as a system command ('zcat /scratch/clarkf/pems/district3/d03_text_station_raw_2016_01_06.txt.gz') and a variable has been used in the expression passed to `input=`. Please use fread(cmd=...). There is a security concern if you are creating an app, and the app could have a malicious user, and the app is not running in a secure envionment; e.g. the app is running as root. Please read item 5 in the NEWS file for v1.11.6 for more information and for the option to suppress this message.
+Taking input= as a system command ('zcat /scratch/clarkf/pems/district3/d03_text_station_raw_2016_01_07.txt.gz') and a variable has been used in the expression passed to `input=`. Please use fread(cmd=...). There is a security concern if you are creating an app, and the app could have a malicious user, and the app is not running in a secure envionment; e.g. the app is running as root. Please read item 5 in the NEWS file for v1.11.6 for more information and for the option to suppress this message.
+Taking input= as a system command ('zcat /scratch/clarkf/pems/district3/d03_text_station_raw_2016_01_08.txt.gz') and a variable has been used in the expression passed to `input=`. Please use fread(cmd=...). There is a security concern if you are creating an app, and the app could have a malicious user, and the app is not running in a secure envionment; e.g. the app is running as root. Please read item 5 in the NEWS file for v1.11.6 for more information and for the option to suppress this message.
+Taking input= as a system command ('zcat /scratch/clarkf/pems/district3/d03_text_station_raw_2016_01_09.txt.gz') and a variable has been used in the expression passed to `input=`. Please use fread(cmd=...). There is a security concern if you are creating an app, and the app could have a malicious user, and the app is not running in a secure envionment; e.g. the app is running as root. Please read item 5 in the NEWS file for v1.11.6 for more information and for the option to suppress this message.
+Taking input= as a system command ('zcat /scratch/clarkf/pems/district3/d03_text_station_raw_2016_01_10.txt.gz') and a variable has been used in the expression passed to `input=`. Please use fread(cmd=...). There is a security concern if you are creating an app, and the app could have a malicious user, and the app is not running in a secure envionment; e.g. the app is running as root. Please read item 5 in the NEWS file for v1.11.6 for more information and for the option to suppress this message.
+Taking input= as a system command ('zcat /scratch/clarkf/pems/district3/d03_text_station_raw_2016_01_11.txt.gz') and a variable has been used in the expression passed to `input=`. Please use fread(cmd=...). There is a security concern if you are creating an app, and the app could have a malicious user, and the app is not running in a secure envionment; e.g. the app is running as root. Please read item 5 in the NEWS file for v1.11.6 for more information and for the option to suppress this message.
+Taking input= as a system command ('zcat /scratch/clarkf/pems/district3/d03_text_station_raw_2016_01_12.txt.gz') and a variable has been used in the expression passed to `input=`. Please use fread(cmd=...). There is a security concern if you are creating an app, and the app could have a malicious user, and the app is not running in a secure envionment; e.g. the app is running as root. Please read item 5 in the NEWS file for v1.11.6 for more information and for the option to suppress this message.
+Taking input= as a system command ('zcat /scratch/clarkf/pems/district3/d03_text_station_raw_2016_01_15.txt.gz') and a variable has been used in the expression passed to `input=`. Please use fread(cmd=...). There is a security concern if you are creating an app, and the app could have a malicious user, and the app is not running in a secure envionment; e.g. the app is running as root. Please read item 5 in the NEWS file for v1.11.6 for more information and for the option to suppress this message.
+Taking input= as a system command ('zcat /scratch/clarkf/pems/district3/d03_text_station_raw_2016_01_16.txt.gz') and a variable has been used in the expression passed to `input=`. Please use fread(cmd=...). There is a security concern if you are creating an app, and the app could have a malicious user, and the app is not running in a secure envionment; e.g. the app is running as root. Please read item 5 in the NEWS file for v1.11.6 for more information and for the option to suppress this message.
+Taking input= as a system command ('zcat /scratch/clarkf/pems/district3/d03_text_station_raw_2016_01_17.txt.gz') and a variable has been used in the expression passed to `input=`. Please use fread(cmd=...). There is a security concern if you are creating an app, and the app could have a malicious user, and the app is not running in a secure envionment; e.g. the app is running as root. Please read item 5 in the NEWS file for v1.11.6 for more information and for the option to suppress this message.
+Taking input= as a system command ('zcat /scratch/clarkf/pems/district3/d03_text_station_raw_2016_01_18.txt.gz') and a variable has been used in the expression passed to `input=`. Please use fread(cmd=...). There is a security concern if you are creating an app, and the app could have a malicious user, and the app is not running in a secure envionment; e.g. the app is running as root. Please read item 5 in the NEWS file for v1.11.6 for more information and for the option to suppress this message.
+Taking input= as a system command ('zcat /scratch/clarkf/pems/district3/d03_text_station_raw_2016_01_19.txt.gz') and a variable has been used in the expression passed to `input=`. Please use fread(cmd=...). There is a security concern if you are creating an app, and the app could have a malicious user, and the app is not running in a secure envionment; e.g. the app is running as root. Please read item 5 in the NEWS file for v1.11.6 for more information and for the option to suppress this message.
+Taking input= as a system command ('zcat /scratch/clarkf/pems/district3/d03_text_station_raw_2016_01_20.txt.gz') and a variable has been used in the expression passed to `input=`. Please use fread(cmd=...). There is a security concern if you are creating an app, and the app could have a malicious user, and the app is not running in a secure envionment; e.g. the app is running as root. Please read item 5 in the NEWS file for v1.11.6 for more information and for the option to suppress this message.
