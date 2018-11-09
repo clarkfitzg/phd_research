@@ -64,4 +64,9 @@ system.time(
 #    user  system elapsed
 #   1.356   0.188   1.552
 
+# Takes under 10 seconds.
+# So we should be able to process 300 files like this in less than 
+# 3000 / 60 = 50 minutes
+# I can try different levels of parallelism to see when we hit the
+# bottleneck with disk IO.
 }
