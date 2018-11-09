@@ -58,13 +58,12 @@ read_file_iotools = function(fname, keepers = c("station", "flow2", "occupancy2"
 read_file_datatable = function(fname, keepers = c("station", "flow2", "occupancy2"))
 {
 
-    columns = pems_columns()
-    keep_col = names(columns) %in% keepers
-    columns[!keep_col] = "NULL"
+    select = match(keepers, names(pems_columns()))
 
     #con = gzfile(fname, open = "rb")
     cmd = paste0("zcat ", fname)
-    data.table::fread(cmd, sep = ",", colClasses = unname(columns))
+    out = data.table::fread(cmd, sep = ",", select = select)
+    colnames(out) = keepers
 }
 
 
