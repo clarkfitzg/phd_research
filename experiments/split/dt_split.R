@@ -33,11 +33,14 @@ read_file = function(fname, keepers = c("station", "flow2", "occupancy2"))
 split_and_write = function(input, split_column_name = "station")
 {
     topdir = dirname(input$fname)
-    file_no_extension = gsub("\\..*", "", input$fname)
+    file_no_extension = gsub("\\..*", "", basename(input$fname))
+
+    # If we put the splitting column column name earlier in the directory
+    # structure then it shows more quickly what we're splitting by.
     newdir = paste0(topdir, "/", split_column_name, "/", file_no_extension)
     dir.create(newdir, recursive = TRUE)
 
-    input$data[, fwrite(.SD, paste0(newdir, station), col.names = FALSE), by=station]
+    input$data[, fwrite(.SD, paste0(newdir, "/", station), col.names = FALSE), by=station]
 }
 
 
@@ -56,5 +59,9 @@ system.time(
 system.time(
     split_and_write(t2)
 )
+#   user  system elapsed
+#  2.532   0.104   2.634
+#    user  system elapsed
+#   1.356   0.188   1.552
 
 }
