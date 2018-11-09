@@ -64,6 +64,7 @@ read_file_datatable = function(fname, keepers = c("station", "flow2", "occupancy
     cmd = paste0("zcat ", fname)
     out = data.table::fread(cmd, sep = ",", select = select)
     colnames(out) = keepers
+    out
 }
 
 
