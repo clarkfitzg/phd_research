@@ -5,6 +5,11 @@
 
 library(iotools)
 
+library(data.table)
+
+# Only one thread
+setDTthreads(1L)
+
 
 # Return a vector of types with column names
 pems_columns = function(nlanes = 8)
@@ -20,7 +25,7 @@ pems_columns = function(nlanes = 8)
 }
 
 
-process_file = function(fname, keepers = c("station", "flow2", "occupancy2"))
+read_file_iotools = function(fname, keepers = c("station", "flow2", "occupancy2"))
 {
     columns = pems_columns()
     keep_col = names(columns) %in% keepers
@@ -30,13 +35,38 @@ process_file = function(fname, keepers = c("station", "flow2", "occupancy2"))
     reader = chunk.reader(con)
     out = chunk.apply(reader, function(chunk){
         dstrsplit(chunk, col_types = columns, sep = ",")
-        # Can't seem to get the row names out of here... Oh well.
-        #write.csv.raw(y, yfile, append = TRUE, sep = ",", nsep = ",", col.names = FALSE)
     })
     close(con)
     colnames(out) = names(columns[keep_col] )
+    row.names(out) = NULL
     out
 }
+
+
+# Interesting Note from Matt Dowle in data.table NEWS:
+#
+# 1. `fread()` can now read `.gz` and `.bz2` files directly; e.g.
+# `fread("file.csv.gz")`. It uses `R.utils::decompressFile` to decompress
+# to a `tempfile()` which is then read by `fread()` in the usual way. For
+# greater speed on large RAM servers, it is recommended to set `TEMPDIR` to
+# `/dev/shm` to use ramdisk for temporary file; see `?tempdir`. Reading a
+# remote compressed file in one step will be supported in the next version;
+# i.e. `fread("http://domain.org/file.csv.bz2")`.
+#
+# Also tmpfs https://en.wikipedia.org/wiki/Tmpfs
+
+read_file_datatable = function(fname, keepers = c("station", "flow2", "occupancy2"))
+{
+
+    columns = pems_columns()
+    keep_col = names(columns) %in% keepers
+    columns[!keep_col] = "NULL"
+
+    #con = gzfile(fname, open = "rb")
+    cmd = paste0("zcat ", fname)
+    data.table::fread(cmd, sep = ",", colClasses = unname(columns))
+}
+
 
 
 if(FALSE)
@@ -45,9 +75,8 @@ if(FALSE)
     testfile = "~/data/pems/d04_text_station_raw_2016_04_13.txt.gz"
 
 system.time(
-    test <- process_file(testfile)
+    test <- read_file_iotools(testfile)
 )
-
 # Defaults:
 #   user  system elapsed
 #  6.184   0.596   6.858
@@ -55,6 +84,16 @@ system.time(
 #  5.892   0.448   6.406
 #   user  system elapsed
 #  6.064   0.540   6.607
+
+system.time(
+    t2 <- read_file_datatable(testfile)
+)
+# About the same as iotools
+#   user  system elapsed
+#  5.924   0.284   6.212
+
+
+
 
 system.time(write.table(test, "~/data/pems/threecolumns.csv"
                         , sep = ",", row.names = FALSE, col.names = FALSE))
@@ -65,14 +104,36 @@ system.time(write.table(test, "~/data/pems/threecolumns.csv"
 split_column_name = "station"
 split_column = names(test) == split_column_name
 
+
+
 system.time(
     ts <- split(test[, !split_column], test[, split_column])
 )
+
 #   user  system elapsed
 # 17.840  30.008  47.850
+#   user  system elapsed
+# 16.708  11.924  28.639
 # Ouch, this is extremely slow :(
 
-#rownames(test) = NULL
+system.time(
+    h <- by(test, test[, split_column], head)
+)
+# This is slow too.
+
+library(data.table)
+
+tdt = as.data.table(test)
+setkeyv(tdt, split_column_name)
+
+system.time(
+    sp <- tdt[, .SD[1:6], by=station]
+)
+# Much faster
+#   user  system elapsed
+#  0.612   0.012   0.623
+
+
 
 system.time(
     test2 <- test[order(test[, split_column_name]), ]
