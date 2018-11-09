@@ -44,8 +44,23 @@ split_and_write = function(input, split_column_name = "station")
 }
 
 
+if(TRUE)
+{
+
+    files = c(list.files(path = "/scratch/clarkf/pems/district3"),
+              list.files(path = "/scratch/clarkf/pems/district4"))
+
+    lapply(files, function(fname){
+        tmp = read_file(fname) 
+        split_and_write(tmp)
+    })
+
+}
+
+
 if(FALSE)
 {
+    # On my local machine
 
     testfile = "~/data/pems/d04_text_station_raw_2016_04_13.txt.gz"
 

@@ -15,4 +15,5 @@ d = data.frame(region = sample.int(nregions, size = n, replace = TRUE)
 
 table(d[1:100, ])
 
-system.time(table(d))
+# 13 minutes
+system.time(result <- table(d))
