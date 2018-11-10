@@ -3,6 +3,10 @@
 # real    96m11.425s
 # user    81m25.427s
 # sys     12m52.013s
+#
+# I watched iostat while this ran, and the read and write speeds never went beyond
+# ~20 MB/sec, which is much lower than the physical limit which should be
+# greater than 100 MB/sec.
 
 library(data.table)
 
