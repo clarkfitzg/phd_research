@@ -1,3 +1,9 @@
+# $ time R CMD BATCH dt_split.R                                                                     
+# 
+# real    96m11.425s
+# user    81m25.427s
+# sys     12m52.013s
+
 library(data.table)
 
 # Only one thread
