@@ -82,3 +82,8 @@ Given GPS tracking data of where the monkeys have moved, describe how they behav
 
 __Julia on GPU__
 Can compile and run Julia code directly?
+
+__Summing up Random Variables__
+How many times do we need to add up Cauchy variable before the sum is infinite?
+Or any other RV where expectation is not defined.
+Could also introduce some numerical methods.
