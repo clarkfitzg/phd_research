@@ -58,3 +58,8 @@ mclapply(indices, work3)
 # Yes, also works fine. So there's no issue with the inherited data
 # structures.
 x3 = as.matrix(x)
+
+
+n = 1e6
+p = 1e3
+y = big.matrix(n, p, init = 1, backingfile = "y.bin", descriptorfile = "y.bin.desc")
