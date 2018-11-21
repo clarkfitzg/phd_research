@@ -13,7 +13,7 @@ lhsVectorFuncs = c("[")
 # There are many, many more
 rhsVectorFuncs = c("`<`", "`[`", "exp")
 
-loadFuncs = c("load")
+loadFuncs = c("read", "load")
 saveFuncs = c("save")
 
 types = data.frame(name = c(rhsVectorFuncs, loadFuncs, saveFuncs)
@@ -41,7 +41,7 @@ funcType = function(funcName, funcTypeTable, fallbackType = "general")
 # lhs[ss] = func(args)
 
 code = list(lhs = lapply(g@code, `[[`, 2)
-    , func = lapply(g@code, `[[`, c(3, 1))
+    , func = as.character(lapply(g@code, `[[`, c(3, 1)))
     , args = lapply(g@code, function(e) as.list(e[[3]])[-1])
     )
 
@@ -87,4 +87,11 @@ code$funcType = sapply(code$func, funcType, funcTypeTable = types)
 # the data. Extending to include the reduce will also help with the 2nd
 # case.
 
-
+# Returns an integer vector of the same length as funcType that defines
+# which statements should be combined into groups. NA means that statement
+# must execute on the master.
+# The number of distinct groups is the number of passes to make through the
+# data, so fewer is better!
+fuse = function(funcType, graph)
+{
+}
