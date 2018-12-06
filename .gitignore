@@ -1,3 +1,7 @@
+# bigmemory backing files
+*.bin
+*.bin.desc
+
 __pycache__
 *.csv
 data/*

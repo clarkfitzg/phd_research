@@ -88,3 +88,32 @@ __Summing up Random Variables__
 How many times do we need to add up Cauchy variable before the sum is infinite?
 Or any other RV where expectation is not defined.
 Could also introduce some numerical methods.
+
+
+### Data sets
+
+I would like to do something with open source software data.
+Log file processing certainly motivates big data...
+
+Big list: https://github.com/awesomedata/awesome-public-datasets
+
+
+__Maybe__
+
+USAspending.gov database. 44.8 GB PostgresSQL archive https://files.usaspending.gov/database_download/
+Can ask some interesting questions- how does the federal government spend the taxpayer money?
+Digital Accountability and Transparency Act of 2014- analyzing this data is one way for citizens to hold government accountable.
+Do the numbers add up?
+We could do some text processing to see what the government cares about.
+Detect outlying expenses. How similar are two gov organizations?
+
+Raw Travis build logs: https://travistorrent.testroots.org/buildlogs/20-12-2016/ 
+nice table: https://travistorrent.testroots.org/page_dataformat/
+3.7 million rows and 62 columns, 1.7 GB in memory.
+
+Zenodo software library dependendency information: https://zenodo.org/record/1196312#.W-274ZNKjOQ
+7 CSV tables, good for relational concepts.
+
+__No__
+
+2019 JSM Data Challenge. Data too small, only 9 MB. Could mention it though. Abstract submission due Feb 4th.
