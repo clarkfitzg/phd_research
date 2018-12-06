@@ -25,6 +25,7 @@ Never assume you know what's going on.
 Measure your program.
 Profiling is different than a microbenchmark
 "Premature optimization is the root of all evil."
+When are copies made? `tracemem` in R.
 
 __Logging__
 Save the results to look at them later.
