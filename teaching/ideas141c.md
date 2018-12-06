@@ -81,6 +81,8 @@ One big table larger than memory, one small table that fits in memory, do someth
 __Animal movements__
 Given GPS tracking data of where the monkeys have moved, describe how they behave.
 
+__Compiled Code__
+
 __Julia on GPU__
 Can compile and run Julia code directly?
 
@@ -88,6 +90,9 @@ __Summing up Random Variables__
 How many times do we need to add up Cauchy variable before the sum is infinite?
 Or any other RV where expectation is not defined.
 Could also introduce some numerical methods.
+
+__Metaprogramming__
+Given a table of equations, look up the right equation and apply it.
 
 
 ### Data sets
