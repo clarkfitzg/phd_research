@@ -1,3 +1,25 @@
+# STA 141C Big Data & High Performance Statistical Computing
+
+Catalog Description:
+
+> High­performance computing in high­level data analysis languages; different computational approaches and paradigms for efficient analysis of big data; interfaces to compiled languages; R and Python programming languages; high­level parallel computing; MapReduce; parallel algorithms and reasoning.
+
+Looking over the syllabus, proposed emphasis is as follows:
+
+- 0.1 profiling / efficiency
+- 0.1 bash
+- 0.2 compiled code
+- 0.4 Python
+- 0.2 Parallel / distributed
+
+James and Nick are doing all of 141B in Python.
+If I teach Python I have to do it for all those in 141A who never saw it, and this will be boring for those that already took 141B.
+Instead I can just let them use Python (or any other language) if they're more comfortable with it.
+The concepts will be the same in both languages.
+Julia, as an up and comer, that's now at 1.0, might be good to demonstrate the compiled languages.
+I'd prefer that over Rcpp.
+I like that C really forces you to understand data types, memory, etc.
+
 ## Concepts
 
 ### Writing
@@ -41,6 +63,9 @@ Test driven development, write a test and documentation first.
 
 __Automation__
 `GNU make` works well, and we can use this to test everyone's code all at once.
+
+__Code Review__
+How to talk about others code.
 
 
 ### Data
