@@ -4,7 +4,7 @@
 #
 # All it does is grep for a word in one column, and return the matches.
 #
-# This version of the script won't work on the full data because DATAFILE is too big.
+# This version of the script won't work on the full data because DATAFILE is too big to fit in memory.
 
 COLUMN = "description"
 WORD = "education"
@@ -15,5 +15,5 @@ dc = d[, COLUMN]
 
 output = grep(WORD, dc, ignore.case = TRUE, value = TRUE)
 
-fname = paste0("~/data/", 
-write.table(output, fname
+fname = paste0("~/data/", COLUMN, "-", WORD, ".txt")
+write(output, fname)
