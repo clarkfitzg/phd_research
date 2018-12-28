@@ -13,9 +13,12 @@ input = file("stdin")
 open(input)
 
 output = stdout()
+#browser()
 
-while(isIncomplete(input)){
+while(TRUE){
     x = readLines(input, n = NLINES)
+    if(length(x) == 0)
+        break
     result = grep(WORD, x, ignore.case = TRUE, value = TRUE)
     writeLines(result, con = output)
 }
