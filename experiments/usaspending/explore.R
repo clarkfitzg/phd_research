@@ -33,16 +33,19 @@ head_table = function(tbl, n = 10, connection = con)
     dbFetch(rs)
 }
 
-examples = lapply(df$table[1:10], head_table)
-names(examples) = df$table[1:10]
+examples = lapply(df$table, head_table)
+names(examples) = df$table
 
 names(examples)
 
 # Interesting ones:
 # transaction_normalized
+# awards
 # transaction_fpds
 # transaction_fabs award_description, cfda_title
 
 names(examples[[10]])
 
 examples[[3]]
+
+
