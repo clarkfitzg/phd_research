@@ -1,0 +1,5 @@
+--\copy (Select * From foo) To '/tmp/test.csv' With CSV
+--Result should have same number of rows as awards, 71 million
+-- Run after creating the temporary table using the awards.sql script
+
+\copy awards_with_agency To '/scratch/usaspending/awards.csv' With CSV HEADER
