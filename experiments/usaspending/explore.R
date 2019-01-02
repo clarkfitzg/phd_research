@@ -1,5 +1,4 @@
 library(DBI)
-
 library(RPostgreSQL)
 
 
@@ -49,3 +48,4 @@ names(examples[[10]])
 examples[[3]]
 
 
+dbDisconnect(con)

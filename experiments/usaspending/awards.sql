@@ -1,6 +1,6 @@
-DROP TABLE awards_with_agency;
+--DROP TABLE awards_with_agency;
 
-CREATE TEMP TABLE awards_with_agency AS
+--CREATE TEMP TABLE awards_with_agency AS
 SELECT a.id
     , a.total_obligation
     , a.period_of_performance_start_date
