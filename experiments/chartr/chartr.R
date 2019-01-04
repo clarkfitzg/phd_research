@@ -109,3 +109,9 @@ summary(fit1c)
 # translation.
 
 # Does R actually do this?
+# Looking in main.c in the source for chartr we see loops over the elements
+# with:
+#       cbuf = CallocCharBuf(strlen(xi));
+# Looking in R_ext/RS.hh we see that this does the memory allocation.
+# So yes, it's doing what I expected, namely allocating memory to do the
+# actual work at each iteration.
