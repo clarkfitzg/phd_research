@@ -1,10 +1,16 @@
 # Server
 
+Resources
+
+- Gauss wiki https://wiki.cse.ucdavis.edu/support/systems/gauss
+- Paul Baines introduction to Gauss slides https://wiki.cse.ucdavis.edu/_media/support/systems/intro_to_gauss_slides.pdf
+
 ## moving files between machines
 
 We don't like to move large data sets because it takes a long time.
 But sometimes we have to do it.
 `scp` (secure copy) and `sftp` (secure file transfer program) are two popular command line tools to do this.
+Consider `rsync` if you need to move files more regularly.
 
 Here's an example of how to use `scp`:
 
@@ -18,8 +24,11 @@ To make sure this worked I can log in to the server and verify that the file exi
 
 If something goes wrong then I can use verbose mode by writing `scp -v` rather than `scp`.
 I can learn about this flag by running `man scp`, which states:
+
 ```
      -v      Verbose mode.  Causes scp and ssh(1) to print debugging messages about their
              progress.  This is helpful in debugging connection, authentication, and con‐
              figuration problems.
 ```
+
+
