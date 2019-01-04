@@ -33,20 +33,35 @@ experiment = function(n_old, len_x, nchar_x, ntimes = 15L, nkeep = 10L, char = l
     new = sample(char, size = n_old)
     new = paste(new, collapse = "")
     x = replicate(len_x, random_string(nchar_x, char))
-    tm = microbenchmark(chartr(old, new, x), ntimes = ntimes)
+    expr = quote(chartr(old, new, x))
+    tm = microbenchmark(list = list(expr), ntimes = ntimes)
     times = sort(tm$time)
     times = times[seq(nkeep)]
     data.frame(n_old = n_old, len_x = len_x, nchar_x = nchar_x, time = times)
 }
 
+# Test it out
+experiment(10, 10000, 20)
+
 params = expand.grid(n_old = c(1, 2, 5, 10, 20, 40)
-    , len_x = c(1, 10, 100, 1000, 5000)
-    , nchar_x = c(1, 10, 100, 1000)
+    , len_x = c(1, 10, 100, 1000)
+    , nchar_x = c(1, 10, 100, 500)
     )
 
 args = do.call(list, params)
-args$FUN = experiment
+args$f = experiment
 
 system.time(
-raw_result <- do.call(mapply, args)
+raw_result <- do.call(Map, args)
 )
+
+result = do.call(rbind, raw_result)
+
+fit = lm(time ~ n_old + len_x * nchar_x, data = result)
+
+summary(fit)
+
+# This is weird.
+# The times are NOT as I expected.
+# Aw, jeez. It's because microbenchmark is timing the expression ntimes.
+# I passed that instead of `times` as the argument.
