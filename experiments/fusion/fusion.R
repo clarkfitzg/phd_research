@@ -76,7 +76,7 @@ code$funcType = sapply(code$func, funcType, funcTypeTable = types)
 # so we know that `cond` is also distributed, because it's the result of a
 # vectorized function call on `x`.
 
-# This relates to something I did years ago, and that foreach and futures
+# This relates to something I did in 2016, and that foreach and futures
 # also do- check which variables are needed and possibly export them.
 
 # If the data fits in memory then these two approaches are pretty similar.
@@ -95,3 +95,5 @@ code$funcType = sapply(code$func, funcType, funcTypeTable = types)
 fuse = function(funcType, graph)
 {
 }
+
+# Need to test this against several types of graphs and code.

@@ -1,0 +1,117 @@
+# Fri Jan  4 05:51:34 PST 2019
+#
+# I'm looking for an example of string processing where I can precisely
+# estimate the time required to do it all. `gsub` is no good because of the
+# complexities of regular expression.
+#
+# chartr substitutes one character for another. I expect that the run time
+# for this function is linear in: 
+#
+# the number of lookups X length of string vector to translate X size of individual strings
+
+# Side Note:
+# Hmm, when I do microbenchmark() on very simple experssions the first time
+# is much slower than the others. That suggests I should ignore the larger
+# ones.
+
+library(microbenchmark)
+
+letters2 = c(letters, LETTERS)
+
+random_string = function(nchar_x, char)
+{
+    out = sample(char, size = nchar_x, replace = TRUE)
+    paste(out, collapse = "")
+}
+
+# Parameter names correspond to those in chartr
+# Repeat the timings `ntimes` and keep the `nkeep` fastest.
+experiment = function(n_old, len_x, nchar_x, ntimes = 15L, nkeep = 10L, char = letters2)
+{
+    old = sample(char, size = n_old)
+    old = paste(old, collapse = "")
+    new = sample(char, size = n_old)
+    new = paste(new, collapse = "")
+    x = replicate(len_x, random_string(nchar_x, char))
+    #expr = quote(chartr(old, new, x))
+    bm = microbenchmark(chartr(old, new, x), times = ntimes)
+    times = sort(bm$time)
+    times = times[seq(nkeep)]
+    data.frame(n_old = n_old, len_x = len_x, nchar_x = nchar_x, time = times)
+}
+
+# Test it out
+experiment(10, 10000, 20)
+
+params = expand.grid(n_old = c(1, 2, 5, 10, 20, 40)
+    , len_x = 100 * seq(10)
+    , nchar_x = 20 * seq(10)
+    )
+
+args = do.call(list, params)
+args$f = experiment
+
+system.time(
+raw_result <- do.call(Map, args)
+)
+
+result = do.call(rbind, raw_result)
+
+fit = lm(time ~ n_old * len_x * nchar_x, data = result)
+
+summary(fit)
+
+# R^2 of 0.97, nice.
+# The interaction term is most significant, just as I expected.
+
+# The QQ plot shows heavy tails.
+# I guess that's the way it goes- things can be linear but not
+# necessarily normal.
+
+# There's a linear term in the length of x.
+# This makes sense, because R has to allocate a new vector of length x to
+# hold the result, and this should take linear time.
+# I forgot about this with my initial time estimate.
+
+fit1b = lm(time ~ len_x + len_x:nchar_x + n_old:len_x:nchar_x, data = result)
+summary(fit1b)
+
+# What about the linear term in len_x:nchar_x ?
+# Why should this term appear?
+# It's an order of magnitude smaller than the len_x term.
+# That's ok, because it's a 'squared' term.
+
+# If I exclude it from the model then R^2 drops way down from 0.97 to
+# 0.82, which means that it's still pretty important.
+
+fit2 = lm(time ~ len_x + n_old:len_x:nchar_x, data = result)
+summary(fit2)
+
+
+fit1c = lm(time ~ len_x:nchar_x + n_old:len_x:nchar_x, data = result)
+summary(fit1c)
+
+# When I exclude the len_x term we still see an R^2 of 0.97.
+# Together this means that len_x is not that important if we know
+# len_x:nchar_x.
+# Why should this be?
+# It makes perfect sense if we were manually allocating space for the
+# actual physical result, meaning the C level char arrays, because we need
+# to allocate space linear in len_x:nchar_x.
+
+# I guess that R _would_ have to allocate this space inside chartr, even if
+# it ultimately stores the final result of strings using an integer lookup
+# table.
+# The reason is that chartr needs to actually do this low level
+# manipulation _somewhere_. I can imagine various ways of doing it. One
+# straightforward way is for each element of the vector, initialize a new C
+# level character array with the contents of the old one, and then do the
+# translation.
+
+# Does R actually do this?
+# Looking in main.c in the source for chartr we see loops over the elements
+# with:
+#       cbuf = CallocCharBuf(strlen(xi));
+# Looking in R_ext/RS.hh we see that this does the memory allocation.
+# So yes, it's doing what I expected, namely allocating memory to do the
+# actual work at each iteration.

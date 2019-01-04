@@ -1,0 +1,1 @@
+\COPY transaction_normalized to '/scratch/usaspending/transaction_normalized.csv' CSV HEADER
