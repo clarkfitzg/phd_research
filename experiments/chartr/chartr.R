@@ -33,8 +33,8 @@ experiment = function(n_old, len_x, nchar_x, ntimes = 15L, nkeep = 10L, char = l
     new = sample(char, size = n_old)
     new = paste(new, collapse = "")
     x = replicate(len_x, random_string(nchar_x, char))
-    expr = quote(chartr(old, new, x))
-    bm = microbenchmark(list = list(expr), times = ntimes)
+    #expr = quote(chartr(old, new, x))
+    bm = microbenchmark(chartr(old, new, x), times = ntimes)
     times = sort(bm$time)
     times = times[seq(nkeep)]
     data.frame(n_old = n_old, len_x = len_x, nchar_x = nchar_x, time = times)
@@ -44,8 +44,8 @@ experiment = function(n_old, len_x, nchar_x, ntimes = 15L, nkeep = 10L, char = l
 experiment(10, 10000, 20)
 
 params = expand.grid(n_old = c(1, 2, 5, 10, 20, 40)
-    , len_x = c(1, 10, 100, 1000)
-    , nchar_x = c(1, 10, 100, 500)
+    , len_x = 100 * seq(10)
+    , nchar_x = 20 * seq(10)
     )
 
 args = do.call(list, params)
@@ -61,5 +61,9 @@ fit = lm(time ~ n_old * len_x * nchar_x, data = result)
 
 summary(fit)
 
-# R^2 of 0.985, nice.
+# R^2 of 0.97, nice.
 # The interaction term is most significant, just as I expected.
+
+# The QQ plot shows heavy tails.
+# I guess that's the way it goes- things can be linear but not
+# necessarily normal.
