@@ -20,7 +20,8 @@ letters2 = c(letters, LETTERS)
 
 random_string = function(nchar_x, char)
 {
-    sample(char, size = nchar_x, replace = TRUE)
+    out = sample(char, size = nchar_x, replace = TRUE)
+    paste(out, collapse = "")
 }
 
 # Parameter names correspond to those in chartr
@@ -28,12 +29,24 @@ random_string = function(nchar_x, char)
 experiment = function(n_old, len_x, nchar_x, ntimes = 15L, nkeep = 10L, char = letters2)
 {
     old = sample(char, size = n_old)
+    old = paste(old, collapse = "")
     new = sample(char, size = n_old)
+    new = paste(new, collapse = "")
     x = replicate(len_x, random_string(nchar_x, char))
     tm = microbenchmark(chartr(old, new, x), ntimes = ntimes)
     times = sort(tm$time)
-    times = time[seq(nkeep)]
+    times = times[seq(nkeep)]
     data.frame(n_old = n_old, len_x = len_x, nchar_x = nchar_x, time = times)
 }
 
-params = 
+params = expand.grid(n_old = c(1, 2, 5, 10, 20, 40)
+    , len_x = c(1, 10, 100, 1000, 5000)
+    , nchar_x = c(1, 10, 100, 1000)
+    )
+
+args = do.call(list, params)
+args$FUN = experiment
+
+system.time(
+raw_result <- do.call(mapply, args)
+)
