@@ -5,9 +5,9 @@
 # complexities of regular expression.
 #
 # chartr substitutes one character for another. I expect that the run time
-# for this function is linear in both the lookup set of characters
-# (length of 1st and 2nd args),
-# and the number of characters to be translated (3rd arg).
+# for this function is linear in: 
+#
+# the number of lookups X length of string vector to translate X size of individual strings
 
 # Side Note:
 # Hmm, when I do microbenchmark() on very simple experssions the first time
@@ -34,8 +34,8 @@ experiment = function(n_old, len_x, nchar_x, ntimes = 15L, nkeep = 10L, char = l
     new = paste(new, collapse = "")
     x = replicate(len_x, random_string(nchar_x, char))
     expr = quote(chartr(old, new, x))
-    tm = microbenchmark(list = list(expr), ntimes = ntimes)
-    times = sort(tm$time)
+    bm = microbenchmark(list = list(expr), times = ntimes)
+    times = sort(bm$time)
     times = times[seq(nkeep)]
     data.frame(n_old = n_old, len_x = len_x, nchar_x = nchar_x, time = times)
 }
@@ -57,11 +57,9 @@ raw_result <- do.call(Map, args)
 
 result = do.call(rbind, raw_result)
 
-fit = lm(time ~ n_old + len_x * nchar_x, data = result)
+fit = lm(time ~ n_old * len_x * nchar_x, data = result)
 
 summary(fit)
 
-# This is weird.
-# The times are NOT as I expected.
-# Aw, jeez. It's because microbenchmark is timing the expression ntimes.
-# I passed that instead of `times` as the argument.
+# R^2 of 0.985, nice.
+# The interaction term is most significant, just as I expected.
