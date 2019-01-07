@@ -136,17 +136,18 @@ uni = uni[uni != "-"]
 random_string(10, uni)
 
 # Start with 2 cores.
-experiment_serial_parallel = function(n_chars_replace, data_size, nchar_x = 10L, len_x = data_size / nchar_x, mc.cores = 2L, char = uni)
+experiment_serial_parallel = function(n_chars_replace, data_size, nchar_x = 500L, len_x = data_size / nchar_x, mc.cores = 2L, char = uni)
 {
     old = sample(char, size = n_chars_replace)
     old = paste(old, collapse = "")
     new = sample(char, size = n_chars_replace)
     new = paste(new, collapse = "")
-# Mon Jan  7 07:58:28 PST 2019
-# This doesn't seem to be fixing the problem.
-#    maxchar = max(nchar(old), nchar(new))
-#    old = substr(old, 1L, stop = maxchar)
-#    new = substr(new, 1L, stop = maxchar)
+
+# Fixes length mismatch. Not sure yet why it happens.
+    len = min(nchar(old), nchar(new))
+    old = substr(old, 1L, stop = len)
+    new = substr(new, 1L, stop = len)
+
     x = replicate(len_x, random_string(nchar_x, char))
     #expr = quote(chartr(old, new, x))
     time_serial = microbenchmark(chartr(old, new, x), times = 1L)$time
@@ -155,7 +156,7 @@ experiment_serial_parallel = function(n_chars_replace, data_size, nchar_x = 10L,
 }
 
 params = expand.grid(n_chars_replace = 1000 * seq(4)
-    , data_size = 1e4 * seq(4)
+    , data_size = 1e5 * seq(4)
     )
 
 args = do.call(list, params)
@@ -169,7 +170,7 @@ result = do.call(rbind, raw_result)
 
 result$speedup = result$time_serial / result$time_parallel
 
-# Even as I vary the parameters, I don't ever see any speedup.
+# FINALLY! speedup > 1. I knew we'd get it eventually.
 range(result$speedup)
 
 # Maybe this means that we don't always _want_ to fuse vectorized
