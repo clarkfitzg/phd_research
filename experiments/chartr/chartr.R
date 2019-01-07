@@ -123,6 +123,13 @@ summary(fit1c)
 
 library(parallel)
 
+library(Unicode)
+
+unicode = u_scripts("Common")[[1]]
+unicode = as.u_char(unicode)
+unicode = as.integer(unicode)
+unicode = intToUtf8(unicode)
+
 # Start with 2 cores.
 experiment_serial_parallel = function(n_chars_replace, data_size, nchar_x = 10L, len_x = data_size / nchar_x, mc.cores = 2L, char = letters2)
 {
