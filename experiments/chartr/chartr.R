@@ -15,6 +15,9 @@
 # ones.
 
 library(microbenchmark)
+library(parallel)
+library(Unicode)
+
 
 letters2 = c(letters, LETTERS)
 
@@ -121,17 +124,17 @@ summary(fit1c)
 # When is it faster to do parallel vs serial?
 # How about for each number of cores?
 
-library(parallel)
 
-library(Unicode)
+uni = u_scripts("Common")[[1]]
+uni = as.u_char(uni)
+uni = as.integer(uni)
+uni = intToUtf8(uni, multiple = TRUE)
 
-unicode = u_scripts("Common")[[1]]
-unicode = as.u_char(unicode)
-unicode = as.integer(unicode)
-unicode = intToUtf8(unicode)
+# Check
+random_string(10, uni)
 
 # Start with 2 cores.
-experiment_serial_parallel = function(n_chars_replace, data_size, nchar_x = 10L, len_x = data_size / nchar_x, mc.cores = 2L, char = letters2)
+experiment_serial_parallel = function(n_chars_replace, data_size, nchar_x = 10L, len_x = data_size / nchar_x, mc.cores = 2L, char = uni)
 {
     old = sample(char, size = n_chars_replace)
     old = paste(old, collapse = "")
@@ -144,8 +147,8 @@ experiment_serial_parallel = function(n_chars_replace, data_size, nchar_x = 10L,
     data.frame(n_chars_replace = n_chars_replace, len_x = len_x, nchar_x = nchar_x, time_serial = time_serial, time_parallel = time_parallel)
 }
 
-params = expand.grid(n_chars_replace = 15 * seq(3)
-    , data_size = 1e6 * seq(3)
+params = expand.grid(n_chars_replace = 1000 * seq(4)
+    , data_size = 1e4 * seq(4)
     )
 
 args = do.call(list, params)
