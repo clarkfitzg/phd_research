@@ -26,24 +26,24 @@ random_string = function(nchar_x, char)
 
 # Parameter names correspond to those in chartr
 # Repeat the timings `ntimes` and keep the `nkeep` fastest.
-experiment = function(n_old, len_x, nchar_x, ntimes = 15L, nkeep = 10L, char = letters2)
+experiment = function(n_chars_replace, len_x, nchar_x, ntimes = 15L, nkeep = 10L, char = letters2)
 {
-    old = sample(char, size = n_old)
+    old = sample(char, size = n_chars_replace)
     old = paste(old, collapse = "")
-    new = sample(char, size = n_old)
+    new = sample(char, size = n_chars_replace)
     new = paste(new, collapse = "")
     x = replicate(len_x, random_string(nchar_x, char))
     #expr = quote(chartr(old, new, x))
     bm = microbenchmark(chartr(old, new, x), times = ntimes)
     times = sort(bm$time)
     times = times[seq(nkeep)]
-    data.frame(n_old = n_old, len_x = len_x, nchar_x = nchar_x, time = times)
+    data.frame(n_chars_replace = n_chars_replace, len_x = len_x, nchar_x = nchar_x, time = times)
 }
 
 # Test it out
 experiment(10, 10000, 20)
 
-params = expand.grid(n_old = c(1, 2, 5, 10, 20, 40)
+params = expand.grid(n_chars_replace = c(1, 2, 5, 10, 20, 40)
     , len_x = 100 * seq(10)
     , nchar_x = 20 * seq(10)
     )
@@ -57,7 +57,7 @@ raw_result <- do.call(Map, args)
 
 result = do.call(rbind, raw_result)
 
-fit = lm(time ~ n_old * len_x * nchar_x, data = result)
+fit = lm(time ~ n_chars_replace * len_x * nchar_x, data = result)
 
 summary(fit)
 
@@ -73,7 +73,7 @@ summary(fit)
 # hold the result, and this should take linear time.
 # I forgot about this with my initial time estimate.
 
-fit1b = lm(time ~ len_x + len_x:nchar_x + n_old:len_x:nchar_x, data = result)
+fit1b = lm(time ~ len_x + len_x:nchar_x + n_chars_replace:len_x:nchar_x, data = result)
 summary(fit1b)
 
 # What about the linear term in len_x:nchar_x ?
@@ -84,11 +84,11 @@ summary(fit1b)
 # If I exclude it from the model then R^2 drops way down from 0.97 to
 # 0.82, which means that it's still pretty important.
 
-fit2 = lm(time ~ len_x + n_old:len_x:nchar_x, data = result)
+fit2 = lm(time ~ len_x + n_chars_replace:len_x:nchar_x, data = result)
 summary(fit2)
 
 
-fit1c = lm(time ~ len_x:nchar_x + n_old:len_x:nchar_x, data = result)
+fit1c = lm(time ~ len_x:nchar_x + n_chars_replace:len_x:nchar_x, data = result)
 summary(fit1c)
 
 # When I exclude the len_x term we still see an R^2 of 0.97.
@@ -115,3 +115,52 @@ summary(fit1c)
 # Looking in R_ext/RS.hh we see that this does the memory allocation.
 # So yes, it's doing what I expected, namely allocating memory to do the
 # actual work at each iteration.
+
+
+# 2d plot for when parallelization is faster based on the arguments
+# When is it faster to do parallel vs serial?
+# How about for each number of cores?
+
+library(parallel)
+
+# Start with 2 cores.
+experiment_serial_parallel = function(n_chars_replace, data_size, nchar_x = 10L, len_x = data_size / nchar_x, mc.cores = 2L, char = letters2)
+{
+    old = sample(char, size = n_chars_replace)
+    old = paste(old, collapse = "")
+    new = sample(char, size = n_chars_replace)
+    new = paste(new, collapse = "")
+    x = replicate(len_x, random_string(nchar_x, char))
+    #expr = quote(chartr(old, new, x))
+    time_serial = microbenchmark(chartr(old, new, x), times = 1L)$time
+    time_parallel = microbenchmark(pvec(x, chartr, old = old, new = new, mc.cores = mc.cores), times = 1L)$time
+    data.frame(n_chars_replace = n_chars_replace, len_x = len_x, nchar_x = nchar_x, time_serial = time_serial, time_parallel = time_parallel)
+}
+
+params = expand.grid(n_chars_replace = 15 * seq(3)
+    , data_size = 1e6 * seq(3)
+    )
+
+args = do.call(list, params)
+args$f = experiment_serial_parallel
+
+system.time(
+raw_result <- do.call(Map, args)
+)
+
+result = do.call(rbind, raw_result)
+
+result$speedup = result$time_serial / result$time_parallel
+
+# Even as I vary the parameters, I don't ever see any speedup.
+range(result$speedup)
+
+# Maybe this means that we don't always _want_ to fuse vectorized
+# statements. For example, we start with a small intermediate result, and
+# then we call a fast function that produces a much larger result from the
+# intermediate result. It may be faster to transfer the small intermediate
+# result and call the fast function in serial than to transfer the larger
+# object. 
+
+# In theory we can use shared memory to avoid the transfer costs, but in
+# practice R's copy on write semantics will get in the way.
