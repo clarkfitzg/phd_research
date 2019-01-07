@@ -101,6 +101,7 @@ summary(fit1c)
 # It makes perfect sense if we were manually allocating space for the
 # actual physical result, meaning the C level char arrays, because we need
 # to allocate space linear in len_x:nchar_x.
+# Furthermore, len_x:nchar_x is the actual _size_ of the input data in bytes, which is surely important.
 
 # I guess that R _would_ have to allocate this space inside chartr, even if
 # it ultimately stores the final result of strings using an integer lookup
@@ -119,6 +120,13 @@ summary(fit1c)
 # So yes, it's doing what I expected, namely allocating memory to do the
 # actual work at each iteration.
 
+# In summary, the performance of chartr is best represented by fit1c.
+# It's realistic to know all of the terms ahead of time to be able to estimate speed.
+
+# Side note-
+# It would also be good to profile this at the C level.
+
+############################################################
 
 # 2d plot for when parallelization is faster based on the arguments
 # When is it faster to do parallel vs serial?
