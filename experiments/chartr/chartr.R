@@ -27,6 +27,9 @@ random_string = function(nchar_x, char)
     paste(out, collapse = "")
 }
 
+if(FALSE)
+{
+
 # Parameter names correspond to those in chartr
 # Repeat the timings `ntimes` and keep the `nkeep` fastest.
 experiment = function(n_chars_replace, len_x, nchar_x, ntimes = 15L, nkeep = 10L, char = letters2)
@@ -94,6 +97,9 @@ summary(fit2)
 fit1c = lm(time ~ len_x:nchar_x + n_chars_replace:len_x:nchar_x, data = result)
 summary(fit1c)
 
+} # End if FALSE
+
+
 # When I exclude the len_x term we still see an R^2 of 0.97.
 # Together this means that len_x is not that important if we know
 # len_x:nchar_x.
@@ -138,6 +144,7 @@ uni = as.u_char(uni)
 uni = as.integer(uni)
 uni = intToUtf8(uni, multiple = TRUE)
 
+# dashes specify ranges in chartr
 uni = uni[uni != "-"]
 
 # Check
@@ -160,11 +167,11 @@ experiment_serial_parallel = function(n_chars_replace, data_size, nchar_x = 500L
     #expr = quote(chartr(old, new, x))
     time_serial = microbenchmark(chartr(old, new, x), times = 1L)$time
     time_parallel = microbenchmark(pvec(x, chartr, old = old, new = new, mc.cores = mc.cores), times = 1L)$time
-    data.frame(n_chars_replace = n_chars_replace, len_x = len_x, nchar_x = nchar_x, time_serial = time_serial, time_parallel = time_parallel)
+    data.frame(n_chars_replace = n_chars_replace, data_size = data_size, len_x = len_x, nchar_x = nchar_x, time_serial = time_serial, time_parallel = time_parallel)
 }
 
-params = expand.grid(n_chars_replace = 1000 * seq(4)
-    , data_size = 1e5 * seq(4)
+params = expand.grid(n_chars_replace = 500 * seq(8)
+    , data_size = 2e4 * seq(10)
     )
 
 args = do.call(list, params)
@@ -180,6 +187,18 @@ result$speedup = result$time_serial / result$time_parallel
 
 # FINALLY! speedup > 1. I knew we'd get it eventually.
 range(result$speedup)
+
+
+# Plotting
+############################################################
+
+library(lattice)
+
+image(result$data_size, result$n_chars_replace, result$speedup)
+
+
+levelplot(speedup ~ data_size * n_chars_replace, result, at = c(-Inf, 0.7, 0.9, 1.1, 1.3, Inf))
+
 
 # Maybe this means that we don't always _want_ to fuse vectorized
 # statements. For example, we start with a small intermediate result, and
