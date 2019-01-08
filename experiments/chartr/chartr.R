@@ -196,8 +196,16 @@ library(lattice)
 
 image(result$data_size, result$n_chars_replace, result$speedup)
 
+pdf("chartr_parallelism.pdf")
 
-levelplot(speedup ~ data_size * n_chars_replace, result, at = c(-Inf, 0.7, 0.9, 1.1, 1.3, Inf))
+levelplot(speedup ~ data_size * n_chars_replace, result, at = c(-Inf, 0.7, 0.9, 1.1, 1.3, Inf)
+          , main = "Speedup from parallelism in chartr"
+          , xlab = "Size of data (bytes)"
+          , ylab = "Number of characters to replace"
+          )
+
+dev.off()
+
 
 
 # Maybe this means that we don't always _want_ to fuse vectorized
