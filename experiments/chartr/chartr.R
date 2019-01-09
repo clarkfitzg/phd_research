@@ -165,13 +165,14 @@ experiment_serial_parallel = function(n_chars_replace, data_size, nchar_x = 500L
 
     x = replicate(len_x, random_string(nchar_x, char))
     #expr = quote(chartr(old, new, x))
+    gc()
     time_serial = microbenchmark(chartr(old, new, x), times = 1L)$time
     time_parallel = microbenchmark(pvec(x, chartr, old = old, new = new, mc.cores = mc.cores), times = 1L)$time
     data.frame(n_chars_replace = n_chars_replace, data_size = data_size, len_x = len_x, nchar_x = nchar_x, time_serial = time_serial, time_parallel = time_parallel)
 }
 
-params = expand.grid(n_chars_replace = 500 * seq(8)
-    , data_size = 2e4 * seq(10)
+params = expand.grid(n_chars_replace = 200 * seq(10)
+    , data_size = 2e4 * seq(20)
     )
 
 args = do.call(list, params)
@@ -187,6 +188,17 @@ result$speedup = result$time_serial / result$time_parallel
 
 # FINALLY! speedup > 1. I knew we'd get it eventually.
 range(result$speedup)
+
+
+# Maybe this means that we don't always _want_ to fuse vectorized
+# statements. For example, we start with a small intermediate result, and
+# then we call a fast function that produces a much larger result from the
+# intermediate result. It may be faster to transfer the small intermediate
+# result and call the fast function in serial than to transfer the larger
+# object. 
+
+# In theory we can use shared memory to avoid the transfer costs, but in
+# practice R's copy on write semantics will get in the way.
 
 
 # Plotting
@@ -207,13 +219,11 @@ levelplot(speedup ~ data_size * n_chars_replace, result, at = c(-Inf, 0.7, 0.9, 
 dev.off()
 
 
+fit_ser = lm(time_serial ~ data_size + n_chars_replace:data_size, data = result)
+summary(fit_ser)
 
-# Maybe this means that we don't always _want_ to fuse vectorized
-# statements. For example, we start with a small intermediate result, and
-# then we call a fast function that produces a much larger result from the
-# intermediate result. It may be faster to transfer the small intermediate
-# result and call the fast function in serial than to transfer the larger
-# object. 
+fit_par = lm(time_parallel ~ data_size + n_chars_replace:data_size, data = result)
+summary(fit_par)
 
-# In theory we can use shared memory to avoid the transfer costs, but in
-# practice R's copy on write semantics will get in the way.
+# Hmm. R^2 not as good for parallel model at 0.92.
+
