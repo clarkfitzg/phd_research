@@ -147,11 +147,17 @@ uni = intToUtf8(uni, multiple = TRUE)
 # dashes specify ranges in chartr
 uni = uni[uni != "-"]
 
+ascii = strsplit(intToUtf8(0:127), "")[[1]]
+ascii = ascii[ascii != "-"]
+
+# Yep, it's ASCII
+tools::showNonASCII(ascii)
+
 # Check
 random_string(10, uni)
 
 # Start with 2 cores.
-experiment_serial_parallel = function(n_chars_replace, data_size, nchar_x = 500L, len_x = data_size / nchar_x, mc.cores = 2L, char = uni)
+experiment_serial_parallel = function(n_chars_replace, data_size, nchar_x = 500L, len_x = data_size / nchar_x, times = 3L, mc.cores = 2L, char = uni)
 {
     old = sample(char, size = n_chars_replace)
     old = paste(old, collapse = "")
@@ -165,18 +171,24 @@ experiment_serial_parallel = function(n_chars_replace, data_size, nchar_x = 500L
 
     x = replicate(len_x, random_string(nchar_x, char))
     #expr = quote(chartr(old, new, x))
-    gc()
-    time_serial = microbenchmark(chartr(old, new, x), times = 1L)$time
-    time_parallel = microbenchmark(pvec(x, chartr, old = old, new = new, mc.cores = mc.cores), times = 1L)$time
-    data.frame(n_chars_replace = n_chars_replace, data_size = data_size, len_x = len_x, nchar_x = nchar_x, time_serial = time_serial, time_parallel = time_parallel)
+    time_serial = microbenchmark(chartr(old, new, x), times = times)$time
+    time_parallel = microbenchmark(pvec(x, chartr, old = old, new = new, mc.cores = mc.cores), times = times)$time
+    data.frame(n_chars_replace = n_chars_replace
+               , data_size = data_size
+               , len_x = len_x
+               , nchar_x = nchar_x
+               , time_serial = min(time_serial)
+               , time_parallel = min(time_parallel)
+               )
 }
 
-params = expand.grid(n_chars_replace = 200 * seq(10)
-    , data_size = 2e4 * seq(20)
+params = expand.grid(n_chars_replace = 10 * seq(12)
+    , data_size = 1e5 * seq(12)
     )
 
 args = do.call(list, params)
 args$f = experiment_serial_parallel
+args$MoreArgs = list(char = ascii)
 
 system.time(
 raw_result <- do.call(Map, args)
@@ -206,11 +218,12 @@ range(result$speedup)
 
 library(lattice)
 
-image(result$data_size, result$n_chars_replace, result$speedup)
+#image(result$data_size, result$n_chars_replace, result$speedup)
 
 pdf("chartr_parallelism.pdf")
 
-levelplot(speedup ~ data_size * n_chars_replace, result, at = c(-Inf, 0.7, 0.9, 1.1, 1.3, Inf)
+#levelplot(speedup ~ data_size * n_chars_replace, result, at = c(-Inf, 0.7, 0.9, 1.1, 1.3, Inf)
+levelplot(speedup ~ data_size * n_chars_replace, result
           , main = "Speedup from parallelism in chartr"
           , xlab = "Size of data (bytes)"
           , ylab = "Number of characters to replace"
@@ -219,11 +232,12 @@ levelplot(speedup ~ data_size * n_chars_replace, result, at = c(-Inf, 0.7, 0.9, 
 dev.off()
 
 
+# This is a difference between ASCII and Unicode - data size alone explains
+# the timings for Unicode.
+#fit_ser = lm(time_serial ~ data_size, data = result)
 fit_ser = lm(time_serial ~ data_size + n_chars_replace:data_size, data = result)
 summary(fit_ser)
 
 fit_par = lm(time_parallel ~ data_size + n_chars_replace:data_size, data = result)
 summary(fit_par)
-
-# Hmm. R^2 not as good for parallel model at 0.92.
 
