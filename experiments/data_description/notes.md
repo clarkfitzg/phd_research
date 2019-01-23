@@ -119,8 +119,9 @@ Infer vectorized blocks |   Medium - Hard | Group nodes in the makeParallel grap
 Enumerate vectorized functions  |   Easy    | List out all the vectorized functions, and which parameters they are vectorized in.
 Generate data description object  |   Medium    | Given a language agnostic data description, create the R objects above.
 
-Inferring vectorized blocks still seems like the most difficult part.
-I have to know the vectorized functions before I can infer vectorized blocks.
+Inferring vectorized blocks still seems like the most unknown part.
+I need to actually do it so that I can see what issues come up.
+I have to know the vectorized functions before I can infer vectorized blocks, but I can start with an easy small subset.
 
 I have ideas on how to implicitly identify the large data sources, but I'm missing a clear idea on how to save results.
 What's the point of all the computations?
@@ -138,3 +139,5 @@ It's also common to produce data for something other than R, and users need full
 What are the common ways to save data in base R? `write.table, save`
 If the calls are simple, something like `write.table(result, 'result.txt')`, then I can analyze these calls and potentially run them within the chunks.
 Then I could postprocess the files and combine them as necessary.
+
+I can generate code from something like a `BlockDependGraph`, that groups all the vectorized functions into blocks.
