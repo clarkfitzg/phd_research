@@ -113,7 +113,7 @@ What is the most difficult part?
 What pieces need to come together to make this happen, and how difficult do I think each one will be?
 
 Component   |   Difficulty  |   Description   
-------------|-----------------------------------------------
+------------|---------------|-------------------------------
 Code generator  |   Medium     |   Generate parallel code from vectorized blocks, many details
 Infer vectorized blocks |   Medium - Hard | Group nodes in the makeParallel graph
 Enumerate vectorized functions  |   Easy    | List out all the vectorized functions, and which parameters they are vectorized in.
