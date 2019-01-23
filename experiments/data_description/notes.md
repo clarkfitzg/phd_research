@@ -92,14 +92,36 @@ Generalizing to different data sources, say a database, it might look something 
 
 ```{r}
 xd = list(setup = NULL
-    , chunk_load_fun = list(fun = readRDS, parallel = TRUE)
-    , chunk_load_args = c("x1.rds", "x2.rds")
+    , chunk_load = list(fun = readRDS, parallel = TRUE, args = c("x1.rds", "x2.rds"))
     , combine_fun = c
 )
 ```
 
 - `setup` is code to run before anything else.
-- `chunk_load_fun` contains a function that will load chunks, and a flag `parallel` that says whether we can load these chunks in parallel.
-- `chunk_load_args` is a list such that calling `chunk_load` on the `i`th element loads the `i`the chunk.
+- `chunk_load` contains everything we need to load chunks:
+    - `fun`, a function that will load chunks
+    - `parallel`, a flag that says whether we can load these chunks in parallel
+    - `args` is a list such that calling `chunk_load` on the `i`th element loads the `i`the chunk.
 - `combine_fun` is a function to assemble the list of chunks together into a single object in one R process.
     This is useful when we have to call a general function on the whole object.
+
+------------------------------------------------------------
+
+It's not that difficult to write the code generator, given the code blocks that should happen in parallel.
+What is the most difficult part?
+
+What pieces need to come together to make this happen, and how difficult do I think each one will be?
+
+Component   |   Difficulty  |   Description   
+------------|-----------------------------------------------
+Code generator  |   Medium     |   Generate parallel code from vectorized blocks, many details
+Infer vectorized blocks |   Medium - Hard | Group nodes in the makeParallel graph
+Enumerate vectorized functions  |   Easy    | List out all the vectorized functions, and which parameters they are vectorized in.
+Generate data description object  |   Medium    | Given a language agnostic data description, create the R objects above.
+
+Inferring vectorized blocks still seems like the most difficult part.
+I have to know the vectorized functions before I can infer vectorized blocks.
+
+I'm missing a clear idea on how to save results.
+What's the point of all the computations?
+How does the user specify which objects to write out and save?
