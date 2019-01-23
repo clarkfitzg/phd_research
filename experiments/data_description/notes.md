@@ -122,6 +122,19 @@ Generate data description object  |   Medium    | Given a language agnostic data
 Inferring vectorized blocks still seems like the most difficult part.
 I have to know the vectorized functions before I can infer vectorized blocks.
 
-I'm missing a clear idea on how to save results.
+I have ideas on how to implicitly identify the large data sources, but I'm missing a clear idea on how to save results.
 What's the point of all the computations?
 How does the user specify which objects to write out and save?
+Here are a few options:
+
+1. Code says what to save, where and how
+1. `makeParallel` user specifies which variables to save
+2. `makeParallel` attempts to do something reasonable, for example, save the last object
+
+These aren't mutually exclusively. I could potentially do all of them.
+
+The first option is appealing- it's how users must write their scripts anyways.
+It's also common to produce data for something other than R, and users need full control over that.
+What are the common ways to save data in base R? `write.table, save`
+If the calls are simple, something like `write.table(result, 'result.txt')`, then I can analyze these calls and potentially run them within the chunks.
+Then I could postprocess the files and combine them as necessary.
