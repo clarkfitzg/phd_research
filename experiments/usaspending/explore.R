@@ -39,7 +39,7 @@ names(examples)
 
 # Interesting ones:
 # transaction_normalized
-# awards
+# X awards
 # transaction_fpds
 # transaction_fabs award_description, cfda_title
 
@@ -47,5 +47,8 @@ names(examples[[10]])
 
 examples[[3]]
 
+trns = head_table("universal_transaction_matview")
+
+names(trns)
 
 dbDisconnect(con)
