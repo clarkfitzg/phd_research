@@ -18,6 +18,7 @@ dbDisconnect(con)
 awards$funding_agency_id[is.na(awards$funding_agency_id)] = 0L
 
 # Save it split into groups
+# 24.5 minutes, ouch!
 system.time(
 by(awards, awards$funding_agency_id, function(group){
     datadir = "/scratch/usaspending/awards"
