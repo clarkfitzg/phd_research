@@ -1,3 +1,4 @@
+COPY (
 SELECT transaction_id                       
 , action_date                          
 , last_modified_date                   
@@ -61,5 +62,6 @@ SELECT transaction_id
 , funding_subtier_agency_abbreviation  
 FROM universal_transaction_matview
 --ORDER BY recipient_unique_id
-LIMIT 100
-;
+LIMIT 10
+)
+to STDOUT With CSV HEADER DELIMITER ',';
