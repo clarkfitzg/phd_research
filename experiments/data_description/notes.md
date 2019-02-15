@@ -156,4 +156,17 @@ The computations may or may not use the partitioning, so I need to detect if the
 Code such as `tapply, by, split` can use it.
 These seem pretty specific though.
 
+Duncan did say that he wanted to do more with the data movement.
+The more interesting case of data movement is with the data distributed as on a cluster.
+At that point, I risk reinventing Hadoop.
+Does anything really change from the single node case?
+Suppose that each group of data is only on one node, and one node can have many groups.
+An updating algorithm could be interesting here, and we would need the capabilities of MPI.
+There is an RMPI package, so we could build on that.
 
+How would we minimize cost of data movement?
+There have to be multiple possibilities.
+With what I described above, the natural thing to do is compute on the data local to each node.
+Which is only one possibility.
+
+TODO: think about how to make more possibilities.
