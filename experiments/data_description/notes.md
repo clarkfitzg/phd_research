@@ -141,3 +141,32 @@ If the calls are simple, something like `write.table(result, 'result.txt')`, the
 Then I could postprocess the files and combine them as necessary.
 
 I can generate code from something like a `BlockDependGraph`, that groups all the vectorized functions into blocks.
+
+
+------------------------------------------------------------
+
+Thinking a little more about the data description.
+It would be good to have some concept of indexing or partitioning.
+Partitioning is probably the better word, because indexing is more a feature of a database.
+For example, splitting the data files based on some variable value.
+Examples: agency ID's in the usaspending data, station ID's in the PEMS.
+I could also have generic ways to repartition the data on disk.
+
+The computations may or may not use the partitioning, so I need to detect if the code uses it.
+Code such as `tapply, by, split` can use it.
+These seem pretty specific though.
+
+Duncan did say that he wanted to do more with the data movement.
+The more interesting case of data movement is with the data distributed as on a cluster.
+At that point, I risk reinventing Hadoop.
+Does anything really change from the single node case?
+Suppose that each group of data is only on one node, and one node can have many groups.
+An updating algorithm could be interesting here, and we would need the capabilities of MPI.
+There is an RMPI package, so we could build on that.
+
+How would we minimize cost of data movement?
+There have to be multiple possibilities.
+With what I described above, the natural thing to do is compute on the data local to each node.
+Which is only one possibility.
+
+TODO: think about how to make more possibilities.
