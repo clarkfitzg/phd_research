@@ -51,4 +51,14 @@ trns = head_table("universal_transaction_matview")
 
 names(trns)
 
+x = dbGetQuery(con, "SELECT * FROM recipient_lookup LIMIT 10")
+
+# Works
+j = dbGetQuery(con, "SELECT * FROM recipient_lookup AS a JOIN transaction_normalized AS b on a.id = b.recipient_id LIMIT 10")
+
+# Works
+j2 = dbGetQuery(con, "SELECT * FROM toptier_agency AS a JOIN transaction_normalized AS b on a.toptier_agency_id = b.funding_agency_id LIMIT 10")
+
+
+
 dbDisconnect(con)
