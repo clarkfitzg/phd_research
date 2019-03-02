@@ -165,7 +165,7 @@ An updating algorithm could be interesting here, and we would need the capabilit
 There is an RMPI package, so we could build on that.
 
 How would we minimize cost of data movement?
-There have to be multiple possibilities.
+There have to be multiple possibile computational plans.
 With what I described above, the natural thing to do is compute on the data local to each node.
 Which is only one possibility.
 
