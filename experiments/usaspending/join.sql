@@ -53,3 +53,11 @@ ON t.recipient_id = l.legal_entity_id
 --    count
 -- -----------
 --  103,373,253
+
+
+-- create a table with just the ones that we want.
+CREATE TABLE legal_entity2 AS (
+    SELECT * FROM legal_entity
+    WHERE legal_entity_id IN 
+        (SELECT DISTINCT recipient_id FROM awards)
+);
