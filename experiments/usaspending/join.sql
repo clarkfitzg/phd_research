@@ -35,12 +35,21 @@ JOIN recipient_lookup as r
 ON t.recipient_id = r.id
 ;
 
+-- How big is the legal_entity table?
+SELECT COUNT(*) FROM legal_entity;
+--    count
+-- -----------
+--  123,618,669
+-- (1 row)
+
 
 -- How many are actually matched?
--- 
+-- Almost all of them.
 SELECT COUNT(*)
 FROM transaction_normalized as t
 JOIN legal_entity as l
 ON t.recipient_id = l.legal_entity_id
 ;
-
+--    count
+-- -----------
+--  103,373,253

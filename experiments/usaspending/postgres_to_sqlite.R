@@ -61,8 +61,13 @@ dbGetQuery(to_db, "SELECT * FROM trans_test")
 }
 
 system.time(
-chunk_copy_table("universal_transaction_matview", "transaction_view")
+chunk_copy_table(to_name = "legal_entity", qstring = "
+    SELECT * FROM legal_entity
+    WHERE legal_entity_id IN 
+        (SELECT DISTINCT recipient_id FROM transaction_normalized)
+    ")
 )
+
 
 
 dbDisconnect(from_db)
