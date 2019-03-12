@@ -48,6 +48,7 @@ table_names = c("agency"
           , "universal_transaction_matview"
           )
 
+# takes about 12 hours
 system.time(
 lapply(table_names, chunk_copy_table)
 )

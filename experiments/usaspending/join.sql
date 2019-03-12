@@ -70,5 +70,13 @@ FROM universal_transaction_matview
 ;
 
 
-select * 
-from recipient_lookup as r JOIN universal_transaction_matview as t ON r.duns
+-- If recipient_hash works as a join key, then this should have close to the same number of records as universal_transaction_matview, 103 million.
+SELECT COUNT(*)
+FROM recipient_lookup AS r 
+JOIN universal_transaction_matview AS t ON r.recipient_hash = t.recipient_hash
+;
+-- Thank God.
+
+--    count
+-- ---------
+--  102,476,631
