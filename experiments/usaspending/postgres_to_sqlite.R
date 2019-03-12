@@ -43,11 +43,14 @@ table_names = c("agency"
           , "toptier_agency"
           , "subtier_agency"
           , "state_data"
-          , "recipient_profile"
           , "recipient_lookup"
+          , "awards"
+          , "universal_transaction_matview"
           )
 
+system.time(
 lapply(table_names, chunk_copy_table)
+)
 
 # Make sure it works before I launch the larger one
 if(FALSE){

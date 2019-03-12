@@ -56,8 +56,19 @@ ON t.recipient_id = l.legal_entity_id
 
 
 -- create a table with just the ones that we want.
+-- doesn't work- this has 71604797 recipient id's
 CREATE TABLE legal_entity2 AS (
     SELECT * FROM legal_entity
     WHERE legal_entity_id IN 
         (SELECT DISTINCT recipient_id FROM awards)
 );
+
+
+-- Which means that we need to get recipient some other way.
+SELECT COUNT(DISTINCT recipient_hash)
+FROM universal_transaction_matview
+;
+
+
+select * 
+from recipient_lookup as r JOIN universal_transaction_matview as t ON r.duns
