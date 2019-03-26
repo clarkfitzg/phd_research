@@ -7,10 +7,16 @@ to_db = dbConnect(RSQLite::SQLite(), "/scratch/usaspending/usaspending.sqlite")
 
 
 # Copy a table between databases in chunks.
-chunk_copy_table = function(from_name, to_name, .from_db = from_db, .to_db = to_db, chunk_size = 1e4L)
+# This is an example of using lazy evaluation to make a more flexible interface.
+chunk_copy_table = function(from_name
+    , to_name = from_name
+    , qstring = paste0("SELECT * FROM ", from_name)
+    , .from_db = from_db
+    , .to_db = to_db
+    , chunk_size = 1e5L
+    )
 {
     # Might be fun to show students what a SQL injection attack is.
-    qstring = paste0("SELECT * FROM ", from_name)
 
     # The stream of incoming data
     # This takes 17 minutes for a large table in Postgres
@@ -30,19 +36,42 @@ chunk_copy_table = function(from_name, to_name, .from_db = from_db, .to_db = to_
         message("chunk ", chunk_index)
         chunk_index = chunk_index + 1L
     }
-
-    message("completed ", from_name)
 }
 
 
-table_names = data.frame(
-    from = c("toptier_agency", "transaction_normalized", "recipient_lookup"),
-    to = c("agency", "transaction", "recipient"),
-    stringsAsFactors = FALSE
+table_names = c("agency"
+          , "toptier_agency"
+          , "subtier_agency"
+          , "state_data"
+          , "recipient_lookup"
+          , "awards"
+          , "universal_transaction_matview"
+          )
+
+# takes about 12 hours
+system.time(
+lapply(table_names, chunk_copy_table)
 )
 
+# Make sure it works before I launch the larger one
+if(FALSE){
 
-Map(chunk_copy_table, table_names[, "from"], table_names[, "to"])
+chunk_copy_table(to_name = "trans_test"
+    , qstring = "SELECT * FROM universal_transaction_matview LIMIT 10"
+    )
+
+dbGetQuery(to_db, "SELECT * FROM trans_test")
+
+}
+
+system.time(
+chunk_copy_table(to_name = "legal_entity", qstring = "
+    SELECT * FROM legal_entity
+    WHERE legal_entity_id IN 
+        (SELECT DISTINCT recipient_id FROM transaction_normalized)
+    ")
+)
+
 
 
 dbDisconnect(from_db)
