@@ -23,7 +23,7 @@ clusterCall(cls, load_data)
 # uses data_chunk, the global variable on each worker
 likelihood_per_chunk = function(theta)
 {
-    sum(dnorm(data_chunk, mean = theta, log = TRUE))
+    -sum(dnorm(data_chunk, mean = theta, log = TRUE))
 }
 
 likelihood = function(theta, .cls = cls)
