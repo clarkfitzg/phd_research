@@ -87,6 +87,21 @@ Lc = L_constraint(L = L, dir = dir, rhs = rhs)
 
 problem = OP(objective = obj, constraints = Lc, types = types)
 
+# Cool - looks at repos and finds out what's out there that I can use.
+ROI_available_solvers(problem)
+
+# Try the first one
+install.packages("ROI.plugin.ecos")
+library(ROI.plugin.ecos)
+
 sol = ROI_solve(problem)
 
+solution(sol)
 
+
+# Does it match the load balancing I would do based on a glance?
+g1_index = c(1, 4)
+t1 = sum(p[g1_index])
+t2 = sum(p[-g1_index])
+# Yes.
+# It also matches the "assign the next biggest task to the most available worker" heuristic.
