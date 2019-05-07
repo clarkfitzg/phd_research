@@ -1,7 +1,12 @@
 # Mon May  6 07:26:37 PDT 2019
 #
 # Trying to use ROI package to solve a mixed integer programming problem
-# on how to optimally balance the load among workers for a GROUP BY computation
+# on how to optimally statically balance the load among workers for a GROUP BY computation.
+#
+# Looking at the CS literature, `load balancing' might not be quite the right term, because that tends to imply a real time system responding to requests.
+# This solution minimizes the total time it takes to process g groups on w workers, assuming that we know how long each group takes to run.
+# A natural extension is to suppose that the data starts out distributed among workers in some fashion, and subsequently minimize total time = transfer + compute time.
+
 
 library(ROI)
 
