@@ -1,7 +1,7 @@
 # Mon May  6 07:26:37 PDT 2019
 #
-# Trying to use ROI package to solve some integer programming problems
-# for how to split data for a group by computation
+# Trying to use ROI package to solve a mixed integer programming problem
+# on how to optimally balance the load among workers for a GROUP BY computation
 
 library(ROI)
 
@@ -9,8 +9,9 @@ library(ROI)
 library(slam)
 
 
-# Here's for the single GROUP BY
+# number of groups
 g = 5L
+# number of workers
 w = 2L
 gw = g * w
 
