@@ -10,8 +10,8 @@ library(slam)
 
 
 # Here's for the single GROUP BY
-w = 2L
 g = 5L
+w = 2L
 gw = g * w
 
 set.seed(823)
@@ -35,29 +35,58 @@ L11 = simple_triplet_matrix(
 
 L12 = -Iw
 
-L13 = simple_triplet_zero_matrix(nrow = w, ncol = 1)
+L13 = simple_triplet_zero_matrix(nrow = w, ncol = 1L)
+
+L1 = cbind(L11, L12, L13)
 
 
+# Could write this as cbind of w gxg identity matrices.
+# But I'll leave it because this pattern may be valuable later.
 make_L21_row = function(i)
 {
     j = seq(from = i, by = g, length.out = w)
     ones = rep(1L, length(j))
     simple_triplet_matrix(i = ones, j = j, v = ones, ncol = gw)
 }
-
 L21_rows = lapply(seq(g), make_L21_row)
 L21 = do.call(rbind, L21_rows)
 
+L22 = simple_triplet_zero_matrix(nrow = g, ncol = w)
+
+L23 = simple_triplet_zero_matrix(nrow = g, ncol = 1L)
+
+L2 = cbind(L21, L22, L23)
 
 
-Lc = L_constraint(L = 
-)
+L31 = simple_triplet_zero_matrix(nrow = w, ncol = gw)
 
-simple_triplet_matrix
+L32 = Iw
 
-problem = OP(objective = c(rep(0, ngroups), 1L)
-    , constraints = Lc
-    , types = c(rep("B", ngroups), "C")
-)
+L33 = simple_triplet_matrix(i = seq(w), j = rep(1L, w), v = rep(-1L, w))
+
+L3 = cbind(L31, L32, L33)
+
+
+L = rbind(L1, L2, L3)
+rows_per_block = c(w, g, w)
+stopifnot(nrow(L) == sum(rows_per_block), ncol(L) == (g*w + w + 1L))
+
+
+############################################################
+# The actual optimization
+############################################################
+
+
+dir = rep(c("==", ">=", "<="), times = rows_per_block)
+rhs = rep(c(0, 1, 0), times = rows_per_block)
+obj_var_sizes = c(gw, w, 1L)
+types = rep(c("B", "C", "C"), times = obj_var_sizes)
+obj = c(rep(c(0, 0, 1), times = obj_var_sizes))
+
+Lc = L_constraint(L = L, dir = dir, rhs = rhs)
+
+problem = OP(objective = obj, constraints = Lc, types = types)
+
+sol = ROI_solve(problem)
 
 
