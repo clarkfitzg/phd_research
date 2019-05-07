@@ -20,10 +20,21 @@ g = 5L
 w = 2L
 gw = g * w
 
+if(FALSE)
+{
 set.seed(823)
 p = runif(g)
 p = p / sum(p)
-# This will be a linear model more generally
+}
+
+# Simple example where "assign the next biggest task to the worker who will finish it first" heuristic gets it wrong.
+# I'm pretty sure I saw that heuristic in Norm Matloff's Parallel Programming book.
+# But I don't see it here: http://heather.cs.ucdavis.edu/~matloff/158/PLN/ParProcBook.pdf
+#
+# Actually, this heuristic is the same as list scheduling.
+p = c(3, 3, 2, 2, 2)
+
+# This will be a linear model more generally.
 time_per_group = p
 
 Iw = simple_triplet_diag_matrix(1, nrow = w)
@@ -97,7 +108,7 @@ problem = OP(objective = obj, constraints = Lc, types = types)
 ROI_available_solvers(problem)
 
 # Try the first one
-install.packages("ROI.plugin.ecos")
+#install.packages("ROI.plugin.ecos")
 library(ROI.plugin.ecos)
 
 sol = ROI_solve(problem)
@@ -110,4 +121,3 @@ g1_index = c(1, 4)
 t1 = sum(p[g1_index])
 t2 = sum(p[-g1_index])
 # Yes.
-# It also matches the "assign the next biggest task to the most available worker" heuristic.
