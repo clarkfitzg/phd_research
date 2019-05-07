@@ -2,6 +2,7 @@
 #
 # Trying to use ROI package to solve a mixed integer programming problem
 # on how to optimally statically balance the load among workers for a GROUP BY computation.
+# Actually, this solves more generally the problem of how to optimally schedule g independent tasks.
 #
 # Looking at the CS literature, `load balancing' might not be quite the right term, because that tends to imply a real time system responding to requests.
 # This solution minimizes the total time it takes to process g groups on w workers, assuming that we know how long each group takes to run.
@@ -14,15 +15,15 @@ library(ROI)
 library(slam)
 
 
-# number of groups
-g = 5L
 # number of workers
 w = 2L
-gw = g * w
 
-if(FALSE)
+if(TRUE)
 {
 set.seed(823)
+#g = 5
+w = 10L
+g = 50
 p = runif(g)
 p = p / sum(p)
 }
@@ -32,7 +33,11 @@ p = p / sum(p)
 # But I don't see it here: http://heather.cs.ucdavis.edu/~matloff/158/PLN/ParProcBook.pdf
 #
 # Actually, this heuristic is the same as list scheduling.
-p = c(3, 3, 2, 2, 2)
+#p = c(3, 3, 2, 2, 2)
+
+# number of groups
+g = length(p)
+gw = g * w
 
 # This will be a linear model more generally.
 time_per_group = p
@@ -104,14 +109,37 @@ Lc = L_constraint(L = L, dir = dir, rhs = rhs)
 
 problem = OP(objective = obj, constraints = Lc, types = types)
 
+
 # Cool - looks at repos and finds out what's out there that I can use.
 ROI_available_solvers(problem)
 
-# Try the first one
-#install.packages("ROI.plugin.ecos")
-library(ROI.plugin.ecos)
 
-sol = ROI_solve(problem)
+solver = "ecos"
+# ecos - embedded conic solver
+# "an interior-point solver for second-order cone programming (SOCP)"
+# Claims to be competitive up to tens of thousands of variables
+# https://web.stanford.edu/~boyd/papers/pdf/ecos_ecc.pdf
+#
+# But my application here is not second order, it's just mixed integer programming.
+# When I have 500 variables it fails with this message:
+# ..$ infostring: chr "Maximum iterations reached with no feasible solution found"
+#
+# This is frustrating because it's easy to get reasonable feasible solutions- just assign groups to workers randomly.
+# But I cannot find where in the software I can specify an initial solution for it to iterate on.
+
+
+solver = "lpsolve"
+# http://lpsolve.sourceforge.net/
+# This seems more suited to the problem at hand.
+
+
+ROI_registered_solver_control(solver)
+
+#control = list(maxit = Inf)
+# It might help to use the heuristic as a starting point.
+# Or just do a random assignment, at least that will be feasible
+
+solve_time = system.time(sol <- ROI_solve(problem, solver))
 
 solution(sol)
 
