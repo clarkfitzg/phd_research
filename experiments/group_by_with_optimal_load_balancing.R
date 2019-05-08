@@ -9,6 +9,7 @@
 # A natural extension is to suppose that the data starts out distributed among workers in some fashion, and subsequently minimize total time = transfer + compute time.
 
 
+
 library(ROI)
 
 # for triple_simple_matrix
@@ -18,22 +19,44 @@ library(slam)
 # number of workers
 w = 2L
 
-if(TRUE)
-{
-set.seed(823)
-#g = 5
-w = 10L
-g = 50
-p = runif(g)
-p = p / sum(p)
-}
-
 # Simple example where "assign the next biggest task to the worker who will finish it first" heuristic gets it wrong.
 # I'm pretty sure I saw that heuristic in Norm Matloff's Parallel Programming book.
 # But I don't see it here: http://heather.cs.ucdavis.edu/~matloff/158/PLN/ParProcBook.pdf
 #
 # Actually, this heuristic is the same as list scheduling.
-#p = c(3, 3, 2, 2, 2)
+p = c(3, 3, 2, 2, 2)
+
+
+if(TRUE)
+{
+set.seed(823)
+
+# I let this run for 3 hours with lpsolve before killing it.
+# There's only 50 choose 2 = 10 billion different combinations.
+# I probably could have exhaustively tried all of them in that time.
+# w = 10L
+# g = 50L
+
+
+# fix 10 workers
+
+# with inequality contraints on the second block:
+# 8.3 seconds to do 10 groups
+# 27 seconds to do 11 groups
+# 83 seconds to do 12 groups
+# 372 seconds to do 13 groups
+
+# with equality contraints on the second block:
+# 6.4 seconds to do 10 groups
+# 16 seconds to do 11 groups
+# 62 seconds to do 12 groups
+
+
+w = 10L
+g = 12L
+p = runif(g)
+p = p / sum(p)
+}
 
 # number of groups
 g = length(p)
@@ -98,8 +121,11 @@ stopifnot(nrow(L) == sum(rows_per_block), ncol(L) == (g*w + w + 1L))
 # The actual optimization
 ############################################################
 
+# What happens if I give it equality constraints for block L2?
+# This amounts to requiring that each group execute exactly once, rather than more than once.
+# Will that help performance at all?
 
-dir = rep(c("==", ">=", "<="), times = rows_per_block)
+dir = rep(c("==", "==", "<="), times = rows_per_block)
 rhs = rep(c(0, 1, 0), times = rows_per_block)
 obj_var_sizes = c(gw, w, 1L)
 types = rep(c("B", "C", "C"), times = obj_var_sizes)
@@ -123,9 +149,10 @@ solver = "ecos"
 # But my application here is not second order, it's just mixed integer programming.
 # When I have 500 variables it fails with this message:
 # ..$ infostring: chr "Maximum iterations reached with no feasible solution found"
+# I attempted to change the maximum number of iterations by passing the `control` argument to `ROI_solve` and setting the max number of iterations, but still I get the same error.
 #
 # This is frustrating because it's easy to get reasonable feasible solutions- just assign groups to workers randomly.
-# But I cannot find where in the software I can specify an initial solution for it to iterate on.
+# I cannot find where in the software I can specify an initial solution for it to iterate on.
 
 
 solver = "lpsolve"
