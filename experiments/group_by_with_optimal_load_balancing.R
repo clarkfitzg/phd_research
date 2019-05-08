@@ -37,8 +37,10 @@ set.seed(823)
 # w = 10L
 # g = 50L
 
+w = 10L
 
-# fix 10 workers
+# lpsolve
+############################################################
 
 # with inequality contraints on the second block:
 # 8.3 seconds to do 10 groups
@@ -54,8 +56,16 @@ set.seed(823)
 # with cutting plane (L4)
 # 42 seconds to do 10 groups. That's ridiculously slow.
 
-w = 10L
-g = 10L
+# glpk
+############################################################
+
+# 18 seconds to do 11 groups
+# 29 seconds to do 12 groups
+# 29 seconds to do 13 groups
+# 60 seconds to do 14 groups
+
+
+g = 14L
 p = runif(g)
 p = p / sum(p)
 }
@@ -74,6 +84,9 @@ Iw = simple_triplet_diag_matrix(1, nrow = w)
 # Construct the constraint matrix L using 9 blocks following written notation
 ############################################################
 
+
+# L1 defines t_k, the time spent on worker k, as the sum of all the times.
+
 L11 = simple_triplet_matrix(
       i = rep(seq(w), each = g)
     , j = seq(gw)
@@ -86,6 +99,8 @@ L13 = simple_triplet_zero_matrix(nrow = w, ncol = 1L)
 
 L1 = cbind(L11, L12, L13)
 
+
+# L2 says every group gets computed exactly once.
 
 # Could write this as cbind of w gxg identity matrices.
 # But I'll leave it because this pattern may be valuable later.
@@ -105,6 +120,8 @@ L23 = simple_triplet_zero_matrix(nrow = g, ncol = 1L)
 L2 = cbind(L21, L22, L23)
 
 
+# L3 defines t = max(t_k) over k.
+
 L31 = simple_triplet_zero_matrix(nrow = w, ncol = gw)
 
 L32 = Iw
@@ -114,8 +131,12 @@ L33 = simple_triplet_matrix(i = seq(w), j = rep(1L, w), v = rep(-1L, w))
 L3 = cbind(L31, L32, L33)
 
 
-# Cutting plane.
-# I'm only adding this constraint so that it can potentially solve faster.
+# The following constraints are cutting planes.
+############################################################
+# I'm only adding these constraints so that it can potentially solve faster.
+
+
+# L4 says every worker gets at least one group.
 
 L41 = simple_triplet_matrix(i = rep(seq(w), each = g), j = seq(gw), v = rep(1L, gw))
 
@@ -124,6 +145,9 @@ L42 = simple_triplet_zero_matrix(nrow = w, ncol = w)
 L43 = simple_triplet_zero_matrix(nrow = w, ncol = 1L)
 
 L4 = cbind(L41, L42, L43)
+
+
+# L5 says that we cannot go faster than the slowest group
 
 
 L = rbind(L1, L2, L3, L4)
@@ -153,8 +177,9 @@ problem = OP(objective = obj, constraints = Lc, types = types)
 # Cool - looks at repos and finds out what's out there that I can use.
 ROI_available_solvers(problem)
 
+ROI_installed_solvers()
+solver = "glpk"
 
-solver = "ecos"
 # ecos - embedded conic solver
 # "an interior-point solver for second-order cone programming (SOCP)"
 # Claims to be competitive up to tens of thousands of variables
@@ -168,10 +193,13 @@ solver = "ecos"
 # This is frustrating because it's easy to get reasonable feasible solutions- just assign groups to workers randomly.
 # I cannot find where in the software I can specify an initial solution for it to iterate on.
 
-
-solver = "lpsolve"
-# http://lpsolve.sourceforge.net/
-# This seems more suited to the problem at hand.
+# Possible solvers
+#
+# Open source - glpk, lpsolve, symphony
+# Commerical - cplex (IBM), gurobi, mosek
+# Other
+#   neos - Send the problem off to a server to compute it
+#   msbinlp - Not sure what these are, maybe an R implementation?
 
 
 ROI_registered_solver_control(solver)
