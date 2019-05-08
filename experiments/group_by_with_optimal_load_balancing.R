@@ -27,9 +27,23 @@ w = 2L
 p = c(3, 3, 2, 2, 2)
 
 
+# Possible solvers
+#
+# Open source general- glpk, lpsolve, symphony
+# Commerical general- cplex (IBM), gurobi, mosek
+# Other
+#   neos - Send the problem off to a server to compute it
+#   msbinlp - Not sure what these are, maybe an R implementation?
+#   ecos - embedded conic solver
+
+solver = "ecos"
+
 if(TRUE)
 {
 set.seed(823)
+
+w = 10L
+g = 16L
 
 # I let this run for 3 hours with lpsolve before killing it.
 # There's only 50 choose 2 = 10 billion different combinations.
@@ -37,7 +51,7 @@ set.seed(823)
 # w = 10L
 # g = 50L
 
-w = 10L
+
 
 # lpsolve
 ############################################################
@@ -63,9 +77,27 @@ w = 10L
 # 29 seconds to do 12 groups
 # 29 seconds to do 13 groups
 # 60 seconds to do 14 groups
+# 131 seconds to do 15 groups
+
+# symphony
+############################################################
+
+# ecos
+############################################################
+# (embedded conic solver)
+# "an interior-point solver for second-order cone programming (SOCP)"
+# Claims to be competitive up to tens of thousands of variables
+# https://web.stanford.edu/~boyd/papers/pdf/ecos_ecc.pdf
+#
+# But my application here is not second order, it's just mixed integer programming.
+# When I have 500 variables it fails with this message:
+# ..$ infostring: chr "Maximum iterations reached with no feasible solution found"
+# I attempted to change the maximum number of iterations by passing the `control` argument to `ROI_solve` and setting the max number of iterations, but still I get the same error.
+#
+# This is frustrating because it's easy to get reasonable feasible solutions- just assign groups to workers randomly.
+# I cannot find where in the software I can specify an initial solution for it to iterate on.
 
 
-g = 14L
 p = runif(g)
 p = p / sum(p)
 }
@@ -178,28 +210,6 @@ problem = OP(objective = obj, constraints = Lc, types = types)
 ROI_available_solvers(problem)
 
 ROI_installed_solvers()
-solver = "glpk"
-
-# ecos - embedded conic solver
-# "an interior-point solver for second-order cone programming (SOCP)"
-# Claims to be competitive up to tens of thousands of variables
-# https://web.stanford.edu/~boyd/papers/pdf/ecos_ecc.pdf
-#
-# But my application here is not second order, it's just mixed integer programming.
-# When I have 500 variables it fails with this message:
-# ..$ infostring: chr "Maximum iterations reached with no feasible solution found"
-# I attempted to change the maximum number of iterations by passing the `control` argument to `ROI_solve` and setting the max number of iterations, but still I get the same error.
-#
-# This is frustrating because it's easy to get reasonable feasible solutions- just assign groups to workers randomly.
-# I cannot find where in the software I can specify an initial solution for it to iterate on.
-
-# Possible solvers
-#
-# Open source - glpk, lpsolve, symphony
-# Commerical - cplex (IBM), gurobi, mosek
-# Other
-#   neos - Send the problem off to a server to compute it
-#   msbinlp - Not sure what these are, maybe an R implementation?
 
 
 ROI_registered_solver_control(solver)
