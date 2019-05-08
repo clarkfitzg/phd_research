@@ -51,9 +51,11 @@ set.seed(823)
 # 16 seconds to do 11 groups
 # 62 seconds to do 12 groups
 
+# with cutting plane (L4)
+# 42 seconds to do 10 groups. That's ridiculously slow.
 
 w = 10L
-g = 12L
+g = 10L
 p = runif(g)
 p = p / sum(p)
 }
@@ -112,8 +114,20 @@ L33 = simple_triplet_matrix(i = seq(w), j = rep(1L, w), v = rep(-1L, w))
 L3 = cbind(L31, L32, L33)
 
 
-L = rbind(L1, L2, L3)
-rows_per_block = c(w, g, w)
+# Cutting plane.
+# I'm only adding this constraint so that it can potentially solve faster.
+
+L41 = simple_triplet_matrix(i = rep(seq(w), each = g), j = seq(gw), v = rep(1L, gw))
+
+L42 = simple_triplet_zero_matrix(nrow = w, ncol = w)
+
+L43 = simple_triplet_zero_matrix(nrow = w, ncol = 1L)
+
+L4 = cbind(L41, L42, L43)
+
+
+L = rbind(L1, L2, L3, L4)
+rows_per_block = c(w, g, w, w)
 stopifnot(nrow(L) == sum(rows_per_block), ncol(L) == (g*w + w + 1L))
 
 
@@ -125,8 +139,8 @@ stopifnot(nrow(L) == sum(rows_per_block), ncol(L) == (g*w + w + 1L))
 # This amounts to requiring that each group execute exactly once, rather than more than once.
 # Will that help performance at all?
 
-dir = rep(c("==", "==", "<="), times = rows_per_block)
-rhs = rep(c(0, 1, 0), times = rows_per_block)
+dir = rep(c("==", "==", "<=", ">="), times = rows_per_block)
+rhs = rep(c(0, 1, 0, 1), times = rows_per_block)
 obj_var_sizes = c(gw, w, 1L)
 types = rep(c("B", "C", "C"), times = obj_var_sizes)
 obj = c(rep(c(0, 0, 1), times = obj_var_sizes))
