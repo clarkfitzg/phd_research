@@ -36,7 +36,7 @@ p = c(3, 3, 2, 2, 2)
 #   msbinlp - Not sure what these are, maybe an R implementation?
 #   ecos - embedded conic solver
 
-solver = "ecos"
+solver = "glpk"
 
 if(TRUE)
 {
@@ -69,6 +69,7 @@ g = 16L
 
 # with cutting plane (L4)
 # 42 seconds to do 10 groups. That's ridiculously slow.
+# I'm surprised that adding the constraint made it slower- that's that's the opposite of what it's supposed to do!
 
 # glpk
 ############################################################
@@ -78,6 +79,7 @@ g = 16L
 # 29 seconds to do 13 groups
 # 60 seconds to do 14 groups
 # 131 seconds to do 15 groups
+# Long time to do 16 groups - I killed it after an hour
 
 # symphony
 ############################################################
