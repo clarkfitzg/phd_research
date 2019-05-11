@@ -4,31 +4,33 @@
 
 
 # Standard greedy algorithm
-greedy = function(p, w)
+greedy = function(tasktimes, w)
 {
     #schedule = lapply(seq(w), numeric)
-    times = rep(0, w)
-    for(tm in p){
-        idx = which.min(times)
-        times[idx] = times[idx] + tm
+    workertimes = rep(0, w)
+    for(tm in tasktimes){
+        idx = which.min(workertimes)
+        workertimes[idx] = workertimes[idx] + tm
     }
-    times
+    workertimes
 }
 
 
 # Greedy with pairwise exchanges using Karmarkar-Karp
-greedy_pairs = function(p, w)
+greedy_pairs = function(tasktimes, w)
 {
 }
 
 
 # My algorithm, try to fill up workers first plus an epsilon
-full_plus_epsilon = function(p, w)
+full_plus_epsilon = function(tasktimes, w)
 {
-    times = rep(0, w)
-    for(tm in p){
-    }
-    times
+    # Think more about this.
+    epsilon = tasktimes[length(tasktimes) - w]
 
+    workertimes = rep(0, w)
+    for(tm in tasktimes){
+    }
+    workertimes
 }
 
