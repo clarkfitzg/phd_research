@@ -23,6 +23,7 @@ pairwise_exchange = function(tasktimes, w)
 
 
 # New algorithm, try to completely fill up workers first plus an epsilon
+
 full_plus_epsilon = function(tasktimes, w
         , epsilon = min(tasktimes)
         )
@@ -32,10 +33,11 @@ full_plus_epsilon = function(tasktimes, w
     for(tm in tasktimes){
         newtimes = workertimes + tm
         idx = which(newtimes < full_plus_epsilon)[1]
-        if(length(idx) == 0){
+        if(is.na(idx)){
             # Cannot keep the size of any workers under full_plus_epsilon
             # Fall back to greedy algorithm
             idx = which.min(workertimes)
+            browser()
         }
         workertimes[idx] = workertimes[idx] + tm
     }
@@ -74,19 +76,29 @@ generate_times = function(ntasks = 20L, w = 2L, random_gen = runif)
 # Test it out
 t0 = generate_times()
 
-
-compare = function(w = 4L, reps = 100L, ...
-        , funcs = list(greedy, full_plus_epsilon))
-{
-    tt = replicate(reps, generate_times(w = w, ...))
-    results = lapply(funcs, maxtime, tt = tt, w = w)
-    results = as.data.frame(results)
-    unname(results)
-}
+#compare = function(w = 4L, reps = 100L, ...
+#        , funcs = list(greedy, full_plus_epsilon))
+#{
+#    tt = replicate(reps, generate_times(w = w, ...))
+#    results = lapply(funcs, maxtime, tt = tt, w = w)
+#    results = as.data.frame(results)
+#    unname(results)
+#}
 
 
 set.seed(23480)
-out = compare(reps = 1000L)
+w = 4L
+tt = replicate(100L, generate_times(w = w), simplify = FALSE)
+
+fnames = c("greedy", "full_plus_epsilon")
+funcs = lapply(fnames, get)
+results = lapply(funcs, maxtime, tt = tt, w = w)
+results = as.data.frame(results)
+names(results) = fnames
+
+
+
+
 
 # Positive delta shows that the first approach (greedy) is marginally better in this case.
 delta = out[, 1] - out[, 2]
@@ -97,7 +109,7 @@ t.test(delta)
 table(sign(delta))
 
 set.seed(901873)
-out = compare(reps = 1000L, random_gen = function(n) seq(n) + runif(n))
+#out = compare(reps = 1000L, random_gen = function(n) seq(n) + runif(n))
 
 # For this more skew data the new algorithm does better.
 # This suggests that the new algorithm is more robust.
