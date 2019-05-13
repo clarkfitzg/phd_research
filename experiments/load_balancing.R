@@ -43,6 +43,18 @@ full_plus_epsilon = function(tasktimes, w
 }
 
 
+# make sure thes algorithms work correctly
+tt_hard_1 = c(2, 2, 2, 3, 3)
+tt_hard_2 = c(8, 7, 6, 5, 4)
+
+full_plus_epsilon(tt_hard_1, 2L)
+greedy(tt_hard_1, 2L)
+
+full_plus_epsilon(tt_hard_2, 2L)
+greedy(tt_hard_2, 2L)
+
+
+
 maxtime = function(f, tt, w){
     times = lapply(tt, f, w = w)
     sapply(times, max)
