@@ -2,12 +2,12 @@
 #
 # How to balance n tasks among w workers such that we minimize the time that all workers are finished?
 
+# Assume that tasktimes are sorted in decreasing order.
+
 
 # Standard greedy algorithm
-greedy = function(tasktimes, w)
+greedy = function(tasktimes, w, workertimes = rep(0, w))
 {
-    #schedule = lapply(seq(w), numeric)
-    workertimes = rep(0, w)
     for(tm in tasktimes){
         idx = which.min(workertimes)
         workertimes[idx] = workertimes[idx] + tm
@@ -22,14 +22,17 @@ greedy_pairs = function(tasktimes, w)
 }
 
 
-# My algorithm, try to fill up workers first plus an epsilon
-full_plus_epsilon = function(tasktimes, w)
+# New algorithm, try to fill up workers first plus an epsilon
+full_plus_epsilon = function(tasktimes, w
+        , epsilon = min(tasktimes)
+        )
 {
-    # Think more about this.
-    epsilon = tasktimes[length(tasktimes) - w]
-
+    full_plus_epsilon = sum(tasktimes) / w + epsilon
     workertimes = rep(0, w)
     for(tm in tasktimes){
+        newtimes = workertimes + tm
+        idx = which(newtimes < full_plus_epsilon)[0]
+        workertimes[idx] = workertimes[idx] + tm
     }
     workertimes
 }
