@@ -37,7 +37,6 @@ full_plus_epsilon = function(tasktimes, w
             # Cannot keep the size of any workers under full_plus_epsilon
             # Fall back to greedy algorithm
             idx = which.min(workertimes)
-            browser()
         }
         workertimes[idx] = workertimes[idx] + tm
     }
@@ -88,7 +87,7 @@ t0 = generate_times()
 
 set.seed(23480)
 w = 4L
-tt = replicate(100L, generate_times(w = w), simplify = FALSE)
+tt = replicate(1000L, generate_times(w = w), simplify = FALSE)
 
 fnames = c("greedy", "full_plus_epsilon")
 funcs = lapply(fnames, get)
@@ -101,12 +100,17 @@ names(results) = fnames
 
 
 # Positive delta shows that the first approach (greedy) is marginally better in this case.
-delta = out[, 1] - out[, 2]
+delta = results[, 1] - results[, 2]
 hist(delta)
 
 t.test(delta)
 
 table(sign(delta))
+
+# Greedy and new approach do essentially the same thing for uniform data.
+
+
+
 
 set.seed(901873)
 #out = compare(reps = 1000L, random_gen = function(n) seq(n) + runif(n))
