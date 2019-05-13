@@ -71,13 +71,17 @@ generate_times = function(ntasks = 20L, w = 2L, random_gen = runif)
     sort(out, decreasing = TRUE)
 }
 
+# Test it out
+t0 = generate_times()
+
 
 compare = function(w = 4L, reps = 100L, ...
         , funcs = list(greedy, full_plus_epsilon))
 {
-    tt = lapply(seq(reps), generate_times, w = w, ...)
+    tt = replicate(reps, generate_times(w = w, ...))
     results = lapply(funcs, maxtime, tt = tt, w = w)
     results = as.data.frame(results)
+    unname(results)
 }
 
 
