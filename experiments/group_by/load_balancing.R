@@ -5,6 +5,7 @@
 # Assume that tasktimes are sorted in decreasing order.
 
 library(lattice)
+library(gridExtra)
 
 
 # Standard greedy algorithm
@@ -174,22 +175,16 @@ times$fillfirst_vs_lower = mapply(compare, times$w, times$g
 times$greedy_vs_lower = mapply(compare, times$w, times$g
         , MoreArgs = list(competitor = greedy, baseline = lower_bound))
 
-pdf("fillfirst_vs_greedy.pdf")
-levelplot(fillfirst_vs_greedy ~ workers * groups, data = times
-          , main = "")
-dev.off()
-
-pdf("fillfirst_vs_baseline.pdf")
-levelplot(fillfirst_vs_lower ~ workers * groups, data = times
-          , main = "Performance relative to lower bound")
-dev.off()
-
-pdf("greedy_load_balancing_group_by_relative_to_ideal.pdf")
-par(mfrow = c(1, 2))
 levelplot(greedy_vs_lower ~ workers * groups, data = times
-          , main = "Performance of greedy relative to lower bound")
+          , main = "greedy vs lower bound")
+
+pdf("fillfirst_vs_greedy.pdf")
 dev.off()
 
-
-
-hist(times$delta)
+pdf("groupby_load_balancing_heuristics.pdf", width = 8, height = 5)
+plot1 = levelplot(fillfirst_vs_greedy ~ workers * groups, data = times
+          , main = "fill first vs greedy")
+plot2 = levelplot(fillfirst_vs_lower ~ workers * groups, data = times
+          , main = "fill first vs lower bound")
+grid.arrange(plot1, plot2, ncol=2)
+dev.off()
