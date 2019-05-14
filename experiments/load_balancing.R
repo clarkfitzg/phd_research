@@ -122,12 +122,12 @@ table(sign(delta))
 # Often I see something that looks an exponential decay, with a long tail.
 
 sim_groups = function(ngroups
-        , fixed_part = exp(seq(from=1, to=5, length.out = ngroups)
+        , fixed_part = exp(seq(from=1, to=4, length.out = ngroups))
         , random_part = runif(ngroups)
         )
-){
+{
     out = fixed_part + random_part
-    out / sum(out)
+    out = out / sum(out)
     sort(out, decreasing = TRUE)
 }
 
@@ -141,7 +141,7 @@ times$groups = as.factor(times$g)
 
 compare = function(w, g, reps = 100L, baseline = greedy, competitor = full_plus_epsilon)
 {
-    tt = replicate(reps, sim_groups(g))
+    tt = replicate(reps, sim_groups(g), simplify = FALSE)
 
     t_baseline_all = lapply(tt, baseline, w = w)
     t_baseline = sapply(t_baseline_all, max)
@@ -149,12 +149,20 @@ compare = function(w, g, reps = 100L, baseline = greedy, competitor = full_plus_
     t_comp_all = lapply(tt, competitor, w = w)
     t_comp = sapply(t_comp_all, max)
 
-    w * mean(t_comp - t_baseline)
+    delta = t_comp - t_baseline
+    #browser()
+    w * mean(delta)
 }
 
+# Test
+compare(10, 16)
+
 times$delta = runif(nrow(times))
+
+times$delta = mapply(compare, times$w, times$g)
+
 
 
 
 levelplot(delta ~ workers * groups, data = times
-          , main = "Values are average relative improvements from using the new algorithm")
+          , main = "Values are average relative improvements from using the competing algorithm")
