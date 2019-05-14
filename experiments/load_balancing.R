@@ -143,26 +143,41 @@ compare = function(w, g, reps = 100L, baseline = greedy, competitor = full_plus_
 {
     tt = replicate(reps, sim_groups(g), simplify = FALSE)
 
-    t_baseline_all = lapply(tt, baseline, w = w)
-    t_baseline = sapply(t_baseline_all, max)
-
     t_comp_all = lapply(tt, competitor, w = w)
     t_comp = sapply(t_comp_all, max)
 
-    delta = t_comp - t_baseline
-    #browser()
-    w * mean(delta)
+    if(is.null(baseline))
+    {
+        w * mean(t_comp)
+    } else {
+        t_baseline_all = lapply(tt, baseline, w = w)
+        t_baseline = sapply(t_baseline_all, max)
+
+        delta = t_comp - t_baseline
+        #browser()
+        w * mean(delta)
+    }
 }
 
 # Test
-compare(10, 16)
+compare(w = 3, 16)
 
 times$delta = runif(nrow(times))
 
+set.seed(24890)
 times$delta = mapply(compare, times$w, times$g)
+times$full_plus_epsilon = mapply(compare, times$w, times$g
+        , MoreArgs = list(baseline = NULL))
 
-
-
-
+pdf("greedy_load_balancing_group_by_compare.pdf")
 levelplot(delta ~ workers * groups, data = times
-          , main = "Values are average relative improvements from using the competing algorithm")
+          , main = "Improvement relative to baseline")
+dev.off()
+
+pdf("greedy_load_balancing_group_by_relative_to_ideal.pdf")
+levelplot(full_plus_epsilon ~ workers * groups, data = times
+          , main = "Performance relative to lower bound")
+dev.off()
+
+
+hist(times$delta)
