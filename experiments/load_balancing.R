@@ -4,6 +4,8 @@
 
 # Assume that tasktimes are sorted in decreasing order.
 
+library(lattice)
+
 
 # Standard greedy algorithm
 greedy = function(tasktimes, w, workertimes = rep(0, w))
@@ -107,7 +109,7 @@ t.test(delta)
 table(sign(delta))
 
 # Greedy and new approach are the same thing for uniform data.
-# For this more skew data the new algorithm does better.
+# For more skewed data the new algorithm does better.
 # This suggests that the new algorithm is more robust.
 
 # To compare numbers I'll need to get the scaling right.
@@ -118,3 +120,41 @@ table(sign(delta))
 # What is a typical distribution of group sizes?
 # The PEMS data has uniform group sizes.
 # Often I see something that looks an exponential decay, with a long tail.
+
+sim_groups = function(ngroups
+        , fixed_part = exp(seq(from=1, to=5, length.out = ngroups)
+        , random_part = runif(ngroups)
+        )
+){
+    out = fixed_part + random_part
+    out / sum(out)
+    sort(out, decreasing = TRUE)
+}
+
+
+# I want a grid that shows relative performance of the algorithms,
+# with workers on one axis, and number of groups on the other.
+
+times = expand.grid(w = 2^(1:7), g = as.integer(exp(2:8)))
+times$workers = as.factor(times$w)
+times$groups = as.factor(times$g)
+
+compare = function(w, g, reps = 100L, baseline = greedy, competitor = full_plus_epsilon)
+{
+    tt = replicate(reps, sim_groups(g))
+
+    t_baseline_all = lapply(tt, baseline, w = w)
+    t_baseline = sapply(t_baseline_all, max)
+
+    t_comp_all = lapply(tt, competitor, w = w)
+    t_comp = sapply(t_comp_all, max)
+
+    w * mean(t_comp - t_baseline)
+}
+
+times$delta = runif(nrow(times))
+
+
+
+levelplot(delta ~ workers * groups, data = times
+          , main = "Values are average relative improvements from using the new algorithm")
