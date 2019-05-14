@@ -27,13 +27,14 @@ pairwise_exchange = function(tasktimes, w)
 # Lower bound for how fast any scheduling algorithm can finish with w workers
 lower_bound = function(tasktimes, w)
 {
-
+    avg_worker_load = sum(tasktimes) / w
+    max(max(tasktimes), avg_worker_load)
 }
 
 
 # New algorithm, try to completely fill up workers first plus an epsilon
 
-full_plus_epsilon = function(tasktimes, w
+fillfirst = function(tasktimes, w
         , epsilon = min(tasktimes)
         )
 {
@@ -57,10 +58,10 @@ full_plus_epsilon = function(tasktimes, w
 tt_hard_1 = c(2, 2, 2, 3, 3)
 tt_hard_2 = c(8, 7, 6, 5, 4)
 
-full_plus_epsilon(tt_hard_1, 2L)
+fillfirst(tt_hard_1, 2L)
 greedy(tt_hard_1, 2L)
 
-full_plus_epsilon(tt_hard_2, 2L)
+fillfirst(tt_hard_2, 2L)
 greedy(tt_hard_2, 2L)
 
 
@@ -85,7 +86,7 @@ generate_times = function(ntasks = 20L, w = 2L, random_gen = runif)
 t0 = generate_times()
 
 #compare = function(w = 4L, reps = 100L, ...
-#        , funcs = list(greedy, full_plus_epsilon))
+#        , funcs = list(greedy, fillfirst))
 #{
 #    tt = replicate(reps, generate_times(w = w, ...))
 #    results = lapply(funcs, maxtime, tt = tt, w = w)
@@ -99,7 +100,7 @@ set.seed(23480)
 w = 4L
 tt = replicate(1000L, generate_times(w = w, random_gen = skewgen), simplify = FALSE)
 
-fnames = c("greedy", "full_plus_epsilon")
+fnames = c("greedy", "fillfirst")
 funcs = lapply(fnames, get)
 results = lapply(funcs, maxtime, tt = tt, w = w)
 results = as.data.frame(results)
@@ -147,8 +148,9 @@ times$workers = as.factor(times$w)
 times$groups = as.factor(times$g)
 
 
-compare = function(w, g, reps = 100L, baseline = lower_bound, competitor = full_plus_epsilon)
-{
+compare = function(w, g, reps = 100L, competitor = fillfirst
+    , baseline = lower_bound
+){
     tt = replicate(reps, sim_groups(g), simplify = FALSE)
 
     t_comp_all = lapply(tt, competitor, w = w)
@@ -157,30 +159,35 @@ compare = function(w, g, reps = 100L, baseline = lower_bound, competitor = full_
     t_baseline_all = lapply(tt, baseline, w = w)
     t_baseline = sapply(t_baseline_all, max)
 
-    delta = t_comp - t_baseline
-    #browser()
-    w * mean(delta)
+    relative_time_change = t_comp / t_baseline
+    mean(relative_time_change)
 }
 
 # Test
 compare(w = 3, 16)
 
-times$delta = runif(nrow(times))
-
 set.seed(24890)
-times$delta = mapply(compare, times$w, times$g
+times$fillfirst_vs_greedy = mapply(compare, times$w, times$g
         , MoreArgs = list(baseline = greedy))
-times$full_plus_epsilon = mapply(compare, times$w, times$g)
+times$fillfirst_vs_baseline = mapply(compare, times$w, times$g)
+times$greedy_vs_baseline = mapply(compare, times$w, times$g)
 
-pdf("greedy_load_balancing_group_by_compare.pdf")
-levelplot(delta ~ workers * groups, data = times
-          , main = "Improvement relative to baseline")
+pdf("fillfirst_vs_greedy.pdf")
+levelplot(fillfirst_vs_greedy ~ workers * groups, data = times
+          , main = "")
+dev.off()
+
+pdf("fillfirst_vs_baseline.pdf")
+levelplot(fillfirst_vs_baseline ~ workers * groups, data = times
+          , main = "Performance relative to lower bound")
 dev.off()
 
 pdf("greedy_load_balancing_group_by_relative_to_ideal.pdf")
-levelplot(full_plus_epsilon ~ workers * groups, data = times
-          , main = "Performance relative to lower bound")
+par(mfrow = c(1, 2))
+levelplot(greedy_vs_baseline ~ workers * groups, data = times
+          , main = "Performance of greedy relative to lower bound")
 dev.off()
+
 
 
 hist(times$delta)
