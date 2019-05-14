@@ -168,9 +168,11 @@ compare(w = 3, 16)
 
 set.seed(24890)
 times$fillfirst_vs_greedy = mapply(compare, times$w, times$g
-        , MoreArgs = list(baseline = greedy))
-times$fillfirst_vs_baseline = mapply(compare, times$w, times$g)
-times$greedy_vs_baseline = mapply(compare, times$w, times$g)
+        , MoreArgs = list(competitor = fillfirst, baseline = greedy))
+times$fillfirst_vs_lower = mapply(compare, times$w, times$g
+        , MoreArgs = list(competitor = fillfirst, baseline = lower_bound))
+times$greedy_vs_lower = mapply(compare, times$w, times$g
+        , MoreArgs = list(competitor = greedy, baseline = lower_bound))
 
 pdf("fillfirst_vs_greedy.pdf")
 levelplot(fillfirst_vs_greedy ~ workers * groups, data = times
@@ -178,13 +180,13 @@ levelplot(fillfirst_vs_greedy ~ workers * groups, data = times
 dev.off()
 
 pdf("fillfirst_vs_baseline.pdf")
-levelplot(fillfirst_vs_baseline ~ workers * groups, data = times
+levelplot(fillfirst_vs_lower ~ workers * groups, data = times
           , main = "Performance relative to lower bound")
 dev.off()
 
 pdf("greedy_load_balancing_group_by_relative_to_ideal.pdf")
 par(mfrow = c(1, 2))
-levelplot(greedy_vs_baseline ~ workers * groups, data = times
+levelplot(greedy_vs_lower ~ workers * groups, data = times
           , main = "Performance of greedy relative to lower bound")
 dev.off()
 
