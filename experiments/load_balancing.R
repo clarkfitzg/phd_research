@@ -24,6 +24,13 @@ pairwise_exchange = function(tasktimes, w)
 }
 
 
+# Lower bound for how fast any scheduling algorithm can finish with w workers
+lower_bound = function(tasktimes, w)
+{
+
+}
+
+
 # New algorithm, try to completely fill up workers first plus an epsilon
 
 full_plus_epsilon = function(tasktimes, w
@@ -139,24 +146,20 @@ times = expand.grid(w = 2^(1:7), g = as.integer(exp(2:8)))
 times$workers = as.factor(times$w)
 times$groups = as.factor(times$g)
 
-compare = function(w, g, reps = 100L, baseline = greedy, competitor = full_plus_epsilon)
+
+compare = function(w, g, reps = 100L, baseline = lower_bound, competitor = full_plus_epsilon)
 {
     tt = replicate(reps, sim_groups(g), simplify = FALSE)
 
     t_comp_all = lapply(tt, competitor, w = w)
     t_comp = sapply(t_comp_all, max)
 
-    if(is.null(baseline))
-    {
-        w * mean(t_comp)
-    } else {
-        t_baseline_all = lapply(tt, baseline, w = w)
-        t_baseline = sapply(t_baseline_all, max)
+    t_baseline_all = lapply(tt, baseline, w = w)
+    t_baseline = sapply(t_baseline_all, max)
 
-        delta = t_comp - t_baseline
-        #browser()
-        w * mean(delta)
-    }
+    delta = t_comp - t_baseline
+    #browser()
+    w * mean(delta)
 }
 
 # Test
@@ -165,9 +168,9 @@ compare(w = 3, 16)
 times$delta = runif(nrow(times))
 
 set.seed(24890)
-times$delta = mapply(compare, times$w, times$g)
-times$full_plus_epsilon = mapply(compare, times$w, times$g
-        , MoreArgs = list(baseline = NULL))
+times$delta = mapply(compare, times$w, times$g
+        , MoreArgs = list(baseline = greedy))
+times$full_plus_epsilon = mapply(compare, times$w, times$g)
 
 pdf("greedy_load_balancing_group_by_compare.pdf")
 levelplot(delta ~ workers * groups, data = times
