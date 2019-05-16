@@ -32,8 +32,8 @@ P = matrix(runif(g1 * g2), nrow = g1)
 # Returns an integer vector the same length as P1 that assigns each group to one of the w workers.
 first_group = function(P, w)
 {
-    P1 = rowsum(P)
-    P2 = colsum(P)
+    P1 = rowSums(P)
+    P2 = colSums(P)
 
     epsilon = min(P1)
     full_plus_epsilon = sum(P) / w + epsilon
@@ -45,7 +45,7 @@ first_group = function(P, w)
     for(idx in order(P1, decreasing = TRUE)){
         tm = P1[idx]
         newload = P[idx, ]
-        g2_loads = worker_g2_loads(assignments, P)
+        g2_loads = worker_g2_loads(assignments, times, P)
         w = find_best_worker(newload, g2_loads, times, epsilon)
         assignments[idx] = w
         times[w] = times[w] + tm
@@ -59,8 +59,15 @@ first_group = function(P, w)
     # This is necessary instead of zeros for how we'll balance based on inner products.
     #worker_g2_loads = lapply(seq(w), function(...) P2 / w)
 
-worker_g2_loads = function(assignments, P)
+worker_g2_loads = function(assignments, times, P, w)
 {
+    free_idx = is.na(assignments)
+
+    # Balance the remainder of this free load
+    free = colSums(P[free_idx, ])
+
+    assigned_load = lapply(seq(w), function(wi) colSums(P[assignments[!free_idx] == wi, ]))
+
 }
 
 
