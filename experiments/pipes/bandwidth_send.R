@@ -18,6 +18,7 @@ print(object.size(oneGB), units = "GB")
 # The bandwidth is around 0.4 GB / second on my Mac.
 # I wonder if this is for the whole machine, or just a pair of processes?
 # I wonder if it uses TCP/IP, or the more efficient UNIX domain sockets?
+# I expect the latter, because Simon Urbanek would definitely want that efficiency in parallel
 # https://lists.freebsd.org/pipermail/freebsd-performance/2005-February/001143.html
 1 / 2.4
 
@@ -30,6 +31,19 @@ system.time(
 # Just for kicks, how long does a copy take?
 system.time(
     oneGB[1] <- pi
+)
+
+
+# Is a fifo any faster?
+
+f = fifo("test.fifo", "wb+", blocking = TRUE)
+
+# Wow, how does it manage to take close to a full minute for this?
+# Weird.
+serialize(rnorm(1e6), f)
+
+system.time(
+    serialize(oneGB, f, xdr = FALSE)
 )
 
 
