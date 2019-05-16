@@ -59,14 +59,26 @@ first_group = function(P, w)
     # This is necessary instead of zeros for how we'll balance based on inner products.
     #worker_g2_loads = lapply(seq(w), function(...) P2 / w)
 
-worker_g2_loads = function(assignments, times, P, w)
+# This computes the load on each worker if the remaining groups of data were distributed evenly 
+# according to the space each worker has available.
+worker_g2_loads = function(assignments, P, w)
 {
+    avg_load = sum(P) / w
     free_idx = is.na(assignments)
 
-    # Balance the remainder of this free load
-    free = colSums(P[free_idx, ])
+    # Balance the remainder of the unassigned load according to the relative space each worker has available.
+    # Need to be real careful with how we assign weights
+    unassigned = colSums(P[free_idx, ])
 
-    assigned_load = lapply(seq(w), function(wi) colSums(P[assignments[!free_idx] == wi, ]))
+    loads = vector(w, mode = "list")
+    for(worker in seq(w)){
+        load = colSums(P[assignments[!free_idx] == worker, ])
+        prop_free = 1 - sum(load) / avg_load
+        if(0 < prop_free){
+            load = load +
+        }
+    }
+
 
 }
 
