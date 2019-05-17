@@ -96,6 +96,42 @@ find_best_worker = function(newload, g2_loads, times, epsilon, avg_load)
 }
 
 
+shuffle_time = function(g1_assign, g2_assign, P)
+{
+}
+
+
+# Assign the second group to workers given the first GROUP BY assignments
+# Start with the largest groups and assign them to the worker that already has the most data for that group.
+second_group = function(g1_assign, P, w)
+{
+    P2 = colSums(P)
+
+    epsilon = min(P2)
+    full_plus_epsilon = sum(P) / w + epsilon
+
+    avg_load = sum(P) / w
+    times = rep(0, w)
+
+    assignments = rep(NA, length(P2))
+
+    for(idx in order(P2, decreasing = TRUE)){
+        candidates = times + newload < avg_load + epsilon
+        present_on_worker = tapply(P[, idx], g1_assign, sum)
+
+        bw = if(!any(candidates)) 
+        {
+            which.min(times)
+        } else {
+            # TODO:
+        }
+        assignments[idx] = bw
+    }
+
+
+}
+
+
 # Actually try it out
 ############################################################
 
@@ -112,7 +148,6 @@ g1_assign = first_group(P, w)
 P1 = rowSums(P)
 
 # Did it do a reasonable load balancing?
-# Nope!
 tapply(P1, g1_assign, sum)
 
 # Numbers should be around:
