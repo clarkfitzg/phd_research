@@ -45,7 +45,7 @@ first_group = function(P, w)
     for(idx in order(P1, decreasing = TRUE)){
         tm = P1[idx]
         newload = P[idx, ]
-        g2_loads = worker_g2_loads(assignments, times, P)
+        g2_loads = worker_g2_loads(assignments, P, w)
         w = find_best_worker(newload, g2_loads, times, epsilon)
         assignments[idx] = w
         times[w] = times[w] + tm
@@ -67,19 +67,23 @@ worker_g2_loads = function(assignments, P, w)
     free_idx = is.na(assignments)
 
     # Balance the remainder of the unassigned load according to the relative space each worker has available.
-    # Need to be real careful with how we assign weights
     unassigned = colSums(P[free_idx, ])
+
+    # Scale the unassigned such that it sums to 1
+    unassigned = unassigned / sum(unassigned)
 
     loads = vector(w, mode = "list")
     for(worker in seq(w)){
         load = colSums(P[assignments[!free_idx] == worker, ])
-        prop_free = 1 - sum(load) / avg_load
-        if(0 < prop_free){
-            load = load +
+        free = avg_load - sum(load)
+        if(0 < free){
+            # Assign weight accordingly. 
+            # TODO: This may "overassign" some of the free workers, but I'm not too worried about it.
+            load = load + free * unassigned
         }
+        loads[[worker]] = load
     }
-
-
+    loads
 }
 
-
+        w = find_best_worker(newload, g2_loads, times, epsilon)
