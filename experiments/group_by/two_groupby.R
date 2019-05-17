@@ -38,8 +38,8 @@ first_group = function(P, w)
         tm = P1[idx]
         newload = P[idx, ]
         g2_loads = worker_g2_loads(assignments, P, w, avg_load)
-        w = find_best_worker(newload, g2_loads, times, epsilon, avg_load)
-        assignments[idx] = w
+        best_worker = find_best_worker(newload, g2_loads, times, epsilon, avg_load)
+        assignments[idx] = best_worker
         times[w] = times[w] + tm
     }
 
@@ -114,3 +114,6 @@ P1 = rowSums(P)
 # Did it do a reasonable load balancing?
 # Nope!
 tapply(P1, g1_assign, sum)
+
+# Numbers should be around:
+sum(P1) / w
