@@ -61,7 +61,7 @@ worker_g2_loads = function(assignments, P, w, avg_load)
 
     loads = vector(w, mode = "list")
     for(worker in seq(w)){
-        load_idx = assignments[!free_idx] == worker
+        load_idx = which(assignments == worker)
         load = colSums(P[load_idx, , drop = FALSE])
         free = avg_load - sum(load)
         if(0 < free){
