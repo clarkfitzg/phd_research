@@ -37,6 +37,7 @@ first_group = function(P, w)
 
     epsilon = min(P1)
     full_plus_epsilon = sum(P) / w + epsilon
+    avg_load = sum(P) / w
 
     # These get updated as the assignments are made
     assignments = rep(NA, length(P1))
@@ -45,8 +46,8 @@ first_group = function(P, w)
     for(idx in order(P1, decreasing = TRUE)){
         tm = P1[idx]
         newload = P[idx, ]
-        g2_loads = worker_g2_loads(assignments, P, w)
-        w = find_best_worker(newload, g2_loads, times, epsilon)
+        g2_loads = worker_g2_loads(assignments, P, w, avg_load)
+        w = find_best_worker(newload, g2_loads, times, epsilon, avg_load)
         assignments[idx] = w
         times[w] = times[w] + tm
     }
@@ -61,9 +62,8 @@ first_group = function(P, w)
 
 # This computes the load on each worker if the remaining groups of data were distributed evenly 
 # according to the space each worker has available.
-worker_g2_loads = function(assignments, P, w)
+worker_g2_loads = function(assignments, P, w, avg_load)
 {
-    avg_load = sum(P) / w
     free_idx = is.na(assignments)
 
     # Balance the remainder of the unassigned load according to the relative space each worker has available.
@@ -86,4 +86,23 @@ worker_g2_loads = function(assignments, P, w)
     loads
 }
 
-        w = find_best_worker(newload, g2_loads, times, epsilon)
+
+scaled_similarity = function(x, y)
+{
+    x = x / sqrt(sum(x^2))
+    y = y / sqrt(sum(y^2))
+    sum(x * y)
+}
+
+
+find_best_worker = function(newload, g2_loads, times, epsilon, avg_load)
+{
+    candidates = times + newload < avg_load + epsilon
+
+    # Corner case is when they all exceed it
+    if(!any(candidates)) return(which.min(times))
+
+    scores = sapply(g2_loads[candidates], scaled_similarity, y = newload)
+
+    which(candidates)[which.max(scores)]
+}
