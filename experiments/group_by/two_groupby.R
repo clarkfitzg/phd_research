@@ -17,15 +17,6 @@ cost = list(gb1 = 1, gb2 = 1, transfer = 5)
 # It's more likely to me that the group by computations take longer than the transfers, which means that this number would be even smaller.
 # There's also the case of a hierarchy of workers, where transfers between different groups of workers take much longer than among the same group of workers.
 
-# Numbers of groups
-g1 = 20
-g2 = 15
-w = 3
-
-set.seed(32180)
-P = matrix(runif(g1 * g2), nrow = g1)
-
-
 
 # Put groups on the 'best' workers, starting with the largest groups and without exceeding a balanced load by epsilon.
 # The best workers are those that have relatively more of the same second group already on them.
@@ -56,10 +47,6 @@ first_group = function(P, w)
 }
 
 
-    # G2 starts out evenly distributed among workers.
-    # This is necessary instead of zeros for how we'll balance based on inner products.
-    #worker_g2_loads = lapply(seq(w), function(...) P2 / w)
-
 # This computes the load on each worker if the remaining groups of data were distributed evenly 
 # according to the space each worker has available.
 worker_g2_loads = function(assignments, P, w, avg_load)
@@ -67,14 +54,15 @@ worker_g2_loads = function(assignments, P, w, avg_load)
     free_idx = is.na(assignments)
 
     # Balance the remainder of the unassigned load according to the relative space each worker has available.
-    unassigned = colSums(P[free_idx, ])
+    unassigned = colSums(P[free_idx, , drop = FALSE])
 
     # Scale the unassigned such that it sums to 1
     unassigned = unassigned / sum(unassigned)
 
     loads = vector(w, mode = "list")
     for(worker in seq(w)){
-        load = colSums(P[assignments[!free_idx] == worker, ])
+        load_idx = assignments[!free_idx] == worker
+        load = colSums(P[load_idx, , drop = FALSE])
         free = avg_load - sum(load)
         if(0 < free){
             # Assign weight accordingly. 
@@ -106,3 +94,23 @@ find_best_worker = function(newload, g2_loads, times, epsilon, avg_load)
 
     which(candidates)[which.max(scores)]
 }
+
+
+# Actually try it out
+############################################################
+
+# Numbers of groups
+g1 = 20
+g2 = 15
+w = 3
+
+set.seed(32180)
+P = matrix(runif(g1 * g2), nrow = g1)
+
+g1_assign = first_group(P, w)
+
+P1 = rowSums(P)
+
+# Did it do a reasonable load balancing?
+# Nope!
+tapply(P1, g1_assign, sum)
