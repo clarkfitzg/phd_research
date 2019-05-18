@@ -85,7 +85,7 @@ scaled_similarity = function(x, y)
 
 find_best_worker = function(newload, g2_loads, times, epsilon, avg_load)
 {
-    candidates = times + newload < avg_load + epsilon
+    candidates = times + sum(newload) < avg_load + epsilon
 
     # Corner case is when they all exceed it
     if(!any(candidates)) return(which.min(times))
@@ -116,19 +116,21 @@ second_group = function(g1_assign, P, w)
     assignments = rep(NA, length(P2))
 
     for(idx in order(P2, decreasing = TRUE)){
-        candidates = times + newload < avg_load + epsilon
+        newtime = P2[idx]
+        candidates = times + newtime < avg_load + epsilon
         present_on_worker = tapply(P[, idx], g1_assign, sum)
 
         bw = if(!any(candidates)) 
         {
             which.min(times)
         } else {
-            # TODO:
+            # intersect returns result in order of first arg
+            intersect(order(present_on_worker), which(candidates))[1]
         }
+        times[bw] = times[bw] + newtime
         assignments[idx] = bw
     }
-
-
+    assignments
 }
 
 
@@ -144,11 +146,14 @@ set.seed(32180)
 P = matrix(runif(g1 * g2), nrow = g1)
 
 g1_assign = first_group(P, w)
+g2_assign = second_group(g1_assign, P, w)
 
 P1 = rowSums(P)
+P2 = colSums(P)
 
 # Did it do a reasonable load balancing?
 tapply(P1, g1_assign, sum)
+tapply(P2, g2_assign, sum)
 
 # Numbers should be around:
 sum(P1) / w
