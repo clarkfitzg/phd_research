@@ -18,6 +18,20 @@ cost = list(gb1 = 1, gb2 = 1, transfer = 5)
 # There's also the case of a hierarchy of workers, where transfers between different groups of workers take much longer than among the same group of workers.
 
 
+# Standard greedy algorithm
+greedy_assign = function(tasktimes, w)
+{
+    workertimes = rep(0, w)
+    assignments = rep(NA, length(tasktimes))
+    for(idx in seq_along(tasktimes)){
+        worker = which.min(workertimes)
+        workertimes[worker] = workertimes[worker] + tasktimes[idx]
+        assignments[idx] = worker
+    }
+    assignments
+}
+
+
 # Put groups on the 'best' workers, starting with the largest groups and without exceeding a balanced load by epsilon.
 # The best workers are those that have relatively more of the same second group already on them.
 # Returns an integer vector the same length as P1 that assigns each group to one of the w workers.
@@ -96,8 +110,19 @@ find_best_worker = function(newload, g2_loads, times, epsilon, avg_load)
 }
 
 
-shuffle_time = function(g1_assign, g2_assign, P)
+# Count how much data in P had to be moved between workers
+relative_data_movement = function(g1_assign, g2_assign, P)
 {
+    workers = unique(c(g1_assign, g2_assign))
+    moved = sapply(workers, data_moved_per_worker
+        , g1_assign = g1_assign, g2_assign = g2_assign, P = P)
+    sum(moved) / sum(P)
+}
+
+
+data_moved_per_worker = function(worker, g1_assign, g2_assign, P)
+{
+    sum(P[g1_assign != worker, g2_assign == worker])
 }
 
 
@@ -139,21 +164,40 @@ second_group = function(g1_assign, P, w)
 
 # Numbers of groups
 g1 = 20
-g2 = 15
+g2 = 35
 w = 3
 
-set.seed(32180)
+set.seed(2347)
 P = matrix(runif(g1 * g2), nrow = g1)
 
-g1_assign = first_group(P, w)
-g2_assign = second_group(g1_assign, P, w)
+g1_new = first_group(P, w)
+g2_new = second_group(g1_new, P, w)
 
 P1 = rowSums(P)
 P2 = colSums(P)
 
 # Did it do a reasonable load balancing?
-tapply(P1, g1_assign, sum)
-tapply(P2, g2_assign, sum)
+tapply(P1, g1_new, sum)
+tapply(P2, g2_new, sum)
 
 # Numbers should be around:
 sum(P1) / w
+
+g1_greedy = greedy_assign(P1, w)
+g2_greedy = greedy_assign(P2, w)
+
+# Yes, balanced
+tapply(P1, g1_greedy, sum)
+tapply(P2, g2_greedy, sum)
+
+
+# We expect a movement of around 2/3 for the greedy one.
+movement = c(greedy = relative_data_movement(g1_greedy, g2_greedy, P)
+    , new = relative_data_movement(g1_new, g2_new, P)
+)
+
+print(movement)
+
+# The new and improved algorithm actually does WORSE at around 0.75!
+# For many different seeds also.
+# Is that even possible?
