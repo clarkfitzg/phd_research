@@ -9,14 +9,12 @@
 
 library(rstatic)
 
-large_objects = "pems"
 vector_funcs = c("[", "sin")
 
 # Only including the large named data objects at this time.
 # Could extend it to include all the resources we care about- constants, files, etc.
-# Also can use integers as lookup keys rather than names.
 resources = new.env()
-resources[["pems"]] = list("Details of pems data", uses = list())
+resources[["pems"]] = list(details = "Is a large chunked data object", uses = list())
 
 record_use = function(use, varname, .resources = resources)
 {
@@ -33,7 +31,24 @@ code = quote_ast({
 
 
 # Directly annotate them by hand.
-# This is how the algorithm will proceed.
+############################################################
+# This is the order in which the algorithm will do it.
 
 # The first `pems`
 record_use(code[[1]]$read$args$contents[[1]], "pems")
+
+# This is the call, the rhs of the assignment.
+# This should actually be unnamed.
+# We can use integers to lookup the resources, along with a map of names.
+record_use(code[[1]]$read, "stn")
+
+# Infer that the subset is a known column.
+resources[["stn"]][["details"]] = "Is a column of pems"
+
+code[[2]]$read$args$contents[[1]]
+
+code[[2]]$read$args$contents[[1]]
+
+# Now we can analyze the call to `by`
+
+as.list(resources)
