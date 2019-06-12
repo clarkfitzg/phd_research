@@ -13,16 +13,16 @@ vector_funcs = c("[", "sin")
 
 # Only including the large named data objects at this time.
 # Could extend it to include all the resources we care about- constants, files, etc.
-resources = new.env()
-resources[["pems"]] = list(details = "Is a large chunked data object", uses = list())
+resources = list()
+resources[[1L]] = list(details = "Is a large chunked data object", uses = list(), expected_name = "pems")
 
-record_use = function(use, varname, .resources = resources)
+record_use = function(use, index)
 {
-    .resources[[varname]][["uses"]] = c(.resources[[varname]][["uses"]], use)
+    tryCatch(resources[[index]][["uses"]] <<- c(resources[[index]][["uses"]], use),
+             error = function(...){
+                resources[[index]] <<- list(uses = list(use))
+             })
 }
-
-
-
 
 code = quote_ast({
     stn = pems[, "station"]
@@ -35,20 +35,18 @@ code = quote_ast({
 # This is the order in which the algorithm will do it.
 
 # The first `pems`
-record_use(code[[1]]$read$args$contents[[1]], "pems")
+record_use(code[[1]]$read$args$contents[[1]], 1L)
 
 # This is the call, the rhs of the assignment.
-# This should actually be unnamed.
-# We can use integers to lookup the resources, along with a map of names.
-record_use(code[[1]]$read, "stn")
+record_use(code[[1]]$read, 2L)
 
-# Infer that the subset is a known column.
-resources[["stn"]][["details"]] = "Is a column of pems"
+# Infer from the subset that this is a known column.
+resources[[2L]][["details"]] = "Is a column of pems"
+resources[[2L]][["expected_name"]] = "stn"
 
-code[[2]]$read$args$contents[[1]]
-
-code[[2]]$read$args$contents[[1]]
+# The call to by uses 'pems' and 'stn'
+record_use(code[[2]]$read$args$contents[[1]], 1L)
+record_use(code[[2]]$read$args$contents[[2]], 2L)
 
 # Now we can analyze the call to `by`
 
-as.list(resources)
