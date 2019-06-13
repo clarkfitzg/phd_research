@@ -1,3 +1,5 @@
+library(rstatic)
+
 ast = quote_ast({
     stn = pems[, "station"]
     result = by(pems, stn, npbin)
@@ -39,8 +41,8 @@ splits_by_known_column = function(bycall, env)
 }
 
 
-call = code[[2]]$read
+bc = find_nodes(ast, function(node) is(node, "Call") && node$fn$value == "by")[[1]]
 
-find_nodes(ast, function(node) is(node, "Symbol") && node$value == "x")
+ast[[bc]]
 
 
