@@ -38,12 +38,13 @@ new_named_resource = function(node, resources, namer, chunked_object = FALSE, ..
 # @ value list containing updated ast and resource.
 #       ast is the original ast except that the nodes \code{x.data$resource_id} have values to look up the resources
 #       resources is the orginal resource plus any new distributed resources
+
 propagate = function(node, name_resource, resources, namer)
 {
     # To simulate evaluation we need to walk up from the leaf nodes of the tree.
     # This is different from the conventional DFS / BFS.
     # We can implement this by making sure all the children have their resource_id's set
-    for(child in node){
+    for(child in children(node)){
         Recall(child, name_resource, resources, namer)
     }
     # This guarantees the children all have resources, so we can proceed to this node.
@@ -57,11 +58,11 @@ update_resource = function(node, name_resource, resources, namer, ...) UseMethod
 update_resource.Subset = function(node, name_resource, resources, namer)
 {
     if(node$fn$value == "["
-       && resource(node$args[[1]], resources)$chunked_object
+       && resources[[resource_id(node$args[[1]])]]$chunked_object
        && is(node$args[[2]], "EmptyArgument")
        && is(node$args[[3]], "Character")
     ){
-        new_named_resource(node, namer, resources,
+        new_named_resource(node, resources, namer,
             chunked_object = TRUE, column_subset = TRUE, column_names = node$args[[3]]$value)
     } else {
         NextMethod()
@@ -73,7 +74,7 @@ update_resource.Symbol = function(node, name_resource, resources, namer)
 {
     nm = node$value 
     if(nm %in% names(name_resource)){
-        resource(node) = name_resource[[nm]]
+        resource_id(node) = name_resource[[nm]]
     } else {
         NextMethod()
     }
@@ -82,14 +83,15 @@ update_resource.Symbol = function(node, name_resource, resources, namer)
 
 update_resource.default = function(node, name_resource, resources, namer)
 {
-    new_named_resource(node, namer, resources)
+    new_named_resource(node, resources, namer)
 }
 
 
 update_resource.Assign = function(node, name_resource, resources, namer)
 {
-    r_id = resource(node$read) 
-    resource(node$write) = r_id
+    r_id = resource_id(node$read) 
+    # This will write over an existing value for that symbol, which is what we want.
+    resource_id(node$write) = r_id
     name_resource[[node$write$value]] = r_id
 }
 
@@ -120,4 +122,4 @@ ast = quote_ast({
 propagate(ast, name_resource, resources, namer)
 
 # Should see a column subset in here after this is done.
-as.list(resources)
+out = as.list(resources)
