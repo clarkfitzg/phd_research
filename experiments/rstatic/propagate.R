@@ -1,6 +1,19 @@
 # Propagate Resources
 #
 # Thu Jun 13 08:55:57 PDT 2019
+#
+# This is a proof of concept to determine if the code calls `by`, where the argument to split the data on is known.
+#
+# The approach is to first propagate through the special semantic meanings of the code that we care about.
+# It works by iterating over the code, method dispatch on the class of the nodes, and updating mutable data structures as it infers things.
+# rstatic made it all much easier than it would have been otherwise.
+#
+# Many nodes may refer to the same resource.
+# There are three data structures involved:
+#
+# - ast The propagation step assigns each node a resource ID.
+# - name_resource is an environment where the keys are variable names in the code and the values are resource ID's.
+# - resources is an environment where the keys are resource ID's and the values are 
 
 library(rstatic)
 
