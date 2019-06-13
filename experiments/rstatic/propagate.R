@@ -29,6 +29,8 @@ new_named_resource = function(node, resources, namer, chunked_object = FALSE, ..
 
 # Propagate resource identifiers through an ast
 #
+# Must be called from the root of the AST, which is probably a Brace
+#
 # @param ast rstatic language object
 # @param name_resource environment mapping symbol names to resource identifiers.
 #       Think of this as the evaluation environment of the code.
@@ -36,11 +38,16 @@ new_named_resource = function(node, resources, namer, chunked_object = FALSE, ..
 # @ value list containing updated ast and resource.
 #       ast is the original ast except that the nodes \code{x.data$resource_id} have values to look up the resources
 #       resources is the orginal resource plus any new distributed resources
-propagate = function(ast, name_resource, resources)
+propagate = function(node, name_resource, resources, namer)
 {
     # To simulate evaluation we need to walk up from the leaf nodes of the tree.
     # This is different from the conventional DFS / BFS.
     # We can implement this by making sure all the children have their resource_id's set
+    for(child in node){
+        Recall(child, name_resource, resources, namer)
+    }
+    # This guarantees the children all have resources, so we can proceed to this node.
+    update_resource(node, name_resource, resources, namer)
 }
 
 
@@ -110,3 +117,7 @@ ast = quote_ast({
 })
 
 
+propagate(ast, name_resource, resources, namer)
+
+# Should see a column subset in here after this is done.
+as.list(resources)
