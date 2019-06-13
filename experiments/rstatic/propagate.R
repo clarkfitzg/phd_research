@@ -12,7 +12,18 @@ resource_id = function(node) node$.data[["resource_id"]]
     node
 }
 
-new_resource = function(chunked_object = FALSE, ...) list(chunked_object = chunked_object, ...)
+# Returns the name of the added resource
+new_named_resource = function(node, resources, namer, chunked_object = FALSE, ...) 
+{
+    new_name = namer()
+    r = list(chunked_object = chunked_object, ...)
+
+    # All based on side effects
+    assign(new_name, value = r, pos = resources)
+    resource_id(node) = new_name
+
+    new_name
+}
 
 
 # Propagate resource identifiers through an ast
@@ -43,10 +54,8 @@ update_resource.Subset = function(node, name_resource, resources, namer)
        && is(node$args[[3]], "Character")
     ){
         # Record the object of interest
-        new_name = namer()
-        resource_id(node) = new_name
-        r = new_resource(chunked_object = TRUE, column_subset = TRUE, column_names = node$args[[3]]$value)
-        assign(new_name, value = r, pos = resources)
+        nm = new_named_resource(node, namer, resources,
+            chunked_object = TRUE, column_subset = TRUE, column_names = node$args[[3]]$value)
     } else {
         NextMethod()
     }
@@ -55,6 +64,8 @@ update_resource.Subset = function(node, name_resource, resources, namer)
 
 update_resource.Symbol = function(node, name_resource, resources, namer)
 {
+    if(node$value)
+
 }
 
 
@@ -73,6 +84,11 @@ namer_factory = function(basename = "r"){
 ############################################################
 
 
+name_resource = new.env()
+resources = new.env()
+namer = namer_factory()
+
+name_resource[["pems"]] = 
 
 ast = quote_ast({
     stn = pems[, "station"]
