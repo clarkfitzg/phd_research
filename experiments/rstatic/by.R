@@ -1,33 +1,38 @@
 library(rstatic)
 
+
 ast = quote_ast({
     stn = pems[, "station"]
     result = by(pems, stn, npbin)
 })
 
 
-# 
-############################################################
+# The resource that corresponds to a node, or NULL if none exists
+get_resource = function(node, resources)
+{
+    rname = node$.data[["resource"]]
+    if(is.null(rname)){
+        NULL
+    } else {
+        resources[[rname]]
+    }
+}
 
 
 # Returns the name of the column that the call splits by if it can find it, and FALSE otherwise
-splits_by_known_column = function(bycall, env)
+splits_by_known_column = function(bycall, resources)
 {
     # bycall a call to `by`
-    # env resource descriptions that act like an evaluation environment for the call to `by`
+    # resources descriptions that act like an evaluation environment for the call to `by`
     
     # Check that:
     # 1. data_arg is a large chunked data object
     # 2. index_arg is a known column
 
     # For now I'm not thinking about whether the chunking schemes match up or if they inherit from the same object.
-    data_arg_name = bycall$args$contents[[1]]$value
-    index_arg_name = bycall$args$contents[[2]]$value
 
-    # TODO: Find a more robust / general way to lookup resources.
-    # This assumes they are names.
-    data_arg = env[[data_arg_name]]
-    index_arg = env[[index_arg_name]]
+    data_arg = get_resource(bycall$args$contents[[1]], resources)
+    index_arg = get_resource(bycall$args$contents[[2]], resources)
 
     if(is.null(data_arg) || is.null(index_arg) || !data_arg[["chunked_object"]]){
         return(FALSE)
@@ -41,8 +46,11 @@ splits_by_known_column = function(bycall, env)
 }
 
 
+# Find the call to `by`
 bc = find_nodes(ast, function(node) is(node, "Call") && node$fn$value == "by")[[1]]
+bc = ast[[bc]]
 
-ast[[bc]]
 
-
+# Directly add the resources to the AST by hand.
+############################################################
+# This is the order in which the algorithm will do it.
