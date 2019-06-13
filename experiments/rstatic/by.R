@@ -10,11 +10,11 @@ ast = quote_ast({
 # The resource that corresponds to a node, or NULL if none exists
 get_resource = function(node, resources)
 {
-    rname = node$.data[["resource"]]
-    if(is.null(rname)){
+    resource_id = node$.data[["resource_id"]]
+    if(is.null(resource_id)){
         NULL
     } else {
-        resources[[rname]]
+        resources[[resource_id]]
     }
 }
 
@@ -51,6 +51,7 @@ bc = find_nodes(ast, function(node) is(node, "Call") && node$fn$value == "by")[[
 bc = ast[[bc]]
 
 
+# The approach I'm considering associates each node of the AST with a resource which is an R object.
 # Directly add the resources to the AST by hand.
 ############################################################
 # This is the order in which the algorithm will do it.
