@@ -7,6 +7,12 @@
 #
 # I don't really plan on implementing this in the scheduler, since I think it's too specific.
 
+# Sun Jun 16 15:09:00 PDT 2019
+#
+# I've realized that this applies more widely than I originally thought.
+# Even for a single GROUP BY it applies, if the data start out in any kind of chunks, it's the same problem as the two GROUP BY's
+
+
 # These are the unit costs in terms of the size of the group / data to compute the group by's and to transfer data.
 # They're only important relative to each other, which is why I put them in this form.
 cost = list(gb1 = 1, gb2 = 1, transfer = 5)
@@ -127,7 +133,6 @@ data_moved_per_worker = function(worker, g1_assign, g2_assign, P)
 
 
 # Assign the second group to workers given the first GROUP BY assignments
-# Start with the largest groups and assign them to the worker that already has the most data for that group.
 second_group = function(g1_assign, P, w)
 {
     P2 = colSums(P)
@@ -140,20 +145,22 @@ second_group = function(g1_assign, P, w)
 
     assignments = rep(NA, length(P2))
 
+    # Start with the largest groups and assign them to the worker that already has the most data for that group.
     for(idx in order(P2, decreasing = TRUE)){
         newtime = P2[idx]
         candidates = times + newtime < avg_load + epsilon
         present_on_worker = tapply(P[, idx], g1_assign, sum)
 
-        bw = if(!any(candidates)) 
+        best_worker = if(!any(candidates)) 
         {
             which.min(times)
         } else {
+            workers_with_most_data_first = order(present_on_worker, decreasing = TRUE)
             # intersect returns result in order of first arg
-            intersect(order(present_on_worker), which(candidates))[1]
+            intersect(workers_with_most_data_first, which(candidates))[1]
         }
-        times[bw] = times[bw] + newtime
-        assignments[idx] = bw
+        times[best_worker] = times[best_worker] + newtime
+        assignments[idx] = best_worker
     }
     assignments
 }
@@ -192,6 +199,7 @@ tapply(P2, g2_greedy, sum)
 
 
 # We expect a movement of around 2/3 for the greedy one.
+# An improved algorithm will have less movement.
 movement = c(greedy = relative_data_movement(g1_greedy, g2_greedy, P)
     , new = relative_data_movement(g1_new, g2_new, P)
 )
