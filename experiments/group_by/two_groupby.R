@@ -167,9 +167,20 @@ second_group = function(g1_assign, P, w)
 
 
 # Positive numbers show that the new approach moves less data than the naive greedy way.
-one_relative_improvement = function(g1, g2, w)
+one_relative_improvement = function(g1, g2, w, block_two = FALSE)
 {
     P = matrix(runif(g1 * g2), nrow = g1)
+
+    if(block_two){
+        # Add two diagonal blocks to it
+        g1_b = seq(as.integer(g1 / 2))
+        g2_b = seq(as.integer(g2 / 2))
+        block_ones = matrix(0, nrow = g1, ncol = g2)
+        block_ones[g1_b, g2_b] = 1
+        block_ones[-g1_b, -g2_b] = 1
+
+        P = P + block_two
+    }
 
     g1_new = first_group(P, w)
     g2_new = second_group(g1_new, P, w)
@@ -186,9 +197,9 @@ one_relative_improvement = function(g1, g2, w)
     baseline - new
 }
 
-med_relative_improvement = function(g1, g2, w, nreps = 100L)
+med_relative_improvement = function(g1, g2, w, block_two = FALSE, nreps = 100L)
 {
-    out = replicate(nreps, one_relative_improvement(g1, g2, w))
+    out = replicate(nreps, one_relative_improvement(g1, g2, w, block_two))
     median(out)
 }
 
@@ -228,9 +239,16 @@ levelplot(w5 ~ g1 + g2, wg
 # If the whole data set is 20 TB, this would prevent moving 1-2 TB.
 
 
-
 # Next- should try to add some block structure to the P matrix, then the algorithm should do better.
 
+wg$w3_block = mapply(med_relative_improvement, wg$g1, wg$g2, w = 3L
+                     , MoreArgs = list(block_two = TRUE))
+
+# This doesn't do what I expect
+levelplot(w3_block ~ g1 + g2, wg
+          , main = "With block structure, 3 workers"
+          , col.regions = heat.colors
+          )
 
 
 
