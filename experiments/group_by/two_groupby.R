@@ -166,46 +166,94 @@ second_group = function(g1_assign, P, w)
 }
 
 
+# Positive numbers show that the new approach moves less data than the naive greedy way.
+one_relative_improvement = function(g1, g2, w)
+{
+    P = matrix(runif(g1 * g2), nrow = g1)
+
+    g1_new = first_group(P, w)
+    g2_new = second_group(g1_new, P, w)
+
+    P1 = rowSums(P)
+    P2 = colSums(P)
+
+    g1_greedy = greedy_assign(P1, w)
+    g2_greedy = greedy_assign(P2, w)
+
+    baseline = relative_data_movement(g1_greedy, g2_greedy, P)
+    new = relative_data_movement(g1_new, g2_new, P)
+
+    baseline - new
+}
+
+med_relative_improvement = function(g1, g2, w, nreps = 100L)
+{
+    out = replicate(nreps, one_relative_improvement(g1, g2, w))
+    median(out)
+}
+
 # Actually try it out
 ############################################################
 
-# Numbers of groups
-g1 = 20
-g2 = 35
-w = 3
-
 set.seed(2347)
-P = matrix(runif(g1 * g2), nrow = g1)
 
-g1_new = first_group(P, w)
-g2_new = second_group(g1_new, P, w)
+one_relative_improvement(10, 15, 4)
 
-P1 = rowSums(P)
-P2 = colSums(P)
+ngroups = seq(from = 5, to = 30, by = 5)
+wg = expand.grid(g1 = ngroups, g2 = ngroups)
 
-# Did it do a reasonable load balancing?
-tapply(P1, g1_new, sum)
-tapply(P2, g2_new, sum)
+wg$w2 = mapply(med_relative_improvement, wg$g1, wg$g2, w = 2L)
+wg$w3 = mapply(med_relative_improvement, wg$g1, wg$g2, w = 3L)
+wg$w5 = mapply(med_relative_improvement, wg$g1, wg$g2, w = 5L)
 
-# Numbers should be around:
-sum(P1) / w
+library(lattice)
+library(RColorBrewer)
 
-g1_greedy = greedy_assign(P1, w)
-g2_greedy = greedy_assign(P2, w)
+levelplot(w2 ~ g1 + g2, wg
+          , main = "Median relative improvement over 100 reps with 2 workers"
+          , col.regions = heat.colors
+          )
 
-# Yes, balanced
-tapply(P1, g1_greedy, sum)
-tapply(P2, g2_greedy, sum)
+levelplot(w3 ~ g1 + g2, wg
+          , main = "Median relative improvement over 100 reps with 3 workers"
+          , col.regions = heat.colors
+          )
+
+levelplot(w5 ~ g1 + g2, wg
+          , main = "Median relative improvement over 100 reps with 5 workers"
+          , col.regions = heat.colors
+          )
+
+# Summary- this algorithm results moves less data, about 5 - 11 percent.
+# If the whole data set is 20 TB, this would prevent moving 1-2 TB.
 
 
-# We expect a movement of around 2/3 for the greedy one.
-# An improved algorithm will have less movement.
-movement = c(greedy = relative_data_movement(g1_greedy, g2_greedy, P)
-    , new = relative_data_movement(g1_new, g2_new, P)
-)
 
-print(movement)
+# Next- should try to add some block structure to the P matrix, then the algorithm should do better.
 
-# The new and improved algorithm actually does WORSE at around 0.75!
-# For many different seeds also.
-# Is that even possible?
+
+
+
+
+
+
+if(FALSE){
+    # Did it do a reasonable load balancing?
+    tapply(P1, g1_new, sum)
+    tapply(P2, g2_new, sum)
+
+    # Numbers should be around:
+    sum(P1) / w
+
+    # Yes, balanced
+    tapply(P1, g1_greedy, sum)
+    tapply(P2, g2_greedy, sum)
+
+    # We expect a movement of around 2/3 for the greedy one.
+    # An improved algorithm will have less movement.
+    movement = c(greedy = relative_data_movement(g1_greedy, g2_greedy, P)
+        , new = relative_data_movement(g1_new, g2_new, P)
+    )
+
+    print(movement)
+}
