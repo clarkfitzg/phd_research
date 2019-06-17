@@ -175,11 +175,11 @@ one_relative_improvement = function(g1, g2, w, block_two = FALSE)
         # Add two diagonal blocks to it
         g1_b = seq(as.integer(g1 / 2))
         g2_b = seq(as.integer(g2 / 2))
-        block_ones = matrix(0, nrow = g1, ncol = g2)
-        block_ones[g1_b, g2_b] = 1
-        block_ones[-g1_b, -g2_b] = 1
+        block = matrix(0, nrow = g1, ncol = g2)
+        block[g1_b, g2_b] = 1
+        block[-g1_b, -g2_b] = 1
 
-        P = P + block_two
+        P = P + block
     }
 
     g1_new = first_group(P, w)
@@ -208,7 +208,7 @@ med_relative_improvement = function(g1, g2, w, block_two = FALSE, nreps = 100L)
 
 set.seed(2347)
 
-one_relative_improvement(10, 15, 4)
+one_relative_improvement(10, 15, 4, block_two = TRUE)
 
 ngroups = seq(from = 5, to = 30, by = 5)
 wg = expand.grid(g1 = ngroups, g2 = ngroups)
@@ -239,18 +239,16 @@ levelplot(w5 ~ g1 + g2, wg
 # If the whole data set is 20 TB, this would prevent moving 1-2 TB.
 
 
-# Next- should try to add some block structure to the P matrix, then the algorithm should do better.
+# Next- should try to add some structure to the P matrix, and then the algorithm should do better.
 
 wg$w3_block = mapply(med_relative_improvement, wg$g1, wg$g2, w = 3L
                      , MoreArgs = list(block_two = TRUE))
 
-# This doesn't do what I expect
+# Yes, it does a fair amount better.
 levelplot(w3_block ~ g1 + g2, wg
           , main = "With block structure, 3 workers"
           , col.regions = heat.colors
           )
-
-
 
 
 
