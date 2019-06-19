@@ -9,4 +9,4 @@
 
 # 1. Identify function calls that are vectorized in large objects.
 # 2. Gather the largest possible collections of vectorized function calls that it can.
-# 3. Turn these collections of calls into 
+# 3. Evaluate these collections of calls on one worker.

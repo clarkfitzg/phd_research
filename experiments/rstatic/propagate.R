@@ -109,6 +109,22 @@ update_resource.Assign = function(node, name_resource, resources, namer)
 }
 
 
+update_resource.Call = function(node, name_resource, resources, namer, vectorfuncs)
+{
+    # First implementation will behave naively.
+    # If the call is to a vectorized function, and any of the arguments to that function are chunked objects, then the result is a chunked object.
+    # A more robust version will match on argument names, but for this we will need the argument list to be named.
+
+    has_vector_args = sapply(node$args, function(x) resource_id(x)$chunked_object)
+
+    if(node$fn$value %in% vectorfuncs && any(has_vector_args)){
+        new_named_resource(node, resources, namer, chunked_object = TRUE)
+    } else {
+        NextMethod()
+    }
+}
+
+
 namer_factory = function(basename = "r"){
     cnt = Counter$new()
     function() next_name(cnt, basename)
@@ -155,30 +171,9 @@ splits_by_known_column = function(bycall, resources)
 }
 
 
-# Actually use it
+# For when we actually run it:
 ############################################################
 
 name_resource = new.env()
 resources = new.env()
 namer = namer_factory()
-
-pems_id = namer()
-name_resource[["pems"]] = pems_id
-resources[[pems_id]] = list(chunked_object = TRUE)
-
-ast = quote_ast({
-    stn = pems[, "station"]
-    result = by(pems, stn, npbin)
-})
-
-# Does all the inference
-propagate(ast, name_resource, resources, namer)
-
-# Should see a column subset in here after this is done.
-out = as.list(resources)
-
-# Find the call to `by`
-bc = find_nodes(ast, function(node) is(node, "Call") && node$fn$value == "by")[[1]]
-bc = ast[[bc]]
-
-s = splits_by_known_column(bc, resources)
