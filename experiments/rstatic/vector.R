@@ -11,7 +11,7 @@ ast = quote_ast({
 })
 
 # Does all the inference
-propagate(ast, name_resource, resources, namer, vectorfuncs = c("exp", "+"))
+propagate(ast, name_resource, resources, namer, vector_funcs = c("exp", "+"))
 
 # Should be a chunked object
-get_resource(ast[[2]])
+get_resource(ast[[2]], resources)
