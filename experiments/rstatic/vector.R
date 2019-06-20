@@ -22,6 +22,7 @@ resources[[x_id]] = list(chunked_object = TRUE)
 ast = quote_ast({
     y = x[, "y"]
     y2 = 2 * y
+    2 * 3
 })
 
 # Mark everything with whether it's a chunked object or not.
@@ -45,10 +46,21 @@ gdf = g@graph
 
 chunk_obj = sapply(ast$contents, is_chunked, resources = resources)
 
-# Find the largest set of vector blocks possible, working forward.
+# Find the largest set of vector blocks possible
 findVectorBlocks = function(gdf, chunk_obj)
 {
-    smallest = min(gdf$from, gdf$to)
+    not_chunked = which(!chunk_obj)
+
+    # Order matters here!
+    
+    # Drop nodes that are descendants of chunked nodes
+    gdf = gdf[gdf$from %in% chunk_obj, ]
+
+    # Drop nodes that are not chunked
+
+    # The graph with only the chunked objects
+    gdf = gdf[(gdf$from %in% chunk_obj) & (gdf$to %in% chunk_obj), ]
+
 }
 
 
