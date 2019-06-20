@@ -44,23 +44,38 @@ setMethod("inferGraph", signature(code = "Brace", time = "missing"),
 g = inferGraph(ast)
 gdf = g@graph
 
+
+# Recursively find descendants of a node.
+# gdf should be a dag or this will recurse infinitely.
+descendants = function(node, gdf)
+{
+    children = gdf$to[gdf$from == node]
+    cplus = lapply(children, descendants, gdf = gdf)
+    cplus = do.call(c, cplus)
+    unique(c(children, cplus))
+}
+
 chunk_obj = sapply(ast$contents, is_chunked, resources = resources)
 
-# Find the largest set of vector blocks possible
+# Find the largest connected set of vector blocks possible
+# This will only pick up those nodes that are connected through dependencies- we could include siblings as well.
+# One way to do that is to have a node for the initial load of the large data object, and gather all of its descendants.
 findVectorBlocks = function(gdf, chunk_obj)
 {
     not_chunked = which(!chunk_obj)
 
-    # Order matters here!
-    
-    # Drop nodes that are descendants of chunked nodes
-    gdf = gdf[gdf$from %in% chunk_obj, ]
+    # Drop nodes that are descendants of non chunked nodes.
+    d2 = lapply(not_chunked, descendants, gdf = gdf)
+    d2 = do.call(c, d2)
+    exclude = c(not_chunked, d2)
 
-    # Drop nodes that are not chunked
+    # This graph contains only the ones we need
+    pruned = gdf[!(gdf$from %in% exclude) & !(gdf$to %in% exclude), ]
 
-    # The graph with only the chunked objects
-    gdf = gdf[(gdf$from %in% chunk_obj) & (gdf$to %in% chunk_obj), ]
-
+    # Picking the smallest index is somewhat arbitrary.
+    d0 = min(pruned$from)
+    d = descendants(d0, pruned)
+    c(d0, d)
 }
 
 
