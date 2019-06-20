@@ -1,5 +1,19 @@
+# Thu Jun 20 11:37:30 PDT 2019
+# I can get this working incrementally by starting with the simplest things possible.
+# The simplest thing is to see the system working for a completely vectorized program.
+
+# Here's what we can do on further refinements:
+# 1. column selection
+# 2. force a 'collect', say with median
+# 3. 'reduce' functions, as in the z score example. 
+
+
+# Developing stuff that should make its way into makeParallel
+library(makeParallel)
 
 source("propagate.R")
+
+
 
 x_id = namer()
 name_resource[["x"]] = x_id
@@ -16,14 +30,6 @@ propagate(ast, name_resource, resources, namer, vector_funcs = c("exp", "+", "*"
 # Should be a chunked object
 get_resource(ast[[2]], resources)
 
-# Next is the scheduling and code generation.
-# Start with the simplest things possible.
-# - Each worker will read in a chunk of `x`, doing column selection at the source so that only the column 'y' comes through.
-# - Each worker will compute `y2` and save it
-
-# Developing stuff that will go into makeParallel
-
-library(makeParallel)
 
 setOldClass("Brace")
 
@@ -35,9 +41,19 @@ setMethod("inferGraph", signature(code = "Brace", time = "missing"),
 })
 
 g = inferGraph(ast)
+gdf = g@graph
+
+chunk_obj = sapply(ast$contents, is_chunked, resources = resources)
+
+# Find the largest set of vector blocks possible, working forward.
+findVectorBlocks = function(gdf, chunk_obj)
+{
+    smallest = min(gdf$from, gdf$to)
+}
+
+
 
 setClass("VectorSchedule", contains = "Schedule")
-
 
 scheduleVector = function(graph, data)
 {
