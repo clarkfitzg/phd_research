@@ -47,3 +47,11 @@ system.time(
 )
 
 
+# What is the max size of data I can put in the buffer before it waits for the client to consume it?
+# 0.5 MB works, but 1 MB blocks.
+d = as.numeric(seq(as.integer(0.5 * 2^20/8)))
+
+print(object.size(d), units = "MB")
+
+serialize(d, s, xdr = FALSE)
+

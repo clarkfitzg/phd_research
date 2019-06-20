@@ -1,6 +1,9 @@
 # Tue Jun 18 15:37:55 PDT 2019
 #
 # Do an actual experiment, how long does it take before we're ready to compute on the groups?
+#
+# What I'm doing here is essentially the same thing as Spark's shuffle
+# http://people.apache.org/~pwendell/spark-nightly/spark-master-docs/latest/rdd-programming-guide.html#shuffle-operations
 
 library(parallel)
 library(partools)
