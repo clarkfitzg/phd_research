@@ -24,6 +24,6 @@ code = parse(text = '
     2 * 3
 ')
 
-out = makeParallel(code, scheduler = scheduleVector, data = d)
+out = makeParallel(code, scheduler = scheduleVector, data = d, save_var = "y2")
 
 writeCode(out, "vector_actual_generated.R")

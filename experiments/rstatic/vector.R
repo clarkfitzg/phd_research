@@ -54,7 +54,7 @@ findBigVectorBlock = function(gdf, chunk_obj)
     # Picking the smallest index is somewhat arbitrary.
     d0 = min(pruned$from)
     d = descendants(d0, pruned)
-    c(d0, d)
+    as.integer(c(d0, d))
 }
 
 
@@ -103,11 +103,21 @@ scheduleVector = function(graph, data, save_var, nworkers = 2L, vector_funcs = c
 
     chunk_obj = sapply(ast$contents, is_chunked, resources = resources)
 
-    vector_indices = findBigVectorBlock(gdf, chunk_obj)
+    vector_indices = findBigVectorBlock(graph@graph, chunk_obj)
 
-    VectorSchedule(assignment_list = assignments, nworkers = as.integer(nworkers)
-                   , save_var = save_var, vector_indices = vector_indices)
+    # TODO: Check that save_var is actually produced in the vector block
+
+    VectorSchedule(graph = graph
+                   , assignment_list = assignments
+                   , nworkers = as.integer(nworkers)
+                   , save_var = save_var
+                   , vector_indices = vector_indices
+                   , data = data
+                   )
 }
+
+
+code_to_char = function(code) paste(as.character(code), collapse = "\n")
 
 
 setMethod("generate", "VectorSchedule", function(schedule, ...){
@@ -117,8 +127,9 @@ setMethod("generate", "VectorSchedule", function(schedule, ...){
     data = schedule@data
 
     code = schedule@graph@code
-    vector_body = as.character(code[[schedule@vector_indices]])
-    remainder = as.character(code[[-schedule@vector_indices]])
+    v = schedule@vector_indices
+    vector_body = code_to_char(code[v])
+    remainder = code_to_char(code[-v])
 
     output_code = whisker::whisker.render(template, list(
         gen_time = Sys.time()
@@ -132,7 +143,9 @@ setMethod("generate", "VectorSchedule", function(schedule, ...){
         , remainder = remainder
     ))
 
-    GeneratedCode(schedule = schedule, code = parse(text = output_code))
+    newcode = parse(text = output_code)
+
+    GeneratedCode(schedule = schedule, code = newcode)
 })
 
 
