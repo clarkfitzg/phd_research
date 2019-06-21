@@ -1,18 +1,4 @@
-# The target code to generate
-
 library(parallel)
-
-
-# First set up some toy data
-gen_one = function(i, fname)
-{
-    d = data.frame(y = i, z = 0)
-    saveRDS(d, file = fname)
-}
-nchunks = 4L
-fnames = paste0("x", seq(nchunks), ".rds")
-Map(gen_one, seq(nchunks), fnames)
-
 
 nworkers = 2L
 
@@ -24,6 +10,7 @@ cls = makeCluster(nworkers)
 clusterExport(cls, c("assignments", "fnames"))
 parLapply(cls, seq(nworkers), function(i) assign("workerID", i, globalenv()))
 
+# Sanity check
 clusterEvalQ(cls, workerID)
 
 # Now we just evaluate the serial version of the code on all the workers.
@@ -36,4 +23,5 @@ clusterEvalQ(cls, {
     saveRDS(y2, file = paste0("y2_", workerID, ".rds"))
 })
 
+# An original, non vectorized line
 2 * 3
