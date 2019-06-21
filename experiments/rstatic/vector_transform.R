@@ -16,4 +16,14 @@ Map(gen_one, seq(nchunks), fnames)
 # What follows is what we expect the user of makeParallel to write.
 ############################################################
 
-ds = ChunkLoadFunc(read_func = "readRDS", file_names = fnames, varname = "x", combine_func = "rbind")
+d = ChunkLoadFunc(read_func = "readRDS", file_names = fnames, varname = "x", combine_func = "rbind")
+
+code = parse(text = '
+    y = x[, "y"]
+    y2 = 2 * y
+    2 * 3
+')
+
+out = makeParallel(code, scheduler = scheduleVector, data = d)
+
+writeCode(out, "vector_actual_generated.R")

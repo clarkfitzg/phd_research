@@ -171,11 +171,3 @@ splits_by_known_column = function(bycall, resources)
         FALSE
     }
 }
-
-
-# For when we actually run it:
-############################################################
-
-name_resource = new.env()
-resources = new.env()
-namer = namer_factory()

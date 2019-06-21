@@ -16,6 +16,7 @@ source("propagate.R")
 
 setOldClass("Brace")
 
+
 setMethod("inferGraph", signature(code = "Brace", time = "missing"),
     function(code, time, ...){
         expr = lapply(code$contents, as_language)
@@ -33,7 +34,6 @@ descendants = function(node, gdf)
     cplus = do.call(c, cplus)
     unique(c(children, cplus))
 }
-
 
 
 # Find the largest connected set of vector blocks possible
@@ -88,15 +88,15 @@ scheduleVector = function(graph, data, save_var, nworkers = 2L, vector_funcs = c
     # Fall back to even splitting if we don't know how big the chunks are.
     assignments = parallel::splitIndices(nchunks, nworkers)
 
-    x_id = namer()
-    name_resource[["x"]] = x_id
-    resources[[x_id]] = list(chunked_object = TRUE)
+    name_resource = new.env()
+    resources = new.env()
+    namer = namer_factory()
 
-    ast = quote_ast({
-        y = x[, "y"]
-        y2 = 2 * y
-        2 * 3
-    })
+    data_id = namer()
+    name_resource[[data@varname]] = data_id
+    resources[[data_id]] = list(chunked_object = TRUE)
+
+    ast = to_ast(graph@code)
 
     # Mark everything with whether it's a chunked object or not.
     propagate(ast, name_resource, resources, namer, vector_funcs = vector_funcs)
@@ -104,7 +104,6 @@ scheduleVector = function(graph, data, save_var, nworkers = 2L, vector_funcs = c
     chunk_obj = sapply(ast$contents, is_chunked, resources = resources)
 
     vector_indices = findBigVectorBlock(gdf, chunk_obj)
-
 
     VectorSchedule(assignment_list = assignments, nworkers = as.integer(nworkers)
                    , save_var = save_var, vector_indices = vector_indices)
@@ -141,17 +140,20 @@ setMethod("generate", "VectorSchedule", function(schedule, ...){
 
 
 if(FALSE){
-    # Code for development
+# Code for development
+name_resource = new.env()
+resources = new.env()
+namer = namer_factory()
 
 x_id = namer()
 name_resource[["x"]] = x_id
 resources[[x_id]] = list(chunked_object = TRUE)
 
-ast = quote_ast({
+ast = to_ast(quote({
     y = x[, "y"]
     y2 = 2 * y
     2 * 3
-})
+}))
 
 # Mark everything with whether it's a chunked object or not.
 propagate(ast, name_resource, resources, namer, vector_funcs = c("exp", "+", "*"))
