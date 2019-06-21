@@ -14,24 +14,6 @@ library(makeParallel)
 source("propagate.R")
 
 
-
-x_id = namer()
-name_resource[["x"]] = x_id
-resources[[x_id]] = list(chunked_object = TRUE)
-
-ast = quote_ast({
-    y = x[, "y"]
-    y2 = 2 * y
-    2 * 3
-})
-
-# Mark everything with whether it's a chunked object or not.
-propagate(ast, name_resource, resources, namer, vector_funcs = c("exp", "+", "*"))
-
-# Should be a chunked object
-get_resource(ast[[2]], resources)
-
-
 setOldClass("Brace")
 
 setMethod("inferGraph", signature(code = "Brace", time = "missing"),
@@ -40,9 +22,6 @@ setMethod("inferGraph", signature(code = "Brace", time = "missing"),
         expr = as.expression(expr)
         callGeneric(expr, ...)
 })
-
-g = inferGraph(ast)
-gdf = g@graph
 
 
 # Recursively find descendants of a node.
@@ -55,7 +34,6 @@ descendants = function(node, gdf)
     unique(c(children, cplus))
 }
 
-chunk_obj = sapply(ast$contents, is_chunked, resources = resources)
 
 
 # Find the largest connected set of vector blocks possible
@@ -80,7 +58,6 @@ findBigVectorBlock = function(gdf, chunk_obj)
 }
 
 
-bl = findBigVectorBlock(gdf, chunk_obj)
 
 # For the schedule, we just insert the vector block into something like an lapply, and the remaining program happens on the master.
 # We'll also need to insert the data loading calls before anything happens, and the saving call after.
@@ -92,20 +69,45 @@ ChunkLoadFunc = setClass("ChunkLoadFunc", contains = "DataSource",
          slots = c(read_func = "character", file_names = "character", varname = "character", combine_func = "character"))
 
 VectorSchedule = setClass("VectorSchedule", contains = "Schedule",
-         slots = c(assignment_list = "list", nworkers = "integer", data = "ChunkLoadFunc", save_var = "character"))
+         slots = c(assignment_list = "list"
+                   , nworkers = "integer"
+                   , data = "ChunkLoadFunc"
+                   , save_var = "character"
+                   , vector_indices = "integer"
+                   ))
 
 
-scheduleVector = function(graph, data, save_var, nworkers = 2L, ...)
+scheduleVector = function(graph, data, save_var, nworkers = 2L, vector_funcs = c("exp", "+", "*"), ...)
 {
-    if(!is(data, "ChunkLoadFunc")) stop("Only implemented for data of class ChunkLoadFunc")
+    if(!is(data, "ChunkLoadFunc")) 
+        stop("This function is currently only implemented for data of class ChunkLoadFunc.")
 
     nchunks = length(data@file_names)
 
     # This is where the logic for splitting the chunks will go.
     # Fall back to even splitting if we don't know how big the chunks are.
-    assignments = splitIndices(nchunks, nworkers)
+    assignments = parallel::splitIndices(nchunks, nworkers)
 
-    VectorSchedule(assignment_list = assignments, nworkers = as.integer(nworkers), save_var = save_var)
+    x_id = namer()
+    name_resource[["x"]] = x_id
+    resources[[x_id]] = list(chunked_object = TRUE)
+
+    ast = quote_ast({
+        y = x[, "y"]
+        y2 = 2 * y
+        2 * 3
+    })
+
+    # Mark everything with whether it's a chunked object or not.
+    propagate(ast, name_resource, resources, namer, vector_funcs = vector_funcs)
+
+    chunk_obj = sapply(ast$contents, is_chunked, resources = resources)
+
+    vector_indices = findBigVectorBlock(gdf, chunk_obj)
+
+
+    VectorSchedule(assignment_list = assignments, nworkers = as.integer(nworkers)
+                   , save_var = save_var, vector_indices = vector_indices)
 }
 
 
@@ -115,6 +117,10 @@ setMethod("generate", "VectorSchedule", function(schedule, ...){
     assign_string = deparse(schedule@assignment_list)
     data = schedule@data
 
+    code = schedule@graph@code
+    vector_body = as.character(code[[schedule@vector_indices]])
+    remainder = as.character(code[[-schedule@vector_indices]])
+
     output_code = whisker::whisker.render(template, list(
         gen_time = Sys.time()
         , nworkers = schedule@nworkers
@@ -122,9 +128,9 @@ setMethod("generate", "VectorSchedule", function(schedule, ...){
         , read_func = data@read_func
         , data_varname = data@varname
         , combine_func = data@combine_func
-        , vector_body = 
+        , vector_body = vector_body
         , save_var = schedule@save_var
-        , remainder = 
+        , remainder = remainder
     ))
 
     GeneratedCode(schedule = schedule, code = parse(text = output_code))
@@ -133,18 +139,29 @@ setMethod("generate", "VectorSchedule", function(schedule, ...){
 
 
 
-# Set up some toy data
-gen_one = function(i, fname)
-{
-    d = data.frame(y = i, z = 0)
-    saveRDS(d, file = fname)
+
+if(FALSE){
+    # Code for development
+
+x_id = namer()
+name_resource[["x"]] = x_id
+resources[[x_id]] = list(chunked_object = TRUE)
+
+ast = quote_ast({
+    y = x[, "y"]
+    y2 = 2 * y
+    2 * 3
+})
+
+# Mark everything with whether it's a chunked object or not.
+propagate(ast, name_resource, resources, namer, vector_funcs = c("exp", "+", "*"))
+
+# Should be a chunked object
+get_resource(ast[[2]], resources)
+
+g = inferGraph(ast)
+gdf = g@graph
+
+bl = findBigVectorBlock(gdf, chunk_obj)
+
 }
-nchunks = 4L
-fnames = paste0("x", seq(nchunks), ".rds")
-Map(gen_one, seq(nchunks), fnames)
-
-
-# The actual transformation code
-ds = ChunkLoadFunc(read_func = "readRDS", file_names = fnames, varname = "x", combine_func = "rbind")
-
-
