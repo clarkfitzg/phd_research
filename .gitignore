@@ -12,6 +12,7 @@ data/*
 
 # Rdata
 *.rda
+*.rds
 
 *.aux
 *.bbl

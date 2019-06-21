@@ -57,10 +57,11 @@ descendants = function(node, gdf)
 
 chunk_obj = sapply(ast$contents, is_chunked, resources = resources)
 
+
 # Find the largest connected set of vector blocks possible
 # This will only pick up those nodes that are connected through dependencies- we could include siblings as well.
 # One way to do that is to have a node for the initial load of the large data object, and gather all of its descendants.
-findVectorBlocks = function(gdf, chunk_obj)
+findBigVectorBlock = function(gdf, chunk_obj)
 {
     not_chunked = which(!chunk_obj)
 
@@ -78,6 +79,31 @@ findVectorBlocks = function(gdf, chunk_obj)
     c(d0, d)
 }
 
+
+bl = findBigVectorBlock(gdf, chunk_obj)
+
+# For the schedule, we just insert the vector block into something like an lapply, and the remaining program happens on the master.
+# We'll also need to insert the data loading calls before anything happens, and the saving call after.
+# We should be able to keep these independent of the actual program.
+
+# Set up some toy data
+gen_one = function(i, fname)
+{
+    d = data.frame(y = i, z = 0)
+    saveRDS(d, file = fname)
+}
+nchunks = 4L
+fnames = paste0("x", seq(nchunks), ".rds")
+Map(gen_one, seq(nchunks), fnames)
+
+
+ds = dataSource("readRDS", fnames, varname = "x")
+
+nworkers = 2L
+
+assignments = parallel::splitIndices(nchunks, nworkers)
+
+# I know I've written code that can assign these.
 
 
 setClass("VectorSchedule", contains = "Schedule")
