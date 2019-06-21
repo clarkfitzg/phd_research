@@ -88,26 +88,46 @@ bl = findBigVectorBlock(gdf, chunk_obj)
 
 
 
-setClass("ChunkLoadFunc", contains = "DataSource",
-         slots = c(read_func = "character", varname = "character", combine_func = "character"))
+ChunkLoadFunc = setClass("ChunkLoadFunc", contains = "DataSource",
+         slots = c(read_func = "character", file_names = "character", varname = "character", combine_func = "character"))
 
-setClass("VectorSchedule", contains = "Schedule",
-         slots = c(assignment_list = "list")
+VectorSchedule = setClass("VectorSchedule", contains = "Schedule",
+         slots = c(assignment_list = "list", nworkers = "integer", data = "ChunkLoadFunc", save_var = "character"))
 
 
-scheduleVector = function(graph, data, ...)
+scheduleVector = function(graph, data, save_var, nworkers = 2L, ...)
 {
     if(!is(data, "ChunkLoadFunc")) stop("Only implemented for data of class ChunkLoadFunc")
 
-    # This is where the logic for splitting the chunks will go.
+    nchunks = length(data@file_names)
 
+    # This is where the logic for splitting the chunks will go.
+    # Fall back to even splitting if we don't know how big the chunks are.
+    assignments = splitIndices(nchunks, nworkers)
+
+    VectorSchedule(assignment_list = assignments, nworkers = as.integer(nworkers), save_var = save_var)
 }
 
 
 setMethod("generate", "VectorSchedule", function(schedule, ...){
-    template = readLines("vector_template.R")
-    whisker::whisker.render(template, list(processor = processor))
 
+    template = readLines("vector_template.R")
+    assign_string = deparse(schedule@assignment_list)
+    data = schedule@data
+
+    output_code = whisker::whisker.render(template, list(
+        gen_time = Sys.time()
+        , nworkers = schedule@nworkers
+        , assignment_list = assign_string
+        , read_func = data@read_func
+        , data_varname = data@varname
+        , combine_func = data@combine_func
+        , vector_body = 
+        , save_var = schedule@save_var
+        , remainder = 
+    ))
+
+    GeneratedCode(schedule = schedule, code = parse(text = output_code))
 })
 
 
@@ -122,6 +142,9 @@ gen_one = function(i, fname)
 nchunks = 4L
 fnames = paste0("x", seq(nchunks), ".rds")
 Map(gen_one, seq(nchunks), fnames)
-ds = dataSource("readRDS", fnames, varname = "x")
+
+
+# The actual transformation code
+ds = ChunkLoadFunc(read_func = "readRDS", file_names = fnames, varname = "x", combine_func = "rbind")
 
 
