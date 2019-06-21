@@ -7,8 +7,7 @@ library(parallel)
 
 nworkers = {{{nworkers}}}
 
-
-assignments = splitIndices({{{nchunks}}}, nworkers)
+assignments = {{{assignment_list}}}
 
 cls = makeCluster(nworkers)
 
@@ -22,7 +21,7 @@ clusterEvalQ(cls, {
 
     {{{vector_body}}}
 
-    # We can parameterize this saving function later.
+    # Could parameterize this saving function
     saveRDS({{{save_var}}}, file = paste0("{{{save_var}}}_", workerID, ".rds"))
 })
 

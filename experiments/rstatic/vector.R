@@ -87,6 +87,32 @@ bl = findBigVectorBlock(gdf, chunk_obj)
 # We should be able to keep these independent of the actual program.
 
 
+
+setClass("ChunkLoadFunc", contains = "DataSource",
+         slots = c(read_func = "character", varname = "character", combine_func = "character"))
+
+setClass("VectorSchedule", contains = "Schedule",
+         slots = c(assignment_list = "list")
+
+
+scheduleVector = function(graph, data, ...)
+{
+    if(!is(data, "ChunkLoadFunc")) stop("Only implemented for data of class ChunkLoadFunc")
+
+    # This is where the logic for splitting the chunks will go.
+
+}
+
+
+setMethod("generate", "VectorSchedule", function(schedule, ...){
+    template = readLines("vector_template.R")
+    whisker::whisker.render(template, list(processor = processor))
+
+})
+
+
+
+
 # Set up some toy data
 gen_one = function(i, fname)
 {
@@ -99,10 +125,3 @@ Map(gen_one, seq(nchunks), fnames)
 ds = dataSource("readRDS", fnames, varname = "x")
 
 
-setClass("VectorSchedule", contains = "Schedule")
-
-scheduleVector = function(graph, data)
-{
-    # The idea is to combine as many nodes in the graph as possible.
-    # This means I need to reconcile the dependency graph with the AST.
-}
