@@ -86,25 +86,7 @@ bl = findBigVectorBlock(gdf, chunk_obj)
 # We'll also need to insert the data loading calls before anything happens, and the saving call after.
 # We should be able to keep these independent of the actual program.
 
-# Set up some toy data
-gen_one = function(i, fname)
-{
-    d = data.frame(y = i, z = 0)
-    saveRDS(d, file = fname)
-}
-nchunks = 4L
-fnames = paste0("x", seq(nchunks), ".rds")
-Map(gen_one, seq(nchunks), fnames)
-
-
 ds = dataSource("readRDS", fnames, varname = "x")
-
-nworkers = 2L
-
-assignments = parallel::splitIndices(nchunks, nworkers)
-
-# I know I've written code that can assign these.
-
 
 setClass("VectorSchedule", contains = "Schedule")
 
