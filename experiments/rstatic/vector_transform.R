@@ -26,4 +26,4 @@ code = parse(text = '
 
 out = makeParallel(code, scheduler = scheduleVector, data = d, save_var = "y2")
 
-writeCode(out, "vector_actual_generated.R")
+writeCode(out, "vector_actual_generated.R", overWrite = TRUE)

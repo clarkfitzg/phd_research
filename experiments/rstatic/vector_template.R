@@ -6,17 +6,17 @@
 library(parallel)
 
 nworkers = {{{nworkers}}}
-
 assignments = {{{assignment_list}}}
+file_names = {{{file_names}}}
 
 cls = makeCluster(nworkers)
 
-clusterExport(cls, c("assignments", "fnames"))
+clusterExport(cls, c("assignments", "file_names"))
 parLapply(cls, seq(nworkers), function(i) assign("workerID", i, globalenv()))
 
 clusterEvalQ(cls, {
-    fnames = fnames[assignments[[workerID]]]
-    chunks = lapply(fnames, {{{read_func}}})
+    file_names = file_names[assignments[[workerID]]]
+    chunks = lapply(file_names, {{{read_func}}})
     {{{data_varname}}} = do.call({{{combine_func}}}, chunks)
 
     {{{vector_body}}}

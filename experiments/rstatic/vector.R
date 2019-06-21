@@ -130,9 +130,11 @@ setMethod("generate", "VectorSchedule", function(schedule, ...){
     v = schedule@vector_indices
     vector_body = code_to_char(code[v])
     remainder = code_to_char(code[-v])
+    fnames = deparse(data@file_names)
 
     output_code = whisker::whisker.render(template, list(
         gen_time = Sys.time()
+        , file_names = fnames
         , nworkers = schedule@nworkers
         , assignment_list = assign_string
         , read_func = data@read_func
