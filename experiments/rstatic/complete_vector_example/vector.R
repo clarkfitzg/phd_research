@@ -1,11 +1,13 @@
 # Thu Jun 20 11:37:30 PDT 2019
 # I can get this working incrementally by starting with the simplest things possible.
-# The simplest thing is to see the system working for a completely vectorized program.
+# The simplest thing is a completely vectorized program.
 
-# Here's what we can do on further refinements:
-# 1. column selection
+# I plan to add the following features to the software in this order:
+#
+# 1. column selection at source, using the 'pipe cut' trick
 # 2. force a 'collect', say with median
 # 3. 'reduce' functions, as in the z score example. 
+# 4. Multiple vectorized blocks, where we keep the data loaded on each worker, and return to it.
 
 
 # Developing stuff that should make its way into makeParallel
@@ -76,7 +78,10 @@ VectorSchedule = setClass("VectorSchedule", contains = "Schedule",
                    , vector_indices = "integer"
                    ))
 
-
+#
+#
+#
+# @param save_var character, name of the variable to save
 scheduleVector = function(graph, data, save_var, nworkers = 2L, vector_funcs = c("exp", "+", "*"), ...)
 {
     if(!is(data, "ChunkLoadFunc")) 
