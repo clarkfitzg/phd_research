@@ -52,15 +52,14 @@ add_function_to_cache = function(fun_name, cache, search_env = environment())
 
     fun_env = environment(fun)
 
-    if(is.null(fun_env)){
+    cache_name = if(is.null(fun_env)){
         # Primitives don't have environments
-        cache_name = fun_name
+        fun_name
+    } else if(isNamespace(fun_env)){
+        paste0(getNamespaceName(fun_env), '::', fun_name)
     } else {
-        # TODO: Could generalize this to allow globals
-        ns_name = tryCatch(getNamespaceName(fun_env), 
-                # From local() evaluation of base::.libPaths()
-                error = function(e) getNamespaceName(parent.env(fun_env)))
-        cache_name = paste0(ns_name, '::', fun_name)
+        # .libPaths() is evaluated with local()
+        paste(capture.output(print(fun_env)), fun_name)
     }
 
     if(!exists(cache_name, cache)){
@@ -75,11 +74,13 @@ add_function_to_cache = function(fun_name, cache, search_env = environment())
 
         func_names = unique(do.call(c, func_names))
 
-        cache[[cache_name]] = func_names
-
+        output = list(
         for(fn in func_names){
             Recall(fn, cache, search_env = fun_env)
         }
+
+        cache[[cache_name]] = func_names
+
     }
 
     NULL
@@ -89,4 +90,9 @@ cache = new.env()
 
 add_function_to_cache("data.frame", cache)
 
+# How and why did this find my local f function? Strange.
 
+# Wow, 469 different functions!
+names(cache)
+
+cache[["base::data.frame"]]
