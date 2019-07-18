@@ -30,6 +30,9 @@ get_pkg_funcs = function(info){
 }
 
 
+skip = function(...) NULL
+
+
 # recursively add the usage of all functions to the cache.
 add_function_to_cache = function(fun_name, cache
                                  , search_env = environment()
@@ -47,7 +50,10 @@ add_function_to_cache = function(fun_name, cache
 
     if(!exists(cache_name, cache)){
         message(cache_name)
-        info = getInputs(fun)
+
+        # Skip calls to .Internal
+        col = inputCollector(.Internal = skip)
+        info = getInputs(fun, collector = col)
 
         func_names = sapply(info, get_pkg_funcs)
         func_names = unique(do.call(c, func_names))
