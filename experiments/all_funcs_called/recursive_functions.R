@@ -25,7 +25,8 @@ library(CodeDepends)
 
 # The functions that came from a package, so they're non local 
 get_pkg_funcs = function(info){
-    names(info@functions)[!info@functions]
+    out = names(info@functions)[!info@functions]
+    out[!is.na(out)]
 }
 
 
@@ -34,9 +35,15 @@ add_function_to_cache = function(fun_name, cache
                                  , search_env = environment()
                                  , fun = get(fun_name, search_env)
                                  , fun_env = environment(fun)
-                                 , ns_name = getNamespaceName(fun_env) # Could generalize this to allow globals
                                  ){
-    cache_name = paste0(ns_name, '::', fun_name)
+
+    if(is.null(fun_env)){
+        # I think these are only reserved words: if, for, while, repeat, ...
+        cache_name = fun_name
+    } else {
+        ns_name = getNamespaceName(fun_env) # Could generalize this to allow globals
+        cache_name = paste0(ns_name, '::', fun_name)
+    }
 
     if(!exists(cache_name, cache)){
         info = getInputs(fun)
@@ -51,3 +58,5 @@ add_function_to_cache = function(fun_name, cache
 }
 
 cache = new.env()
+
+add_function_to_cache("data.frame", cache)
