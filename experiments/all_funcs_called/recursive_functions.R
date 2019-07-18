@@ -56,7 +56,10 @@ add_function_to_cache = function(fun_name, cache, search_env = environment())
         # Primitives don't have environments
         cache_name = fun_name
     } else {
-        ns_name = getNamespaceName(fun_env) # TODO: Could generalize this to allow globals
+        # TODO: Could generalize this to allow globals
+        ns_name = tryCatch(getNamespaceName(fun_env), 
+                # From local() evaluation of base::.libPaths()
+                error = function(e) getNamespaceName(parent.env(fun_env)))
         cache_name = paste0(ns_name, '::', fun_name)
     }
 
