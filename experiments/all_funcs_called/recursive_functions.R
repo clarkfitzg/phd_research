@@ -26,7 +26,10 @@ library(CodeDepends)
 # The functions that came from a package, so they're non local 
 get_pkg_funcs = function(info){
     out = names(info@functions)[!info@functions]
-    out[!is.na(out)]
+    out = out[!is.na(out)]
+    # workaround for self-referential functions, see https://github.com/duncantl/CodeDepends/issues/41
+    locally_defined = info@outputs
+    setdiff(out, locally_defined)
 }
 
 
@@ -34,24 +37,34 @@ skip = function(...) NULL
 
 
 # recursively add the usage of all functions to the cache.
-add_function_to_cache = function(fun_name, cache
-                                 , search_env = environment()
-                                 , fun = get(fun_name, search_env)
-                                 , fun_env = environment(fun)
-                                 ){
+add_function_to_cache = function(fun_name, cache, search_env = environment())
+{
+    missing_func = FALSE
+    tryCatch(fun <- get(fun_name, search_env), error = function(e) {
+        missing_func <<- TRUE
+    })
+
+    if(missing_func){
+        # The only way to get this function is to evaluate the call to `function` that creates it.
+        message(sprintf("\nCannot find %s. Skipping.\n", fun_name))
+        return(NULL)
+    }
+
+    fun_env = environment(fun)
 
     if(is.null(fun_env)){
-        # I think these are only reserved words: if, for, while, repeat, ...
+        # Primitives don't have environments
         cache_name = fun_name
     } else {
-        ns_name = getNamespaceName(fun_env) # Could generalize this to allow globals
+        ns_name = getNamespaceName(fun_env) # TODO: Could generalize this to allow globals
         cache_name = paste0(ns_name, '::', fun_name)
     }
 
     if(!exists(cache_name, cache)){
-        message(cache_name)
+        message(paste("adding", cache_name))
 
-        # Skip calls to .Internal
+        # .Internal calls use functions that don't exist at the R level,
+        # so don't analyze any of the subexpressions inside them.
         col = inputCollector(.Internal = skip)
         info = getInputs(fun, collector = col)
 
@@ -65,6 +78,8 @@ add_function_to_cache = function(fun_name, cache
             Recall(fn, cache, search_env = fun_env)
         }
     }
+
+    NULL
 }
 
 cache = new.env()

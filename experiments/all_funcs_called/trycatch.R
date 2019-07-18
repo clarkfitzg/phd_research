@@ -11,6 +11,7 @@ add_123 = function(x){
     add = function(y, ...){
         if(!missing(y)){
             y + add(...)
+            #y + Recall(...)  # Alternatively
         } else 0
     }
     add(x, 1, 2, 3)
@@ -20,6 +21,7 @@ add_123(2)
 
 info = getInputs(add_123)
 
-info[[3]]@functions["add"]
+info[[3]]@functions["add"]  # FALSE, should be TRUE
 
-info[[4]]@functions["add"]
+info[[4]]@functions["add"]  # TRUE, as expected
+
