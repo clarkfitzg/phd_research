@@ -74,16 +74,18 @@ add_function_to_cache = function(fun_name, cache, search_env = environment())
 
         func_names = unique(do.call(c, func_names))
 
-        output = list(
-        for(fn in func_names){
-            Recall(fn, cache, search_env = fun_env)
+        all_funcs_used = vector(length(func_names), mode = "list")
+
+        for(i in seq_along(func_names)){
+            all_funcs_used[[i]] = Recall(func_names[i], cache, search_env = fun_env)
         }
 
-        cache[[cache_name]] = func_names
+        all_funcs_used = unique(do.call(c, all_funcs_used))
 
+        cache[[cache_name]] = all_funcs_used
     }
 
-    NULL
+    cache[[cache_name]]
 }
 
 cache = new.env()
