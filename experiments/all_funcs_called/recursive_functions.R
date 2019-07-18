@@ -56,6 +56,7 @@ add_function_to_cache = function(fun_name, cache
         info = getInputs(fun, collector = col)
 
         func_names = sapply(info, get_pkg_funcs)
+
         func_names = unique(do.call(c, func_names))
 
         cache[[cache_name]] = func_names
@@ -69,3 +70,5 @@ add_function_to_cache = function(fun_name, cache
 cache = new.env()
 
 add_function_to_cache("data.frame", cache)
+
+
