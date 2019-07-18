@@ -45,9 +45,16 @@ add_function_to_cache = function(fun_name, cache, search_env = environment())
     })
 
     if(missing_func){
-        # The only way to get this function is to evaluate the call to `function` that creates it.
-        message(sprintf("\nCannot find %s. Skipping.\n", fun_name))
-        return(NULL)
+        # The only way to get this function is to locally evaluate the call to `function` that creates it.
+        # If we do that we'll need to be much more careful about lexical scoping.
+
+        message(sprintf("\nCannot find %s.\n", fun_name))
+        empty = character()
+        
+        # Add them to the cache anyways so that this function will work recursively.
+        cache_name = paste("**LOCAL CLOSURE**", fun_name)
+        cache[[cache_name]] = empty
+        return(empty)
     }
 
     fun_env = environment(fun)
