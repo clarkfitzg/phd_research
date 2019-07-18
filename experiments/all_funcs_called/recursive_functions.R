@@ -52,6 +52,8 @@ add_function_to_cache = function(fun_name, cache
         func_names = sapply(info, get_pkg_funcs)
         func_names = unique(do.call(c, func_names))
 
+        cache[[cache_name]] = func_names
+
         for(fn in func_names){
             Recall(fn, cache, search_env = fun_env)
         }
