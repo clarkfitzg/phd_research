@@ -9,30 +9,45 @@
 #
 # It should do this only within the R level, not trying to go into the `.Primitive`, `.Call` C level interfaces.
 
-
-# recursively get usage of functions
-#
-# It looks insed
-get_funcs = function(closure){
-}
+library(CodeDepends)
 
 
-f = data.frame
-b = body(f)
-e = environment(f)
+
 
 
 # What's the difference between getExportedValue and get?
 # getExportedValue does something with "lazydata"
 
 
-library(CodeDepends)
 
 # We should be able to use CodeDepends for this.
 
-info = getInputs(b)
 
-func_names = names(info@functions)
+# The functions that came from a package, so they're non local 
+get_pkg_funcs = function(info){
+    names(info@functions)[!info@functions]
+}
 
-funcs = lapply(func_names, get, e)
 
+# recursively add the usage of all functions to the cache.
+add_function_to_cache = function(fun_name, cache
+                                 , search_env = environment()
+                                 , fun = get(fun_name, search_env)
+                                 , fun_env = environment(fun)
+                                 , ns_name = getNamespaceName(fun_env) # Could generalize this to allow globals
+                                 ){
+    cache_name = paste0(ns_name, '::', fun_name)
+
+    if(!exists(cache_name, cache)){
+        info = getInputs(fun)
+
+        func_names = sapply(info, get_pkg_funcs)
+        func_names = unique(do.call(c, func_names))
+
+        for(fn in func_names){
+            Recall(fn, cache, search_env = fun_env)
+        }
+    }
+}
+
+cache = new.env()
