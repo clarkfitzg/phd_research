@@ -46,6 +46,7 @@ add_function_to_cache = function(fun_name, cache
     }
 
     if(!exists(cache_name, cache)){
+        message(cache_name)
         info = getInputs(fun)
 
         func_names = sapply(info, get_pkg_funcs)
