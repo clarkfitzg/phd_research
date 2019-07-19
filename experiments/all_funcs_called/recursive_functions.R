@@ -49,12 +49,12 @@ add_function_to_cache = function(fun_name, cache, search_env = environment())
         # If we do that we'll need to be much more careful about lexical scoping.
 
         message(sprintf("\nCannot find %s.\n", fun_name))
-        empty = character()
         
         # Add them to the cache anyways so that this function will work recursively.
         cache_name = paste("**LOCAL CLOSURE**", fun_name)
-        cache[[cache_name]] = empty
-        return(empty)
+        cache[[cache_name]] = character()
+
+        return()
     }
 
     fun_env = environment(fun)
@@ -78,21 +78,14 @@ add_function_to_cache = function(fun_name, cache, search_env = environment())
         info = getInputs(fun, collector = col)
 
         func_names = sapply(info, get_pkg_funcs)
-
         func_names = unique(do.call(c, func_names))
 
-        all_funcs_used = vector(length(func_names), mode = "list")
+        cache[[cache_name]] = func_names
 
-        for(i in seq_along(func_names)){
-            all_funcs_used[[i]] = Recall(func_names[i], cache, search_env = fun_env)
+        for(fn in func_names){
+            Recall(fn, cache, search_env = fun_env)
         }
-
-        all_funcs_used = unique(do.call(c, all_funcs_used))
-
-        cache[[cache_name]] = all_funcs_used
     }
-
-    cache[[cache_name]]
 }
 
 cache = new.env()
