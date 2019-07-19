@@ -98,3 +98,16 @@ add_function_to_cache("data.frame", cache)
 names(cache)
 
 cache[["base::data.frame"]]
+
+
+if(FALSE){
+
+# Looks like Duncan did the same thing in CodeDepends::makeCallGraph, but it only looks within the package.
+cg_CodeDepends = makeCallGraph("package:CodeDepends")
+
+cg_base = makeCallGraph("package:base")
+# Doesn't work:
+# Error in checkValidNodeName(nodes) :
+#  node name(s) contain edge separator ‘|’: ‘|’, ‘|.hexmode’, ‘|.octmode’, ‘||’
+
+}
