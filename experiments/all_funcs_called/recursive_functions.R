@@ -33,6 +33,14 @@ get_pkg_funcs = function(info){
 }
 
 
+# Extract all the functions found in a formal arguments
+get_formal_funcs = function(p)
+{
+    if(!missing(p) && is.call(p)){
+        names(getInputs(p)@functions)
+    }
+}
+
 
 skip = function(...) NULL
 
@@ -41,7 +49,6 @@ skip = function(...) NULL
 #
 # @param fun_name, string naming a function
 # @param cache, environment to store which functions have been used
-# @param other_info, environment to store anything else
 # @param search_env, environment where to look up function
 # @param ... arguments to CodeDepends::inputCollector
 add_function_to_cache = function(fun_name, cache, search_env = environment(), ...)
@@ -84,8 +91,9 @@ add_function_to_cache = function(fun_name, cache, search_env = environment(), ..
         col = inputCollector(.Internal = skip, ...)
         info = getInputs(fun, collector = col)
 
+        formal_funcs = lapply(formals(fun), get_formal_funcs)
         func_names = sapply(info, get_pkg_funcs)
-        func_names = unique(do.call(c, func_names))
+        func_names = unique(unlist(c(formal_funcs, func_names)))
 
         cache[[cache_name]] = func_names
 
@@ -119,6 +127,7 @@ recorded_calls[["getOption"]]
 # Nothing. 
 # This means they do not find getOption("stringsAsFactors") in default.stringsAsFactors
 # This is probably because we're not walking the code in the default parameters.
+# Which means we're not walking the code in any of the default parameters, so we're potentially missing a whole lotta code.
 
 
 
