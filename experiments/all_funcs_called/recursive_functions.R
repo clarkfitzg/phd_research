@@ -109,15 +109,18 @@ record_usage = function(e, ...)
 }
 
 
-add_function_to_cache("data.frame", cache, options = record_usage, stop = record_usage)
-
-# Nothing
-recorded_calls[["options"]]
+add_function_to_cache("data.frame", cache, getOption = record_usage, options = record_usage, stop = record_usage)
 
 # Seems to work fine
 recorded_calls[["stop"]]
 
-# How and why did this find my local f function? Strange.
+recorded_calls[["options"]]
+recorded_calls[["getOption"]]
+# Nothing. 
+# This means they do not find getOption("stringsAsFactors") in default.stringsAsFactors
+# This is probably because we're not walking the code in the default parameters.
+
+
 
 # Wow, 484 different functions!
 nc = names(cache)
