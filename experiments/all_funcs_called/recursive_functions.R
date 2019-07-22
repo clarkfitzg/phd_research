@@ -33,11 +33,18 @@ get_pkg_funcs = function(info){
 }
 
 
+
 skip = function(...) NULL
 
 
 # recursively add the usage of all functions to the cache.
-add_function_to_cache = function(fun_name, cache, search_env = environment())
+#
+# @param fun_name, string naming a function
+# @param cache, environment to store which functions have been used
+# @param other_info, environment to store anything else
+# @param search_env, environment where to look up function
+# @param ... arguments to CodeDepends::inputCollector
+add_function_to_cache = function(fun_name, cache, search_env = environment(), ...)
 {
     missing_func = FALSE
     tryCatch(fun <- get(fun_name, search_env), error = function(e) {
@@ -74,7 +81,7 @@ add_function_to_cache = function(fun_name, cache, search_env = environment())
 
         # .Internal calls use functions that don't exist at the R level,
         # so don't analyze any of the subexpressions inside them.
-        col = inputCollector(.Internal = skip)
+        col = inputCollector(.Internal = skip, ...)
         info = getInputs(fun, collector = col)
 
         func_names = sapply(info, get_pkg_funcs)
@@ -90,14 +97,34 @@ add_function_to_cache = function(fun_name, cache, search_env = environment())
 
 cache = new.env()
 
-add_function_to_cache("data.frame", cache)
+
+# What happens if I just grab the call to options when I see it?
+# This is much like tracing the function
+recorded_calls = new.env()
+record_usage = function(e, ...)
+{
+    func_name = as.character(e[[1]])
+    recorded_calls[[func_name]] <<- c(recorded_calls[[func_name]], e)
+    CodeDepends::defaultFuncHandlers[["_default_"]](e, ...)
+}
+
+
+add_function_to_cache("data.frame", cache, options = record_usage, stop = record_usage)
+
+# Nothing
+recorded_calls[["options"]]
+
+# Seems to work fine
+recorded_calls[["stop"]]
 
 # How and why did this find my local f function? Strange.
 
-# Wow, 469 different functions!
-names(cache)
+# Wow, 484 different functions!
+nc = names(cache)
 
-cache[["base::data.frame"]]
+# Nothing
+grep("graphics", names(cache), value = TRUE)
+
 
 
 if(FALSE){
