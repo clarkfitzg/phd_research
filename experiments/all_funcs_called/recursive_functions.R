@@ -34,10 +34,11 @@ get_pkg_funcs = function(info){
 
 
 # Extract all the functions found in a formal arguments
-get_formal_funcs = function(p)
+get_formal_funcs = function(p, ...)
 {
     if(!missing(p) && is.call(p)){
-        names(getInputs(p)@functions)
+        info = getInputs(p, ...)
+        names(info@functions)
     }
 }
 
@@ -60,7 +61,7 @@ add_function_to_cache = function(fun_name, cache, search_env = environment(), ..
 
     if(missing_func){
         # The only way to get this function is to locally evaluate the call to `function` that creates it.
-        # If we do that we'll need to be much more careful about lexical scoping.
+        # If we do that, we'll need to be much more careful about lexical scoping.
 
         message(sprintf("\nCannot find %s.\n", fun_name))
         
@@ -91,16 +92,17 @@ add_function_to_cache = function(fun_name, cache, search_env = environment(), ..
         col = inputCollector(.Internal = skip, ...)
         info = getInputs(fun, collector = col)
 
-        formal_funcs = lapply(formals(fun), get_formal_funcs)
+        formal_funcs = lapply(formals(fun), get_formal_funcs, collector = col)
         func_names = sapply(info, get_pkg_funcs)
         func_names = unique(unlist(c(formal_funcs, func_names)))
 
         cache[[cache_name]] = func_names
 
         for(fn in func_names){
-            Recall(fn, cache, search_env = fun_env)
+            Recall(fn, cache, search_env = fun_env, ...)
         }
     }
+    #if(fun_name == "default.stringsAsFactors") browser()
 }
 
 cache = new.env()
@@ -124,6 +126,7 @@ recorded_calls[["stop"]]
 
 recorded_calls[["options"]]
 recorded_calls[["getOption"]]
+
 # Nothing. 
 # This means they do not find getOption("stringsAsFactors") in default.stringsAsFactors
 # This is probably because we're not walking the code in the default parameters.
@@ -131,8 +134,9 @@ recorded_calls[["getOption"]]
 
 
 
-# Wow, 484 different functions!
+# Wow, 495 different functions!
 nc = names(cache)
+length(nc)
 
 # Nothing
 grep("graphics", names(cache), value = TRUE)
